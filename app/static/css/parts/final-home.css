@@ -1,0 +1,423 @@
+/* ================= HERO ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.hero {
+    position: relative;
+    height: 90vh;
+    overflow: hidden;
+}
+
+.hero-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    background-size: cover;
+    background-position: center;
+}
+
+.hero-slide.active {
+    opacity: 1;
+    z-index: 1;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    color: #fff;
+    text-align: center;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.hero-content h1 {
+    font-size: 42px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.hero-content p {
+    font-size: 18px;
+    line-height: 1.7;
+    margin-bottom: 25px;
+}
+
+/* ================= BUTTONS ================= */
+.btn-primary {
+    background: #2563eb;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+.btn-outline {
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+/* ================= SECTIONS ================= */
+section {
+    padding: 70px 0;
+}
+
+.section-title {
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 40px;
+}
+
+/* ================= GRID ================= */
+.services-grid,
+.portfolio-grid,
+.products-grid,
+.blog-grid,
+.team-grid,
+.why-us-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.services-grid { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+.portfolio-grid { grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); }
+.products-grid { grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); }
+.blog-grid { grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); }
+.team-grid { grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); }
+.why-us-grid { grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); }
+
+/* ================= CARDS ================= */
+.service-card,
+.portfolio-card,
+.product-card,
+.blog-card,
+.team-card,
+.why-us-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: 0.3s;
+}
+
+.service-card:hover,
+.portfolio-card:hover,
+.product-card:hover,
+.blog-card:hover,
+.team-card:hover,
+.why-us-card:hover {
+    transform: translateY(-5px);
+}
+
+/* ================= IMAGES ================= */
+.portfolio-image,
+.product-image {
+    height: 180px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.blog-card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.team-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* 🔥 حل مشكلة تكبير الصورة */
+.team-card:hover img {
+    transform: none !important;
+}
+
+/* ================= TEXT FIX ================= */
+h1, h2, h3, p {
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+/* ================= CTA ================= */
+.cta-section {
+    background: linear-gradient(45deg, #1e3a8a, #2563eb);
+    color: #fff;
+    text-align: center;
+    padding: 60px 0;
+}
+
+.cta-buttons {
+    margin-top: 20px;
+}
+/* ===== HOME ANIMATIONS & UX ===== */
+
+.reveal {
+    opacity: 0;
+    transform: translateY(35px);
+    transition: 0.8s ease;
+}
+
+.reveal.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.service-card,
+.portfolio-card,
+.product-card,
+.blog-card,
+.team-card,
+.why-us-card,
+.home-link-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover,
+.portfolio-card:hover,
+.product-card:hover,
+.blog-card:hover,
+.team-card:hover,
+.why-us-card:hover,
+.home-link-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+.btn-primary,
+.btn-outline {
+    transition: 0.25s ease;
+}
+
+.btn-primary:hover,
+.btn-outline:hover {
+    transform: translateY(-2px);
+}
+
+/* ===== HERO NAV ===== */
+.hero-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.4);
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 6px;
+    z-index: 5;
+}
+
+.hero-prev { left: 20px; }
+.hero-next { right: 20px; }
+
+.hero-nav:hover {
+    background: rgba(0,0,0,0.7);
+}
+
+/* ===== DOTS ===== */
+.hero-dots {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 5;
+}
+
+.hero-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ccc;
+    border: none;
+    cursor: pointer;
+}
+
+.hero-dot.active {
+    background: #fff;
+}
+
+/* ===== HERO TEXT ANIMATION ===== */
+.hero-content h1,
+.hero-content p,
+.hero-buttons {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 1s ease forwards;
+}
+
+.hero-content p { animation-delay: 0.3s; }
+.hero-buttons { animation-delay: 0.6s; }
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== CARD HOVER PRO ===== */
+.service-card:hover,
+.portfolio-card:hover,
+.product-card:hover,
+.blog-card:hover {
+    transform: translateY(-8px) scale(1.02);
+}
+
+/* ===== IMAGE EFFECT ===== */
+.portfolio-image,
+.product-image {
+    transition: 0.4s;
+}
+
+.portfolio-card:hover .portfolio-image,
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+/* ===== TEXT FIX FINAL ===== */
+.section-title {
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+p {
+    font-size: 15px;
+    line-height: 1.8;
+}
+header {
+    transition: 0.3s;
+}
+
+header.scrolled {
+    background: #fff;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+/* ===== PAGE LOADER ===== */
+#page-loader {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+}
+
+.loader-spinner {
+    width: 45px;
+    height: 45px;
+    border: 4px solid #eee;
+    border-top: 4px solid #2563eb;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+#page-loader.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ===== SKELETON ===== */
+.skeleton {
+    background: linear-gradient(90deg, #eee, #ddd, #eee);
+    background-size: 200% 100%;
+    animation: skeleton 1.2s infinite;
+    border-radius: 8px;
+}
+
+@keyframes skeleton {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-box {
+    height: 180px;
+    margin-bottom: 10px;
+}
+
+.skeleton-text {
+    height: 12px;
+    margin: 6px 0;
+}
+html {
+    scroll-behavior: smooth;
+}
+
+button:active,
+a:active {
+    transform: scale(0.95);
+}
+
+/* ===== PARTNERS SECTION شركا النجاح===== */
+
+.partners-section {
+    background: #ffffff;
+    text-align: center;
+}
+
+.partners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 24px;
+    align-items: center;
+}
+
+.partner-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 22px;
+    min-height: 110px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+    transition: 0.3s ease;
+}
+
+.partner-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.10);
+}
+
+.partner-item img {
+    max-width: 130px;
+    max-height: 60px;
+    object-fit: contain;
+    filter: grayscale(100%);
+    opacity: 0.75;
+    transition: 0.3s ease;
+}
+
+.partner-item:hover img {
+    filter: grayscale(0%);
+    opacity: 1;
+}

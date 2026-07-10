@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.meta_title or project.title }}{% endblock %}
+
+{% block meta_description %}
+{{ project.meta_description or project.short_description or "" }}
+{% endblock %}
+
+{% block meta_keywords %}
+{{ project.keywords or "" }}
+{% endblock %}
+
+{% block content %}
+
+<section class="portfolio-detail-hero">
+    <div class="container">
+        <h1>{{ project.title }}</h1>
+
+        {% if project.project_type %}
+            <p>{{ project.project_type }}</p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="portfolio-detail-section">
+    <div class="container portfolio-detail-grid">
+
+        <div class="portfolio-detail-image">
+            {% if project.image %}
+                <img src="{{ url_for('static', filename='uploads/' + project.image) }}" alt="{{ project.title }}">
+            {% else %}
+                <div class="portfolio-placeholder"></div>
+            {% endif %}
+        </div>
+
+        <div class="portfolio-detail-content">
+
+            <div class="portfolio-info-box">
+                {% if project.client_name %}
+                    <p><strong>العميل:</strong> {{ project.client_name }}</p>
+                {% endif %}
+
+                {% if project.project_type %}
+                    <p><strong>نوع المشروع:</strong> {{ project.project_type }}</p>
+                {% endif %}
+            </div>
+
+            <div class="portfolio-description">
+                {{ project.description | safe }}
+            </div>
+
+            <div class="portfolio-actions">
+                <a href="{{ url_for('contact.index') }}" class="btn-primary">
+                    اطلب تصميم مشابه
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

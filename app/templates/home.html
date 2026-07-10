@@ -1,0 +1,636 @@
+{% extends "base.html" %}
+
+{% block title %}الرئيسية - {{ setting.site_name if setting and setting.site_name else "موقعي" }}{% endblock %}
+
+{% block content %}
+<section class="hero hero-slider">
+    <div class="hero-slides">
+        {% if sections %}
+            {% for section in sections %}
+            <div class="hero-slide {% if loop.first %}active{% endif %} {% if not section.image %}no-image{% endif %}"
+                 {% if section.image %}
+                 style="background-image: url('{{ url_for('static', filename='uploads/' + section.image) }}');"
+                 {% endif %}>
+                <div class="hero-overlay"></div>
+
+                <div class="container hero-content">
+                    {% set section_title = section.get_title(current_lang) %}
+{% set section_subtitle = section.get_subtitle(current_lang) %}
+{% set section_button_text = section.get_button_text(current_lang) %}
+
+{% if section_title %}
+    <h1>{{ section_title }}</h1>
+{% endif %}
+
+{% if section_subtitle %}
+    <p>{{ section_subtitle }}</p>
+{% endif %}
+
+{% if section_button_text and section.button_link %}
+    <a href="{{ section.button_link }}" class="btn-primary">
+        {{ section_button_text }}
+    </a>
+{% endif %}
+
+                        <a href="{{ url_for('contact.index') }}" class="btn-outline">
+                           {{ tr.contact }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="hero-slide active no-image">
+                <div class="hero-overlay"></div>
+                <div class="container hero-content">
+                    <h1>نحو إبداع بلا حدود</h1>
+                    <p>نقدم حلولًا متكاملة في التصميم، والطباعة، والتسويق الرقمي لرفع علامتك التجارية إلى مستوى احترافي.</p>
+
+                    <div class="hero-buttons">
+                        <a href="{{ url_for('portfolio.index') }}" class="btn-primary">شاهد أعمالنا</a>
+                        <a href="{{ url_for('contact.index') }}" class="btn-outline">تواصل معنا</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if home_menu_items %}
+<section class="home-links-section">
+    <div class="container">
+        <div class="home-links-grid">
+            {% for item in home_menu_items %}
+                <a href="{{ resolve_menu_url(item) }}" class="home-link-card">
+                    {{ item.get_title(current_lang) }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+    {% if sections and sections|length > 1 %}
+    <button class="hero-nav hero-prev" type="button" aria-label="السابق">❮</button>
+    <button class="hero-nav hero-next" type="button" aria-label="التالي">❯</button>
+
+    <div class="hero-dots">
+        {% for section in sections %}
+            <button class="hero-dot {% if loop.first %}active{% endif %}" type="button"></button>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const slides = document.querySelectorAll(".hero-slide");
+    const dots = document.querySelectorAll(".hero-dot");
+    const prevBtn = document.querySelector(".hero-prev");
+    const nextBtn = document.querySelector(".hero-next");
+
+    if (!slides.length) return;
+
+    let current = 0;
+    let autoPlay;
+
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.remove("active");
+            if (dots[i]) dots[i].classList.remove("active");
+        });
+
+        slides[index].classList.add("active");
+        if (dots[index]) dots[index].classList.add("active");
+
+        current = index;
+    }
+
+    function nextSlide() {
+        let next = current + 1;
+        if (next >= slides.length) next = 0;
+        showSlide(next);
+    }
+
+    function prevSlide() {
+        let prev = current - 1;
+        if (prev < 0) prev = slides.length - 1;
+        showSlide(prev);
+    }
+
+    function startAutoPlay() {
+        autoPlay = setInterval(nextSlide, 5000);
+    }
+
+    function resetAutoPlay() {
+        clearInterval(autoPlay);
+        startAutoPlay();
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", function () {
+            nextSlide();
+            resetAutoPlay();
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener("click", function () {
+            prevSlide();
+            resetAutoPlay();
+        });
+    }
+
+    dots.forEach((dot, index) => {
+        dot.addEventListener("click", function () {
+            showSlide(index);
+            resetAutoPlay();
+        });
+    });
+
+    showSlide(0);
+    startAutoPlay();
+});
+</script>
+
+{% if home_menu_flags.get('services', False) %}
+<section class="services-section">
+    <div class="container">
+        <h2 class="section-title">{{ get_home_title("services", tr.services) }}</h2>
+
+        <div class="services-grid">
+            {% if home_services %}
+                {% for service in home_services %}
+                <div class="service-card reveal">
+                    <h3>{{ service.title }}</h3>
+
+                    {% if service.short_description %}
+                        <p>{{ service.short_description }}</p>
+                    {% elif service.description %}
+                        <p>{{ service.description[:150] }}...</p>
+                    {% else %}
+                        <p>تفاصيل الخدمة ستظهر هنا.</p>
+                    {% endif %}
+
+                    <a href="{{ url_for('services.detail', slug=service.slug) }}" class="btn-outline">
+                        عرض الخدمة
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>لا توجد خدمات ظاهرة حالياً.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if home_menu_flags.get('portfolio', False) %}
+<section class="portfolio-section">
+    <div class="container">
+        <h2 class="section-title">{{ get_home_title("portfolio", tr.portfolio) }}</h2>
+        <p class="section-subtitle">
+           {% if current_lang == "en" %}
+    Selected creative projects that reflect quality execution and professional identity.
+{% elif current_lang == "ja" %}
+    高品質な制作とプロフェッショナルなブランド表現を反映した実績の一部です。
+{% else %}
+    نماذج من مشاريعنا الإبداعية التي تعكس جودة التنفيذ والهوية الاحترافية.
+{% endif %}
+        </p>
+
+        <div class="portfolio-grid">
+            {% if latest_projects %}
+                {% for project in latest_projects %}
+                <div class="portfolio-card fade-up">
+                    <div class="portfolio-image"
+                         {% if project.image %}
+                         style="background-image: url('{{ url_for('static', filename='uploads/' + project.image) }}'); background-size: cover; background-position: center;"
+                         {% endif %}>
+                    </div>
+
+                    <div class="portfolio-content">
+                        <h3>{{ project.get_title(current_lang) }}</h3>
+
+                        {% set project_short = project.get_short_description(current_lang) %}
+{% set project_desc = project.get_description(current_lang) %}
+{% set project_slug = project.get_slug(current_lang) %}
+
+{% if project_short %}
+    <p>{{ project_short }}</p>
+{% elif project_desc %}
+    <p>{{ project_desc[:120] }}...</p>
+{% else %}
+    <p>
+        {% if current_lang == "en" %}
+            Project details will appear here.
+        {% elif current_lang == "ja" %}
+            プロジェクトの詳細はここに表示されます。
+        {% else %}
+            تفاصيل المشروع ستظهر هنا.
+        {% endif %}
+    </p>
+{% endif %}
+
+<a href="{{ url_for('portfolio.detail', slug=project_slug) }}" class="btn-outline">
+    {% if current_lang == "en" %}
+        View Project
+    {% elif current_lang == "ja" %}
+        実績を見る
+    {% else %}
+        عرض المشروع
+    {% endif %}
+</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>لا توجد مشاريع حالياً.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% if home_menu_flags.get('shop', False) %}
+
+{% if home_categories %}
+<section class="categories-section">
+    <div class="container">
+
+        <h2 class="section-title">{{ get_home_title("categories", "التصنيفات") }}</h2>
+
+        <div class="categories-grid">
+
+            {% for category in home_categories %}
+            <a href="#" class="category-card">
+
+                <div class="category-image">
+                    {% if category.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + category.image) }}"
+                         alt="{{ category.get_name(current_lang) }}">
+                    {% endif %}
+                </div>
+
+                <div class="category-content">
+                    <h3>{{ category.get_name(current_lang) }}</h3>
+
+                    {% if category.description_ar %}
+                    <p>
+                        {{ category.description_ar[:80] }}...
+                    </p>
+                    {% endif %}
+                </div>
+
+            </a>
+            {% endfor %}
+
+        </div>
+
+    </div>
+</section>
+{% endif %}
+<section class="shop-section" id="home-products">
+    <div class="container">
+        <h2 class="section-title">{{ get_home_title("shop", tr.shop) }}</h2>
+        <p class="section-subtitle">
+    {% if current_lang == "en" %}
+        Latest ready-made products and services available for order.
+    {% elif current_lang == "ja" %}
+        ご注文可能な最新の商品とサービスをご紹介します。
+    {% else %}
+        أحدث المنتجات والخدمات الجاهزة المتاحة للطلب.
+    {% endif %}
+</p>
+
+        <div class="products-grid">
+            {% if latest_products %}
+                {% for product in latest_products %}
+                <div class="product-card">
+
+    <div class="product-image-wrapper">
+
+        <div class="product-card-actions-top">
+    <button type="button" class="icon-btn"
+            onclick="toggleFavorite(this, '{{ product.id }}')">
+        ♡
+    </button>
+
+    <button type="button" class="icon-btn"
+            onclick="sharePage(
+                '{{ product.get_title(current_lang) }}',
+                'شوف هذا المنتج 🔥',
+                '{{ url_for("shop.product", slug=product.get_slug(current_lang), _external=True) }}'
+            )">
+        🔗
+    </button>
+</div>
+
+        <div class="product-image">
+    {% if product.image %}
+        <img class="img-main"
+             src="{{ url_for('static', filename='uploads/' + product.image) }}">
+    {% elif product.images and product.images|length > 0 %}
+        <img class="img-main"
+             src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}">
+    {% endif %}
+
+    {% if product.images and product.images|length > 0 %}
+        <img class="img-hover"
+             src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}">
+    {% endif %}
+</div>
+
+    </div>
+
+    <div class="product-content">
+
+        <h3>{{ product.get_title(current_lang) }}</h3>
+
+        <p>{{ product.get_description(current_lang) }}</p>
+
+        <span class="price">¥{{ product.price }}</span>
+
+        <form method="POST" action="{{ url_for('shop.add_to_cart', product_id=product.id) }}">
+
+            <div class="card-selects">
+
+                {% if product.has_colors and product.available_colors %}
+                <select name="selected_color">
+                    {% for c in product.available_colors.split(',') %}
+                        <option>{{ c.strip() }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+
+                {% if product.has_sizes and product.available_sizes %}
+                <select name="selected_size">
+                    {% for s in product.available_sizes.split(',') %}
+                        <option>{{ s.strip() }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+
+            </div>
+
+            <div class="product-actions">
+
+    <button type="submit" class="btn-main">
+        {% if current_lang == "en" %}
+            Add to Cart
+        {% elif current_lang == "ja" %}
+            カートに追加
+        {% else %}
+            أضف للسلة
+        {% endif %}
+    </button>
+
+    <a href="{{ url_for('shop.product', slug=product.get_slug(current_lang)) }}">
+        {% if current_lang == "en" %}
+            Details
+        {% elif current_lang == "ja" %}
+            詳細
+        {% else %}
+            التفاصيل
+        {% endif %}
+    </a>
+
+</div>
+
+        </form>
+
+    </div>
+
+</div>
+                {% endfor %}
+            {% else %}
+                <p>لا توجد منتجات حالياً.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if home_menu_flags.get('blog', False) %}
+<section class="blog-section">
+    <div class="container">
+        <h2 class="section-title">{{ get_home_title("blog", tr.blog) }}</h2>
+        <p class="section-subtitle">
+    {% if current_lang == "en" %}
+        Articles and tips to help you grow your project and build a strong digital presence.
+    {% elif current_lang == "ja" %}
+        プロジェクトを成長させ、強力なデジタルプレゼンスを構築するための記事とヒント。
+    {% else %}
+        مقالات ونصائح تساعدك على تطوير مشروعك وبناء حضور رقمي قوي.
+    {% endif %}
+</p>
+
+        <div class="blog-grid">
+            {% if latest_posts %}
+                {% for post in latest_posts %}
+                <div class="blog-card">
+                    <div class="blog-card-image">
+                        {% if post.image %}
+                            <img src="{{ url_for('static', filename='uploads/' + post.image) }}" alt="{{ post.title }}">
+                        {% else %}
+                            <div class="blog-card-placeholder"></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="blog-card-content">
+
+    <h3>{{ post.get_title(current_lang) }}</h3>
+
+    <p>
+        {{ (post.get_excerpt(current_lang) or post.get_content(current_lang) or "")[:120] }}...
+    </p>
+
+    <a href="{{ url_for('blog.article', slug=post.get_slug(current_lang)) }}" class="btn-outline">
+
+        {% if current_lang == "en" %}
+            Read More
+        {% elif current_lang == "ja" %}
+            続きを読む
+        {% else %}
+            اقرأ المزيد
+        {% endif %}
+
+    </a>
+
+</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>لا توجد مقالات حالياً.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if setting and setting.show_home_why_us %}
+<section class="why-us-section">
+   <div class="container">
+        <h2 class="section-title">لماذا نحن</h2>
+        <p class="section-subtitle">
+            نقدم حلولًا إبداعية متكاملة تساعدك على بناء حضور بصري قوي والوصول إلى جمهورك بشكل احترافي.
+        </p>
+
+        <div class="why-us-grid">
+            <div class="why-us-card">
+                <h3>هوية احترافية</h3>
+                <p>نصنع تصاميم تعكس قوة علامتك التجارية وتمنحها حضورًا مميزًا.</p>
+            </div>
+
+            <div class="why-us-card">
+                <h3>سرعة في التنفيذ</h3>
+                <p>نوازن بين الجودة العالية وسرعة الإنجاز لتصل إلى السوق في الوقت المناسب.</p>
+            </div>
+
+            <div class="why-us-card">
+                <h3>حلول متكاملة</h3>
+                <p>من التصميم والطباعة إلى التسويق الرقمي وإدارة المحتوى، كل شيء في مكان واحد.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %} 
+{% if home_menu_flags.get('team', False) %}
+<section class="team-section">
+    <div class="container">
+        <h2 class="section-title">{{ get_home_title("team", tr.team) }}</h2>
+        <p class="section-subtitle">
+            تعرف على فريقنا المبدع الذي يقف خلف نجاح مشاريعنا.
+        </p>
+
+        <div class="team-grid">
+            {% if team_members %}
+                {% for member in team_members %}
+                <div class="team-card">
+
+                    <div class="team-image">
+                        {% if member.image %}
+                        <img src="{{ url_for('static', filename='uploads/' + member.image) }}" alt="{{ member.name }}">
+                        {% else %}
+                        <div class="team-placeholder"></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="team-content">
+                        <h3>{{ member.name }}</h3>
+                        <p class="position">{{ member.position }}</p>
+
+                        {% if member.bio %}
+                        <p class="bio">{{ member.bio[:100] }}...</p>
+                        {% endif %}
+                    </div>
+
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>لا يوجد أعضاء حالياً.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if show_partners and partners %}
+<section class="partners-section">
+    <div class="container">
+        <h2 class="section-title">
+    {% if current_lang == "en" %}
+        Partners
+    {% elif current_lang == "ja" %}
+        パートナー
+    {% else %}
+        شركاء النجاح
+    {% endif %}
+</h2>
+        <p class="section-subtitle">
+    {% if current_lang == "en" %}
+        We are proud of the trust of our success partners.
+    {% elif current_lang == "ja" %}
+        私たちは、信頼いただいているパートナーの皆さまを誇りに思います。
+    {% else %}
+        نفخر بثقة شركائنا الذين شاركونا رحلة النجاح.
+    {% endif %}
+</p>
+
+        <div class="partners-grid">
+            {% for partner in partners %}
+            <div class="partner-item">
+                <img src="{{ url_for('static', filename='uploads/' + partner.image) }}"
+                     alt="{{ partner.name }}">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+<section class="cta-section">
+    <div class="container">
+        <h2>
+    {% if current_lang == "en" %}
+        Have a Project?
+    {% elif current_lang == "ja" %}
+        プロジェクトのご相談
+    {% else %}
+        هل لديك مشروع؟
+    {% endif %}
+</h2>
+
+<p>
+    {% if current_lang == "en" %}
+        Let us help you turn your idea into a professional reality that attracts attention and delivers results.
+    {% elif current_lang == "ja" %}
+        あなたのアイデアを、注目を集め成果につながるプロフェッショナルな形にします。
+    {% else %}
+        دعنا نساعدك في تحويل فكرتك إلى واقع احترافي يلفت الانتباه ويحقق نتائج.
+    {% endif %}
+</p>
+
+        <a href="{{ url_for('contact.index') }}" class="btn-primary">
+    {% if current_lang == "en" %}
+        Get Started
+    {% elif current_lang == "ja" %}
+        今すぐ始める
+    {% else %}
+        ابدأ الآن
+    {% endif %}
+</a>
+
+<a href="{{ url_for('portfolio.index') }}" class="btn-outline">
+    {% if current_lang == "en" %}
+        View Portfolio
+    {% elif current_lang == "ja" %}
+        実績を見る
+    {% else %}
+        شاهد أعمالنا
+    {% endif %}
+</a>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const sections = document.querySelectorAll(
+        ".services-section, .portfolio-section, .shop-section, .blog-section, .why-us-section, .team-section, .cta-section"
+    );
+
+    sections.forEach(section => {
+        section.classList.add("reveal");
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("show");
+            }
+        });
+    }, {
+        threshold: 0.15
+    });
+
+    sections.forEach(section => observer.observe(section));
+});
+</script>
+{% endblock %}

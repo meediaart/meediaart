@@ -1,0 +1,16 @@
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    border: none;
+}
+
+.btn-outline {
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    text-decoration: none;
+}

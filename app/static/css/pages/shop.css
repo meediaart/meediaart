@@ -1,0 +1,32 @@
+/* ===== FIX SHOP CARDS ===== */
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.product-card-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* تثبيت طول النص */
+.product-card-content p {
+    min-height: 48px;
+}
+
+/* تثبيت الأزرار تحت */
+.product-card-actions {
+    margin-top: auto;
+    display: flex;
+    gap: 10px;
+}
+
+.product-card-actions .btn-primary,
+.product-card-actions .btn-outline {
+    flex: 1;
+    text-align: center;
+}

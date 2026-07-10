@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}
+
+    {% if category %}
+
+        {{ category.get_name(current_lang) }}
+
+    {% else %}
+
+        {% if current_lang == "en" %}
+            Category Not Found
+        {% elif current_lang == "ja" %}
+            カテゴリーが見つかりません
+        {% else %}
+            التصنيف غير موجود
+        {% endif %}
+
+    {% endif %}
+
+{% endblock %}
+
+{% block content %}
+<div class="page-card">
+
+    {% if category %}
+
+        <h1>{{ category.get_name(current_lang) }}</h1>
+
+        <ul>
+
+            {% for product in products %}
+
+                <li>
+
+                    <a href="{{ url_for('shop.product', slug=product.get_slug(current_lang)) }}">
+
+                        {{ product.get_title(current_lang) }}
+
+                    </a>
+
+                </li>
+
+            {% endfor %}
+
+        </ul>
+
+    {% else %}
+
+        <h1>
+
+            {% if current_lang == "en" %}
+                Category Not Found
+            {% elif current_lang == "ja" %}
+                カテゴリーが見つかりません
+            {% else %}
+                التصنيف غير موجود
+            {% endif %}
+
+        </h1>
+
+        <p>
+
+            {% if current_lang == "en" %}
+                The requested category is unavailable.
+            {% elif current_lang == "ja" %}
+                指定されたカテゴリーは存在しません。
+            {% else %}
+                التصنيف المطلوب غير متوفر.
+            {% endif %}
+
+        </p>
+
+    {% endif %}
+
+</div>
+{% endblock %}

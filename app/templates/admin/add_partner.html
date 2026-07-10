@@ -1,0 +1,14 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+
+<h2>إضافة شريك</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    <input type="text" name="name" placeholder="اسم الشريك" required>
+    <input type="file" name="image" required>
+
+    <button type="submit">حفظ</button>
+</form>
+
+{% endblock %}

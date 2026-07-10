@@ -1,0 +1,24 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+
+<h2>إعدادات الموقع</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    <label>اسم الموقع</label>
+    <input type="text" name="site_name">
+
+    <label>لوجو الموقع</label>
+    <input type="file" name="logo">
+
+    <button type="submit">حفظ</button>
+    <label class="form-check">
+
+    <input type="checkbox" name="show_partners" value="1"
+           {% if setting.show_partners %}checked{% endif %}>
+
+    إظهار قسم شركاء النجاح في الرئيسية
+</label>
+    
+</form>
+{% endblock %}

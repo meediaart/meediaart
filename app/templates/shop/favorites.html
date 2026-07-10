@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == "en" %}
+Favorites
+{% elif current_lang == "ja" %}
+お気に入り
+{% else %}
+المفضلة
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="shop-section">
+    <div class="container">
+
+        <h1 class="section-title">
+            {% if current_lang == "en" %}
+                Favorites
+            {% elif current_lang == "ja" %}
+                お気に入り
+            {% else %}
+                المفضلة
+            {% endif %}
+        </h1>
+
+        {% if products %}
+            <div class="products-grid">
+                {% for product in products %}
+                    {% include "components/product_card.html" %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">❤️</div>
+
+                <h2>
+                    {% if current_lang == "en" %}
+                        You don't have any favorite products yet.
+                    {% elif current_lang == "ja" %}
+                        お気に入りの商品はまだありません。
+                    {% else %}
+                        لا توجد منتجات في المفضلة حتى الآن.
+                    {% endif %}
+                </h2>
+
+                <p>
+                    {% if current_lang == "en" %}
+                        Browse the shop and add the products you like.
+                    {% elif current_lang == "ja" %}
+                        ショップを見て、気に入った商品を追加してください。
+                    {% else %}
+                        تصفح المتجر وأضف المنتجات التي تعجبك.
+                    {% endif %}
+                </p>
+
+                <a href="{{ url_for('shop.index') }}" class="btn-primary empty-action">
+                    {% if current_lang == "en" %}
+                        Go to shop
+                    {% elif current_lang == "ja" %}
+                        ショップへ
+                    {% else %}
+                        الذهاب إلى المتجر
+                    {% endif %}
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

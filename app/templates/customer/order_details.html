@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == "en" %}
+Order Details
+{% elif current_lang == "ja" %}
+注文詳細
+{% else %}
+تفاصيل الطلب
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<section class="shop-section">
+    <div class="container">
+
+        <h1 class="section-title">
+            {% if current_lang == "en" %}
+                Order Details
+            {% elif current_lang == "ja" %}
+                注文詳細
+            {% else %}
+                تفاصيل الطلب
+            {% endif %}
+            #{{ order.id }}
+        </h1>
+
+        <div class="order-details-layout">
+
+            <!-- المنتجات -->
+            <div class="order-details-main">
+
+                <div class="order-detail-card">
+
+                    <h2>
+                        {% if current_lang == "en" %}
+                            Products
+                        {% elif current_lang == "ja" %}
+                            商品
+                        {% else %}
+                            المنتجات
+                        {% endif %}
+                    </h2>
+
+                    {% for item in order.items %}
+
+                        <div class="order-item-row">
+
+                            <div>
+
+                                <strong>{{ item.product_title }}</strong>
+
+                                <p>
+                                    {% if current_lang == "en" %}
+                                        Quantity
+                                    {% elif current_lang == "ja" %}
+                                        数量
+                                    {% else %}
+                                        الكمية
+                                    {% endif %}
+                                    :
+                                    {{ item.quantity }}
+                                </p>
+
+                                {% if item.color %}
+                                <p>
+                                    {% if current_lang == "en" %}
+                                        Color
+                                    {% elif current_lang == "ja" %}
+                                        色
+                                    {% else %}
+                                        اللون
+                                    {% endif %}
+                                    :
+                                    {{ item.color }}
+                                </p>
+                                {% endif %}
+
+                                {% if item.size %}
+                                <p>
+                                    {% if current_lang == "en" %}
+                                        Size
+                                    {% elif current_lang == "ja" %}
+                                        サイズ
+                                    {% else %}
+                                        المقاس
+                                    {% endif %}
+                                    :
+                                    {{ item.size }}
+                                </p>
+                                {% endif %}
+
+                                {% if item.custom_text %}
+                                <p>
+                                    {% if current_lang == "en" %}
+                                        Custom text
+                                    {% elif current_lang == "ja" %}
+                                        カスタムテキスト
+                                    {% else %}
+                                        النص المخصص
+                                    {% endif %}
+                                    :
+                                    {{ item.custom_text }}
+                                </p>
+                                {% endif %}
+
+                            </div>
+
+                            <div class="order-item-price">
+                                ¥{{ (item.price * item.quantity)|round(0) }}
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+            <!-- العمود الجانبي -->
+            <aside class="order-details-side">
+
+                <!-- الملخص -->
+                <div class="order-detail-card">
+
+                    <h2>
+                        {% if current_lang == "en" %}
+                            Summary
+                        {% elif current_lang == "ja" %}
+                            概要
+                        {% else %}
+                            الملخص
+                        {% endif %}
+                    </h2>
+
+                    <p>
+                        {% if current_lang == "en" %}
+                            Status
+                        {% elif current_lang == "ja" %}
+                            状態
+                        {% else %}
+                            الحالة
+                        {% endif %}
+                        :
+                        <strong>{{ status_label }}</strong>
+                    </p>
+
+                    <p>
+                        {% if current_lang == "en" %}
+                            Payment
+                        {% elif current_lang == "ja" %}
+                            支払い
+                        {% else %}
+                            الدفع
+                        {% endif %}
+                        :
+                        <strong>{{ order.payment_method }}</strong>
+                    </p>
+
+                    <p>
+                        {% if current_lang == "en" %}
+                            Total
+                        {% elif current_lang == "ja" %}
+                            合計
+                        {% else %}
+                            الإجمالي
+                        {% endif %}
+                        :
+                        <strong>¥{{ order.total_price|round(0) }}</strong>
+                    </p>
+
+                    <p>
+                        {% if current_lang == "en" %}
+                            Date
+                        {% elif current_lang == "ja" %}
+                            日付
+                        {% else %}
+                            التاريخ
+                        {% endif %}
+                        :
+                        <strong>{{ order.created_at.strftime("%Y-%m-%d") }}</strong>
+                    </p>
+
+                </div>
+
+                <!-- Timeline -->
+                <div class="order-detail-card">
+
+                    <h2>
+                        {% if current_lang == "en" %}
+                            Order Timeline
+                        {% elif current_lang == "ja" %}
+                            注文状況
+                        {% else %}
+                            حالة الطلب
+                        {% endif %}
+                    </h2>
+
+                    <div class="order-timeline">
+
+                        {% for step in timeline %}
+
+                        <div class="timeline-step {% if step.done %}done{% endif %} {% if step.active %}active{% endif %}">
+
+                            <div class="timeline-icon">
+                                {{ step.icon }}
+                            </div>
+
+                            <div class="timeline-content">
+                                <strong>{{ step.title }}</strong>
+                            </div>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <!-- معلومات العميل -->
+                <div class="order-detail-card">
+
+                    <h2>
+                        {% if current_lang == "en" %}
+                            Customer Info
+                        {% elif current_lang == "ja" %}
+                            お客様情報
+                        {% else %}
+                            معلومات العميل
+                        {% endif %}
+                    </h2>
+
+                    <p>{{ order.customer_name }}</p>
+
+                    <p>{{ order.customer_email }}</p>
+
+                    {% if order.customer_phone %}
+                        <p>{{ order.customer_phone }}</p>
+                    {% endif %}
+
+                    {% if order.customer_address %}
+                        <p>{{ order.customer_address }}</p>
+                    {% endif %}
+
+                </div>
+
+                <a href="{{ url_for('customer_auth.orders') }}"
+                   class="btn-outline order-back-btn">
+
+                    {% if current_lang == "en" %}
+                        Back to orders
+                    {% elif current_lang == "ja" %}
+                        注文履歴へ戻る
+                    {% else %}
+                        الرجوع إلى طلباتي
+                    {% endif %}
+
+                </a>
+
+            </aside>
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

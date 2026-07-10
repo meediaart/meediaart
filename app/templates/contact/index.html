@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == "en" %}
+    Contact Us
+{% elif current_lang == "ja" %}
+    お問い合わせ
+{% else %}
+    تواصل معنا
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="contact-page">
+    <div class="container">
+
+        <div class="contact-header">
+            <h1>
+                {% if current_lang == "en" %}
+                    Contact Us
+                {% elif current_lang == "ja" %}
+                    お問い合わせ
+                {% else %}
+                    تواصل معنا
+                {% endif %}
+            </h1>
+
+            <p>
+                {% if current_lang == "en" %}
+                    We are here to answer your questions and help you execute your project with the best possible quality.
+                {% elif current_lang == "ja" %}
+                    ご質問への回答や、プロジェクトを高品質で実現するためのお手伝いをいたします。
+                {% else %}
+                    نحن هنا للإجابة على استفساراتك ومساعدتك في تنفيذ مشروعك بأفضل جودة ممكنة.
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="contact-layout">
+
+            <div class="contact-info">
+
+                <div class="contact-card">
+                    <div class="contact-icon">📞</div>
+                    <div>
+                        <h3>
+                            {% if current_lang == "en" %}
+                                Phone Number
+                            {% elif current_lang == "ja" %}
+                                電話番号
+                            {% else %}
+                                رقم الهاتف
+                            {% endif %}
+                        </h3>
+                        <p>+81 70-9222-0205</p>
+                    </div>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon">✉️</div>
+                    <div>
+                        <h3>
+                            {% if current_lang == "en" %}
+                                Email
+                            {% elif current_lang == "ja" %}
+                                メール
+                            {% else %}
+                                البريد الإلكتروني
+                            {% endif %}
+                        </h3>
+                        <p>info@mediaart.jp</p>
+                    </div>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon">📍</div>
+                    <div>
+                        <h3>
+                            {% if current_lang == "en" %}
+                                Location
+                            {% elif current_lang == "ja" %}
+                                所在地
+                            {% else %}
+                                الموقع
+                            {% endif %}
+                        </h3>
+                        <p>Japan - Tokyo</p>
+                    </div>
+                </div>
+
+                <div class="contact-socials">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-x-twitter"></i></a>
+                </div>
+
+            </div>
+
+            <div class="contact-form-box">
+
+                <form class="contact-form" method="POST">
+
+                    <div class="form-grid">
+                        <input type="text"
+                               name="name"
+                               placeholder="{% if current_lang == 'en' %}Full Name{% elif current_lang == 'ja' %}お名前{% else %}الاسم الكامل{% endif %}"
+                               required>
+
+                        <input type="email"
+                               name="email"
+                               placeholder="{% if current_lang == 'en' %}Email Address{% elif current_lang == 'ja' %}メールアドレス{% else %}البريد الإلكتروني{% endif %}"
+                               required>
+                    </div>
+
+                    <input type="text"
+                           name="subject"
+                           placeholder="{% if current_lang == 'en' %}Message Subject{% elif current_lang == 'ja' %}件名{% else %}عنوان الرسالة{% endif %}">
+
+                    <textarea name="message"
+                              placeholder="{% if current_lang == 'en' %}Write your message here...{% elif current_lang == 'ja' %}メッセージを入力してください...{% else %}اكتب رسالتك هنا...{% endif %}"
+                              required></textarea>
+
+                    <button type="submit">
+                        {% if current_lang == "en" %}
+                            Send Message
+                        {% elif current_lang == "ja" %}
+                            送信する
+                        {% else %}
+                            إرسال الرسالة
+                        {% endif %}
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+{% endblock %}

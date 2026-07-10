@@ -1,0 +1,96 @@
+/* ===== FINAL TRACK ORDER ===== */
+
+.tracking-result {
+    text-align: center !important;
+}
+
+.tracking-status-wrapper {
+    width: 100% !important;
+    margin: 28px auto 20px !important;
+}
+
+.order-status-bar {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    align-items: start !important;
+    width: 100% !important;
+    max-width: 760px !important;
+    margin: 0 auto !important;
+    padding: 22px 16px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 18px !important;
+    direction: rtl !important;
+    position: relative !important;
+}
+
+.order-status-bar::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 42px !important;
+    right: 18% !important;
+    left: 18% !important;
+    height: 3px !important;
+    background: #cbd5e1 !important;
+    z-index: 1 !important;
+}
+
+.order-status-bar .step {
+    position: relative !important;
+    z-index: 2 !important;
+    text-align: center !important;
+    color: #94a3b8 !important;
+}
+
+.order-status-bar .step span {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 auto 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #fff !important;
+    border: 2px solid #cbd5e1 !important;
+    border-radius: 50% !important;
+    font-size: 24px !important;
+}
+
+.order-status-bar .step.active {
+    color: #2563eb !important;
+}
+
+.order-status-bar .step.active span {
+    border-color: #2563eb !important;
+    background: #eff6ff !important;
+}
+
+.tracking-actions {
+    max-width: 760px !important;
+    margin: 20px auto 28px !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 14px !important;
+}
+
+.tracking-whatsapp-btn,
+.tracking-invoice-btn,
+.tracking-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 52px !important;
+    border-radius: 14px !important;
+    text-decoration: none !important;
+    color: #fff !important;
+    font-weight: 800 !important;
+}
+
+.tracking-whatsapp-btn,
+.whatsapp-btn1 {
+    background: #22c55e !important;
+}
+
+.tracking-invoice-btn,
+.invoice-btn {
+    background: #2563eb !important;
+}

@@ -1,0 +1,91 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}إدارة القائمة{% endblock %}
+
+{% block content %}
+<div class="admin-page-head">
+    <div>
+        <h2>عناصر القائمة</h2>
+        <p>إدارة روابط القائمة والتحكم بظهورها في الرئيسية.</p>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.create_menu_item') }}" class="admin-btn admin-btn-primary">
+            + إضافة عنصر
+        </a>
+    </div>
+</div>
+
+{% if items %}
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>العنوان</th>
+                <th>نوع المحتوى</th>
+                <th>الترتيب</th>
+                <th>الحالة</th>
+                <th>الرئيسية</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr class="{% if item.show_on_home %}home-highlight{% endif %}">
+                <td>{{ item.title }}</td>
+                <td>{{ item.content_type or "-" }}</td>
+                <td>{{ item.display_order or 0 }}</td>
+
+                <td>
+                    <div class="admin-actions">
+                        {% if item.is_active %}
+                            <span class="status-badge status-completed">مفعل</span>
+                            <a href="{{ url_for('admin.toggle_menu_active', item_id=item.id) }}" class="admin-btn admin-btn-secondary">
+                                إخفاء
+                            </a>
+                        {% else %}
+                            <span class="status-badge status-unpaid">مخفي</span>
+                            <a href="{{ url_for('admin.toggle_menu_active', item_id=item.id) }}" class="admin-btn admin-btn-primary">
+                                تفعيل
+                            </a>
+                        {% endif %}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="admin-actions">
+                        {% if item.show_on_home %}
+                            <span class="status-badge status-paid">نعم</span>
+                            <a href="{{ url_for('admin.toggle_menu_home', item_id=item.id) }}" class="admin-btn admin-btn-secondary">
+                                إخفاء
+                            </a>
+                        {% else %}
+                            <span class="status-badge status-unpaid">لا</span>
+                            <a href="{{ url_for('admin.toggle_menu_home', item_id=item.id) }}" class="admin-btn admin-btn-primary">
+                                إظهار
+                            </a>
+                        {% endif %}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="admin-actions">
+                        <a href="{{ url_for('admin.edit_menu_item', item_id=item.id) }}" class="admin-btn admin-btn-secondary">
+                            تعديل
+                        </a>
+                        <a href="{{ url_for('admin.delete_menu_item', item_id=item.id) }}"
+                           onclick="return confirm('هل أنت متأكد من الحذف؟')"
+                           class="admin-btn admin-btn-danger">
+                            حذف
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>لا توجد عناصر قائمة حالياً.</p>
+{% endif %}
+{% endblock %}

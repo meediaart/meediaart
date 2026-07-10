@@ -1,0 +1,39 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}إدارة التصنيفات{% endblock %}
+{% block page_title %}إدارة التصنيفات{% endblock %}
+
+{% block content %}
+<div class="page-card">
+    <div class="section-header">
+        <h2>قائمة التصنيفات</h2>
+        <a href="{{ url_for('admin.create_category') }}" class="btn btn-primary">+ إضافة تصنيف</a>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>اسم التصنيف</th>
+                <th>الرابط</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td>{{ category.name }}</td>
+                <td>{{ category.slug }}</td>
+                <td>
+                    <a href="{{ url_for('admin.edit_category', category_id=category.id) }}" class="btn btn-edit">تعديل</a>
+                    <a href="{{ url_for('admin.delete_category', category_id=category.id) }}"
+                       class="btn btn-delete"
+                       onclick="return confirm('هل أنت متأكد من حذف هذا التصنيف؟')">
+                       حذف
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

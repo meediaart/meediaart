@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ product.get_meta_title(current_lang) }}
+{% endblock %}
+
+{% block meta_description %}
+{{ product.get_meta_description(current_lang) }}
+{% endblock %}
+
+{% block meta_keywords %}
+{{ product.get_keywords(current_lang) or "" }}
+{% endblock %}
+
+{% block content %}
+
+{% set product_title = product.get_title(current_lang) %}
+{% set product_description = product.get_description(current_lang) or "" %}
+
+{% if current_lang == "en" %}
+    {% set label_color = "Color" %}
+    {% set label_size = "Size" %}
+    {% set label_custom_text = "Custom text" %}
+    {% set label_custom_image = "Custom image" %}
+    {% set add_to_cart_text = "Add to cart" %}
+    {% set whatsapp_text = "Order via WhatsApp" %}
+    {% set whatsapp_message = "I want to order this product: " %}
+{% elif current_lang == "ja" %}
+    {% set label_color = "色" %}
+    {% set label_size = "サイズ" %}
+    {% set label_custom_text = "カスタムテキスト" %}
+    {% set label_custom_image = "カスタム画像" %}
+    {% set add_to_cart_text = "カートに追加" %}
+    {% set whatsapp_text = "WhatsAppで注文" %}
+    {% set whatsapp_message = "この商品を注文したいです: " %}
+{% else %}
+    {% set label_color = "اللون" %}
+    {% set label_size = "المقاس" %}
+    {% set label_custom_text = "النص المخصص" %}
+    {% set label_custom_image = "صورة مخصصة" %}
+    {% set add_to_cart_text = "إضافة إلى السلة" %}
+    {% set whatsapp_text = "طلب واتساب" %}
+    {% set whatsapp_message = "أريد طلب هذا المنتج: " %}
+{% endif %}
+
+<section class="product-detail-page">
+    <div class="container">
+        <div class="product-detail-card">
+
+            <div class="product-slider">
+                <div class="slider-track">
+                    {% if product.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                         class="slider-img active"
+                         alt="{{ product_title }}">
+                    {% endif %}
+
+                    {% for img in product.images %}
+                    <img src="{{ url_for('static', filename='uploads/' + img.image) }}"
+                         class="slider-img {% if not product.image and loop.first %}active{% endif %}"
+                         alt="{{ product_title }}">
+                    {% endfor %}
+                </div>
+
+                <button class="slider-btn prev" onclick="prevSlide()">‹</button>
+                <button class="slider-btn next" onclick="nextSlide()">›</button>
+
+                <div class="slider-dots">
+                    {% set total = (1 if product.image else 0) + (product.images|length) %}
+                    {% for i in range(total) %}
+                        <span class="dot {% if loop.first %}active{% endif %}"
+                              onclick="goToSlide({{ loop.index0 }})"></span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="product-detail-info">
+
+                <h1>{{ product_title }}</h1>
+
+                {% if product.discount_percent and product.discount_percent > 0 %}
+                    <div class="product-price">
+                        <span style="text-decoration: line-through; color: #999; font-size: 18px;">
+                            ¥{{ product.price|round(0) }}
+                        </span>
+
+                        {% set discounted_price = product.price - (product.price * product.discount_percent / 100) %}
+
+                        <span style="color: red; font-weight: bold; font-size: 22px; margin-left: 10px;">
+                            ¥{{ discounted_price|round(0) }}
+                        </span>
+
+                        <span style="background:red; color:white; padding:3px 8px; border-radius:5px; font-size:13px; margin-left:10px;">
+                            -{{ product.discount_percent }}%
+                        </span>
+                    </div>
+                {% else %}
+                    <p class="product-price">
+                        ¥{{ product.price|round(0) }}
+                    </p>
+                {% endif %}
+
+                {% if product_description %}
+                <div class="product-description">
+                    {{ product_description }}
+                </div>
+                {% endif %}
+
+                <form method="POST"
+                      action="{{ url_for('shop.add_to_cart', product_id=product.id) }}"
+                      enctype="multipart/form-data">
+
+                    {% if product.has_colors and product.available_colors %}
+                    <div class="product-option">
+                        <label>{{ label_color }}</label>
+                        <select name="selected_color" class="form-control">
+                            {% for color in product.available_colors.split(',') %}
+                                <option value="{{ color.strip() }}">{{ color.strip() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    {% if product.has_sizes and product.available_sizes %}
+                    <div class="product-option">
+                        <label>{{ label_size }}</label>
+                        <select name="selected_size" class="form-control">
+                            {% for size in product.available_sizes.split(',') %}
+                                <option value="{{ size.strip() }}">{{ size.strip() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    {% if product.allow_custom_text %}
+                    <div class="product-option">
+                        <label>{{ label_custom_text }}</label>
+                        <textarea name="custom_text" class="form-control" rows="4"></textarea>
+                    </div>
+                    {% endif %}
+
+                    {% if product.allow_custom_image %}
+                    <div class="product-option">
+                        <label>{{ label_custom_image }}</label>
+                        <input type="file" name="custom_image" class="form-control">
+                    </div>
+                    {% endif %}
+
+                    <div class="product-actions">
+                        <button type="submit" class="btn-primary">
+                            {{ add_to_cart_text }}
+                        </button>
+
+                        <a href="https://wa.me/817092220205?text={{ whatsapp_message }}{{ product_title }}"
+                           target="_blank"
+                           class="btn-outline">
+                            {{ whatsapp_text }}
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let slides = document.querySelectorAll(".slider-img");
+    let dots = document.querySelectorAll(".dot");
+    let index = 0;
+
+    if (!slides.length) return;
+
+    function showSlide(i) {
+        slides.forEach(s => s.classList.remove("active"));
+        dots.forEach(d => d.classList.remove("active"));
+        slides[i].classList.add("active");
+        if (dots[i]) dots[i].classList.add("active");
+    }
+
+    window.nextSlide = function () {
+        index = (index + 1) % slides.length;
+        showSlide(index);
+    }
+
+    window.prevSlide = function () {
+        index = (index - 1 + slides.length) % slides.length;
+        showSlide(index);
+    }
+
+    window.goToSlide = function (i) {
+        index = i;
+        showSlide(index);
+    }
+});
+</script>
+
+{% endblock %}

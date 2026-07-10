@@ -1,0 +1,139 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}
+القائمة البريدية
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-head">
+
+    <div>
+        <h2>القائمة البريدية</h2>
+        <p>
+            جميع المشتركين الذين قاموا بالتسجيل عبر الموقع.
+        </p>
+    </div>
+
+</div>
+
+<div class="page-card">
+
+    <form method="GET" class="admin-filter-form">
+
+    <select name="language">
+        <option value="">كل اللغات</option>
+        <option value="ar" {% if language == "ar" %}selected{% endif %}>العربية</option>
+        <option value="en" {% if language == "en" %}selected{% endif %}>English</option>
+        <option value="ja" {% if language == "ja" %}selected{% endif %}>日本語</option>
+    </select>
+
+    <select name="source">
+        <option value="">كل المصادر</option>
+        <option value="footer" {% if source == "footer" %}selected{% endif %}>Footer</option>
+        <option value="contact_page" {% if source == "contact_page" %}selected{% endif %}>Contact Page</option>
+        <option value="website" {% if source == "website" %}selected{% endif %}>Website</option>
+    </select>
+
+    <select name="status">
+        <option value="">كل الحالات</option>
+        <option value="active" {% if status == "active" %}selected{% endif %}>نشط</option>
+        <option value="inactive" {% if status == "inactive" %}selected{% endif %}>غير نشط</option>
+    </select>
+
+    <button type="submit" class="admin-btn admin-btn-primary">
+        فلترة
+    </button>
+
+    <a href="{{ url_for('admin.subscribers_list') }}"
+       class="admin-btn admin-btn-secondary">
+        إعادة ضبط
+    </a>
+
+    <a href="{{ url_for('admin.export_subscribers', language=language, source=source, status=status) }}"
+       class="admin-btn admin-btn-success">
+        تصدير CSV
+    </a>
+
+</form>
+
+    {% if subscribers %}
+
+    <table class="admin-table">
+
+        <thead>
+    <tr>
+        <th>#</th>
+        <th>الاسم</th>
+        <th>البريد الإلكتروني</th>
+        <th>اللغة</th>
+        <th>المصدر</th>
+        <th>الموافقة</th>
+        <th>وقت الموافقة</th>
+        <th>IP</th>
+        <th>الحالة</th>
+        <th>تاريخ الاشتراك</th>
+        <th>الإجراءات</th>
+    </tr>
+</thead>
+
+        <tbody>
+    {% for subscriber in subscribers %}
+    <tr>
+        <td>{{ subscriber.id }}</td>
+
+        <td>{{ subscriber.name or "-" }}</td>
+
+        <td>{{ subscriber.email }}</td>
+
+        <td>{{ subscriber.language or "-" }}</td>
+
+        <td>{{ subscriber.source or "-" }}</td>
+
+        <td>
+            {% if subscriber.consent_given %}
+                نعم
+            {% else %}
+                لا
+            {% endif %}
+        </td>
+
+        <td>
+            {{ subscriber.consent_at.strftime('%Y-%m-%d %H:%M') if subscriber.consent_at else "-" }}
+        </td>
+
+        <td>{{ subscriber.ip_address or "-" }}</td>
+
+        <td>
+            {% if subscriber.is_active %}
+                نشط
+            {% else %}
+                غير نشط
+            {% endif %}
+        </td>
+
+        <td>
+            {{ subscriber.subscribed_at.strftime('%Y-%m-%d %H:%M') if subscriber.subscribed_at else "-" }}
+        </td>
+
+        <td>
+            <a href="{{ url_for('admin.delete_subscriber', subscriber_id=subscriber.id) }}"
+               class="admin-btn admin-btn-danger">
+                حذف
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+    </table>
+
+    {% else %}
+
+    <p>لا يوجد مشتركين حالياً.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

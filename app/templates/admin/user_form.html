@@ -1,0 +1,34 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-card">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <p>
+            {{ form.username.label }}<br>
+            {{ form.username() }}
+        </p>
+
+        <p>
+            {{ form.email.label }}<br>
+            {{ form.email() }}
+        </p>
+
+        <p>
+            {{ form.password.label }}<br>
+            {{ form.password() }}
+        </p>
+
+        <p>
+            {{ form.role.label }}<br>
+            {{ form.role() }}
+        </p>
+
+        <p>{{ form.submit(class="btn btn-primary") }}</p>
+    </form>
+</div>
+{% endblock %}

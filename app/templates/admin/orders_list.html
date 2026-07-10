@@ -1,0 +1,94 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}إدارة الطلبات{% endblock %}
+
+{% block content %}
+<div class="admin-page-head">
+    <div>
+        <h2>الطلبات</h2>
+        <p>إدارة طلبات العملاء ومتابعة حالتها.</p>
+    </div>
+</div>
+
+{% if orders %}
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>العميل</th>
+                <th>الهاتف</th>
+                <th>الإجمالي</th>
+                <th>حالة الطلب</th>
+                <th>حالة الدفع</th>
+                <th>طريقة الدفع</th>
+                <th>التاريخ</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>#{{ order.id }}</td>
+
+                <td>{{ order.customer_name }}</td>
+
+                <td>{{ order.customer_phone or "-" }}</td>
+
+                <td>¥{{ order.total_price }}</td>
+
+                <td>
+                    <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
+                        <select name="status" class="form-control">
+                            <option value="pending" {% if order.status == "pending" %}selected{% endif %}>جديد</option>
+                            <option value="processing" {% if order.status == "processing" %}selected{% endif %}>قيد التنفيذ</option>
+                            <option value="completed" {% if order.status == "completed" %}selected{% endif %}>مكتمل</option>
+                            <option value="cancelled" {% if order.status == "cancelled" %}selected{% endif %}>ملغي</option>
+                        </select>
+                </td>
+
+                <td>
+                        <select name="payment_status" class="form-control">
+                            <option value="unpaid" {% if order.payment_status == "unpaid" %}selected{% endif %}>غير مدفوع</option>
+                            <option value="paid" {% if order.payment_status == "paid" %}selected{% endif %}>مدفوع</option>
+                            <option value="failed" {% if order.payment_status == "failed" %}selected{% endif %}>فشل الدفع</option>
+                        </select>
+                </td>
+
+                <td>
+                    {% if order.payment_method == "whatsapp" %}
+                        واتساب
+                    {% elif order.payment_method == "stripe" %}
+                        Stripe
+                    {% elif order.payment_method == "cod" %}
+                        الدفع عند التسليم
+                    {% elif order.payment_method == "pending" %}
+                        لم يحدد بعد
+                    {% else %}
+                        {{ order.payment_method or "-" }}
+                    {% endif %}
+                </td>
+
+                <td>{{ order.created_at.strftime("%Y-%m-%d %H:%M") if order.created_at else "-" }}</td>
+
+                <td>
+                        <div class="admin-actions">
+                            <button type="submit" class="admin-btn admin-btn-primary">حفظ</button>
+
+                            <a href="{{ url_for('admin.order_details', order_id=order.id) }}"
+                               class="admin-btn admin-btn-secondary">
+                                عرض التفاصيل
+                            </a>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>لا توجد طلبات حالياً.</p>
+{% endif %}
+{% endblock %}

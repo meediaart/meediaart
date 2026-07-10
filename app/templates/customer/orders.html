@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == "en" %}My Orders{% elif current_lang == "ja" %}注文履歴{% else %}طلباتي{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="shop-section">
+    <div class="container">
+
+        <h1 class="section-title">
+            {% if current_lang == "en" %}
+                My Orders
+            {% elif current_lang == "ja" %}
+                注文履歴
+            {% else %}
+                طلباتي
+            {% endif %}
+        </h1>
+
+        {% if orders %}
+            <div class="orders-list">
+
+                {% for order in orders %}
+                    <div class="order-card">
+
+                        <div class="order-card-header">
+                            <div>
+                                <h3>
+                                    {% if current_lang == "en" %}
+                                        Order
+                                    {% elif current_lang == "ja" %}
+                                        注文
+                                    {% else %}
+                                        الطلب
+                                    {% endif %}
+                                    #{{ order.id }}
+                                </h3>
+
+                                <p>{{ order.created_at.strftime("%Y-%m-%d") }}</p>
+                            </div>
+
+                            <span class="order-status status-{{ order.status }}">
+                                {% if order.status == "pending" %}
+                                    {% if current_lang == "en" %}Pending{% elif current_lang == "ja" %}保留中{% else %}قيد المراجعة{% endif %}
+                                {% elif order.status == "processing" %}
+                                    {% if current_lang == "en" %}Processing{% elif current_lang == "ja" %}処理中{% else %}قيد التجهيز{% endif %}
+                                {% elif order.status == "shipped" %}
+                                    {% if current_lang == "en" %}Shipped{% elif current_lang == "ja" %}発送済み{% else %}تم الشحن{% endif %}
+                                {% elif order.status == "delivered" %}
+                                    {% if current_lang == "en" %}Delivered{% elif current_lang == "ja" %}配達済み{% else %}تم التسليم{% endif %}
+                                {% elif order.status == "cancelled" %}
+                                    {% if current_lang == "en" %}Cancelled{% elif current_lang == "ja" %}キャンセル済み{% else %}ملغي{% endif %}
+                                {% else %}
+                                    {{ order.status }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="order-card-body">
+                            <div>
+                                <span>
+                                    {% if current_lang == "en" %}
+                                        Total
+                                    {% elif current_lang == "ja" %}
+                                        合計
+                                    {% else %}
+                                        الإجمالي
+                                    {% endif %}
+                                </span>
+                                <strong>¥{{ order.total_price|round(0) }}</strong>
+                            </div>
+
+                            <div>
+                                <span>
+                                    {% if current_lang == "en" %}
+                                        Payment
+                                    {% elif current_lang == "ja" %}
+                                        支払い
+                                    {% else %}
+                                        الدفع
+                                    {% endif %}
+                                </span>
+                                <strong>{{ order.payment_method }}</strong>
+                            </div>
+
+                            <div>
+                                <span>
+                                    {% if current_lang == "en" %}
+                                        Items
+                                    {% elif current_lang == "ja" %}
+                                        商品数
+                                    {% else %}
+                                        المنتجات
+                                    {% endif %}
+                                </span>
+                                <strong>{{ order.items|length }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="order-card-actions">
+                            <a href="{{ url_for('customer_auth.order_details', order_id=order.id) }}" class="btn-primary">
+                                {% if current_lang == "en" %}
+                                    View details
+                                {% elif current_lang == "ja" %}
+                                    詳細を見る
+                                {% else %}
+                                    عرض التفاصيل
+                                {% endif %}
+                            </a>
+                        </div>
+
+                    </div>
+                {% endfor %}
+
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📦</div>
+
+                <h2>
+                    {% if current_lang == "en" %}
+                        You have no orders yet.
+                    {% elif current_lang == "ja" %}
+                        注文はまだありません。
+                    {% else %}
+                        لا توجد طلبات حتى الآن.
+                    {% endif %}
+                </h2>
+
+                <p>
+                    {% if current_lang == "en" %}
+                        Start shopping and your orders will appear here.
+                    {% elif current_lang == "ja" %}
+                        お買い物を始めると、注文履歴がここに表示されます。
+                    {% else %}
+                        ابدأ التسوق وستظهر طلباتك هنا.
+                    {% endif %}
+                </p>
+
+                <a href="{{ url_for('shop.index') }}" class="btn-primary empty-action">
+                    {% if current_lang == "en" %}
+                        Go to shop
+                    {% elif current_lang == "ja" %}
+                        ショップへ
+                    {% else %}
+                        الذهاب إلى المتجر
+                    {% endif %}
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

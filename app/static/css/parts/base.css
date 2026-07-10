@@ -1,0 +1,206 @@
+/* ===== BASE SYSTEM ===== */
+
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --dark: #0f172a;
+    --text: #334155;
+    --muted: #64748b;
+    --bg: #ffffff;
+    --soft: #f8fafc;
+    --border: #e2e8f0;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Body */
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    direction: rtl;
+    text-align: right;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 0 20px;
+}
+
+/* Sections */
+section {
+    padding: 70px 0;
+}
+
+/* Typography */
+h1, h2, h3, p {
+    line-height: 1.8;
+    word-break: break-word;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* Titles */
+.section-title {
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    color: var(--dark);
+    margin-bottom: 20px;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 40px;
+    line-height: 1.8;
+}
+
+/* Buttons */
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-outline {
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    padding: 10px 18px;
+    border-radius: 12px;
+    text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    section {
+        padding: 50px 0;
+    }
+}
+
+/* ===== GLOBAL SPACING SYSTEM ===== */
+
+section {
+    padding: 90px 0;
+}
+
+.section-title {
+    font-size: 36px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.section-subtitle {
+    font-size: 17px;
+    color: #64748b;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+/* ===== BUTTON HOVER EFFECT ===== */
+
+.btn-primary,
+.btn-outline {
+    transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+.btn-outline:hover {
+    background: #2563eb;
+    color: #fff;
+}
+
+/* ===== SOFT BACKGROUND EFFECT ===== */
+
+section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at top right, rgba(37,99,235,0.04), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(59,130,246,0.04), transparent 25%);
+}
+
+/* ===== FADE ANIMATION ===== */
+
+.fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.8s ease forwards;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== APPLE STYLE CARDS ===== */
+
+.service-card {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 26px;
+    padding: 28px;
+    box-shadow: 0 20px 40px rgba(15,23,42,0.08);
+    transition: all 0.35s ease;
+}
+
+/* Hover احترافي */
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 30px 70px rgba(15,23,42,0.12);
+}
+
+/* العنوان */
+.service-card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #0f172a;
+}
+
+/* النص */
+.service-card p {
+    color: #64748b;
+    line-height: 1.8;
+    font-size: 15px;
+}
+
+/* ===== SOFT BACKGROUND ===== */
+
+.services-section {
+    background: linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f1f5f9 100%
+    );
+    position: relative;
+}

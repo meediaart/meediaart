@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        {{ setting.site_name if setting and setting.site_name else tr.site_default }}
+        {% endblock %}
+    </title>
+
+    <meta name="description" content="{% block meta_description %}موقع احترافي للخدمات والتقنية{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}تقنية, تصميم, تطوير, خدمات{% endblock %}">
+
+    <meta property="og:title" content="{{ self.title()|striptags }}">
+    <meta property="og:description" content="{{ self.meta_description()|striptags }}">
+    <link rel="stylesheet"href="{{ url_for('static', filename='css/variables.css') }}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/parts/final-shop.css') }}">
+</head>
+
+<body>
+
+<div id="page-loader">
+    <div class="loader-spinner"></div>
+</div>
+
+<div class="account-dropdown">
+
+    <button class="account-btn">
+        👤
+        {% if current_user.is_authenticated %}
+            {{ current_user.username }}
+        {% else %}
+            {% if current_lang == "en" %}
+                Account
+            {% elif current_lang == "ja" %}
+                アカウント
+            {% else %}
+                حسابي
+            {% endif %}
+        {% endif %}
+    </button>
+
+    <div class="account-menu">
+
+        {% if current_user.is_authenticated %}
+
+            <a href="{{ url_for('customer_auth.account') }}">
+                👤
+                {% if current_lang == "en" %}
+                    My Account
+                {% elif current_lang == "ja" %}
+                    マイアカウント
+                {% else %}
+                    حسابي
+                {% endif %}
+            </a>
+
+            <a href="{{ url_for('shop.favorites') }}">
+                ❤️
+                {% if current_lang == "en" %}
+                    Favorites
+                {% elif current_lang == "ja" %}
+                    お気に入り
+                {% else %}
+                    المفضلة
+                {% endif %}
+            </a>
+
+            <a href="{{ url_for('customer_auth.orders') }}">
+                📦
+                {% if current_lang == "en" %}
+                    My Orders
+                {% elif current_lang == "ja" %}
+                    注文履歴
+                {% else %}
+                    طلباتي
+                {% endif %}
+            </a>
+
+            <a href="{{ url_for('customer_auth.logout') }}">
+                🚪
+                {% if current_lang == "en" %}
+                    Logout
+                {% elif current_lang == "ja" %}
+                    ログアウト
+                {% else %}
+                    تسجيل الخروج
+                {% endif %}
+            </a>
+
+        {% else %}
+
+            <a href="{{ url_for('customer_auth.login') }}">
+                🔐
+                {% if current_lang == "en" %}
+                    Login
+                {% elif current_lang == "ja" %}
+                    ログイン
+                {% else %}
+                    تسجيل الدخول
+                {% endif %}
+            </a>
+
+            <a href="{{ url_for('customer_auth.register') }}">
+                ✨
+                {% if current_lang == "en" %}
+                    Register
+                {% elif current_lang == "ja" %}
+                    新規登録
+                {% else %}
+                    إنشاء حساب
+                {% endif %}
+            </a>
+
+        {% endif %}
+
+    </div>
+</div>
+
+<a href="https://wa.me/817092220205"
+   target="_blank"
+   class="floating-whatsapp-btn">
+    💬
+</a>
+
+<header class="site-header">
+    <div class="container header-inner">
+
+        <a href="{{ url_for('main.home') }}" class="site-logo">
+            {% if setting and setting.logo %}
+                <img src="{{ url_for('static', filename='uploads/' + setting.logo) }}" alt="logo" class="site-logo-img">
+            {% else %}
+                <span class="logo-mark">M</span>
+            {% endif %}
+
+            <span class="logo-text">
+                {{ setting.site_name if setting and setting.site_name else "MEDIA ART" }}
+            </span>
+        </a>
+
+        <nav class="main-nav" id="mainNav">
+    {% for item in main_menu_items %}
+
+        {% set item_title = item.title %}
+
+        {% if item.content_type == "home" %}
+            {% set item_title = tr.home %}
+        {% elif item.content_type == "about" %}
+            {% set item_title = tr.about %}
+        {% elif item.content_type == "services" %}
+            {% set item_title = tr.services %}
+        {% elif item.content_type == "shop" %}
+            {% set item_title = tr.shop %}
+        {% elif item.content_type == "portfolio" %}
+            {% set item_title = tr.portfolio %}
+        {% elif item.content_type == "blog" %}
+            {% set item_title = tr.blog %}
+        {% elif item.content_type == "contact" %}
+            {% set item_title = tr.contact %}
+        {% endif %}
+
+        <a href="{{ resolve_menu_url(item) }}">
+            {{ item.get_title(current_lang) }}
+        </a>
+
+    {% endfor %}
+
+    <div class="mobile-socials">
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-youtube"></i></a>
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#"><i class="fab fa-x-twitter"></i></a>
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+    </div>
+</nav>
+
+        <div class="header-actions">
+
+
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-x-twitter"></i></a>
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+            </div>
+            <div class="language-dropdown">
+
+    <button class="language-btn">
+        🌐
+        {% if current_lang == "en" %}
+            English
+        {% elif current_lang == "ja" %}
+            日本語
+        {% else %}
+            العربية
+        {% endif %}
+    </button>
+
+    <div class="language-menu">
+
+        <a href="{{ url_for('set_language', lang='ar') }}">
+            🇸🇦 العربية
+        </a>
+
+        <a href="{{ url_for('set_language', lang='en') }}">
+            🇺🇸 English
+        </a>
+
+        <a href="{{ url_for('set_language', lang='ja') }}">
+            🇯🇵 日本語
+        </a>
+
+    </div>
+
+</div>
+            <a href="{{ url_for('shop.cart') }}" class="cart-link">
+                🛒 <span>{{ session.get('cart', [])|length }}</span>
+            </a>
+
+            <a href="{{ url_for('contact.index') }}" class="header-cta">
+                {{ tr.request_service }}
+            </a>
+
+            <button class="menu-toggle" id="menuBtn">
+                ☰
+            </button>
+
+        </div>
+    </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="container flash-area">
+            {% for category, message in messages %}
+                <div class="flash-box">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<main class="site-main">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-grid">
+        <div class="footer-col">
+            <h3>MEDIA ART</h3>
+            <p>{{ tr.footer_text }}</p>
+            
+        </div>
+
+        <div class="footer-col">
+            <h4>{{ tr.quick_links }}</h4>
+            <ul class="footer-links">
+                <li><a href="{{ url_for('main.home') }}">{{ tr.home }}</a></li>
+                <li><a href="{{ url_for('about.index') }}">{{ tr.about }}</a></li>
+                <li><a href="{{ url_for('services.index') }}">{{ tr.services }}</a></li>
+                <li><a href="{{ url_for('shop.index') }}">{{ tr.shop }}</a></li>
+                <li><a href="{{ url_for('portfolio.index') }}">{{ tr.portfolio }}</a></li>
+                <li><a href="{{ url_for('blog.index') }}">{{ tr.blog }}</a></li>
+                <li><a href="{{ url_for('contact.index') }}">{{ tr.contact }}</a></li>
+            </ul>
+        </div>
+
+        
+
+        <div class="footer-col">
+            <h4>{{ tr.contact }}</h4>
+            <p>{{ tr.email }}: info@mediaart.com</p>
+            <p>{{ tr.phone }}: +817092220205</p>
+            <p>{{ tr.address }}: {{ tr.japan }}</p>
+
+            <div class="footer-col">
+    <h4>
+        {% if current_lang == "en" %}
+            Newsletter
+        {% elif current_lang == "ja" %}
+            ニュースレター
+        {% else %}
+            النشرة البريدية
+        {% endif %}
+    </h4>
+
+    <p>
+        {% if current_lang == "en" %}
+            Subscribe to receive our latest updates and offers.
+        {% elif current_lang == "ja" %}
+            最新情報やお知らせを受け取るために登録してください。
+        {% else %}
+            اشترك ليصلك جديد المقالات والعروض والتحديثات.
+        {% endif %}
+    </p>
+
+    <form id="newsletterForm"
+      method="POST"
+      action="{{ url_for('newsletter.subscribe') }}"
+      class="newsletter-form">
+      <div id="newsletterMessage"></div>
+      <input type="text"
+       name="name"
+       placeholder="{% if current_lang == 'en' %}Your name{% elif current_lang == 'ja' %}お名前{% else %}اسمك{% endif %}">
+        <input type="email"
+               name="email"
+               required
+               placeholder="{% if current_lang == 'en' %}Your email{% elif current_lang == 'ja' %}メールアドレス{% else %}بريدك الإلكتروني{% endif %}">
+               <label class="newsletter-consent">
+
+        <input type="checkbox"
+           name="consent"
+           required>
+
+    <span>
+        {% if current_lang == "en" %}
+            I agree to receive emails, offers, and updates.
+        {% elif current_lang == "ja" %}
+            メールによるお知らせや更新情報の受信に同意します。
+        {% else %}
+            أوافق على استقبال الرسائل والعروض والتحديثات عبر البريد الإلكتروني.
+        {% endif %}
+    </span>
+
+</label>
+
+        <button type="submit">
+            {% if current_lang == "en" %}
+                Subscribe
+            {% elif current_lang == "ja" %}
+                登録する
+            {% else %}
+                اشتراك
+            {% endif %}
+        </button>
+    </form>
+</div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="container">
+            <p>© 2026 MEDIA ART - {{ tr.rights }}</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menuBtn = document.getElementById("menuBtn");
+    const mainNav = document.getElementById("mainNav");
+
+    if (menuBtn && mainNav) {
+        menuBtn.addEventListener("click", function () {
+            mainNav.classList.toggle("active");
+            mainNav.classList.toggle("show");
+        });
+    }
+});
+</script>
+
+<script>
+function sharePage(title, text, url) {
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: text,
+            url: url
+        });
+    } else {
+        navigator.clipboard.writeText(url);
+        alert("تم نسخ الرابط 👍");
+    }
+}
+</script>
+
+<script>
+window.addEventListener("load", function () {
+    const loader = document.getElementById("page-loader");
+    if (loader) {
+        loader.classList.add("hide");
+    }
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const newsletterForm = document.getElementById("newsletterForm");
+
+    if (!newsletterForm) return;
+
+    newsletterForm.addEventListener("submit", async function (e) {
+
+        e.preventDefault();
+
+        const formData = new FormData(newsletterForm);
+
+        const response = await fetch(newsletterForm.action, {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        const messageBox = document.getElementById("newsletterMessage");
+
+        if (!messageBox) return;
+
+        messageBox.innerHTML = data.message;
+
+        if (data.already_exists) {
+            messageBox.style.color = "#f5b942";
+        } else {
+            messageBox.style.color = "#4ade80";
+            newsletterForm.reset();
+        }
+
+    });
+
+});
+</script>
+
+</body>
+</html>

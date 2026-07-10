@@ -1,0 +1,26 @@
+{% extends "admin/dashboard.html" %}
+
+{% block content %}
+<h2>إعدادات الموقع</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <p>
+        {{ form.site_name.label }}<br>
+        {{ form.site_name() }}
+    </p>
+
+    <p>
+        {{ form.logo.label }}<br>
+        {{ form.logo() }}
+    </p>
+
+    <p>
+        {{ form.footer_text.label }}<br>
+        {{ form.footer_text() }}
+    </p>
+
+    <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}

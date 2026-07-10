@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ tr.shop }}
+{% endblock %}
+
+{% block content %}
+<section class="shop-section">
+    <div class="container">
+
+        <h1 class="section-title">{{ tr.shop }}</h1>
+
+        <p class="section-subtitle">
+            {% if current_lang == "en" %}
+                Choose from our ready-made products and services.
+            {% elif current_lang == "ja" %}
+                既製の商品とサービスからお選びください。
+            {% else %}
+                اختر من خدماتنا ومنتجاتنا الجاهزة.
+            {% endif %}
+        </p>
+
+        <div id="categoryBarPlaceholder"></div>
+
+        <div id="categoryBar" class="shop-categories-wrapper">
+
+            {% if active_category %}
+                <div class="active-category-title">
+                    {{ active_category.get_name(current_lang) }}
+                </div>
+            {% else %}
+                <div class="active-category-title">
+                    {% if current_lang == "en" %}
+                        All Products
+                    {% elif current_lang == "ja" %}
+                        すべての商品
+                    {% else %}
+                        كل المنتجات
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if categories %}
+            <div class="shop-categories">
+
+                <a href="{{ url_for('shop.index') }}"
+                   class="shop-category-card {% if not active_category %}active{% endif %}">
+                    <div class="shop-category-image">
+                        <span>🛍️</span>
+                    </div>
+                    <h3>
+                        {% if current_lang == "en" %}
+                            All
+                        {% elif current_lang == "ja" %}
+                            すべて
+                        {% else %}
+                            الكل
+                        {% endif %}
+                    </h3>
+                </a>
+
+                {% for category in categories %}
+                    {% set category_name = category.get_name(current_lang) %}
+                    {% set category_slug = category.get_slug(current_lang) %}
+
+                    <a href="{{ url_for('shop.category_products', slug=category_slug) }}"
+                       class="shop-category-card {% if active_category and active_category.id == category.id %}active{% endif %}">
+
+                        <div class="shop-category-image">
+                            {% if category.image %}
+                                <img src="{{ url_for('static', filename='uploads/' + category.image) }}"
+                                     alt="{{ category_name }}">
+                            {% else %}
+                                <span>📦</span>
+                            {% endif %}
+                        </div>
+
+                        <h3>{{ category_name }}</h3>
+                    </a>
+                {% endfor %}
+
+            </div>
+            {% endif %}
+
+        </div>
+
+        <div class="products-grid">
+            {% if products %}
+                {% for product in products %}
+                    {% include "components/product_card.html" %}
+                {% endfor %}
+            {% else %}
+                <p>
+                    {% if current_lang == "en" %}
+                        No products are available at the moment.
+                    {% elif current_lang == "ja" %}
+                        現在利用可能な商品はありません。
+                    {% else %}
+                        لا توجد منتجات متاحة حالياً.
+                    {% endif %}
+                </p>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+
+<script>
+function shareProduct(button) {
+    const title = button.dataset.title;
+    const url = button.dataset.url;
+
+    let text = "شوف هذا المنتج 🔥";
+
+    {% if current_lang == "en" %}
+        text = "Check out this product 🔥";
+    {% elif current_lang == "ja" %}
+        text = "この商品を見てください 🔥";
+    {% endif %}
+
+    sharePage(title, text, url);
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const bar = document.getElementById("categoryBar");
+    const placeholder = document.getElementById("categoryBarPlaceholder");
+
+    if (!bar || !placeholder) return;
+
+    const headerHeight = 70;
+    const startPoint = bar.offsetTop - headerHeight;
+
+    function fixCategoryBar() {
+        const mobileMenu = document.querySelector(".mobile-menu");
+        const menuOpen = mobileMenu && mobileMenu.classList.contains("active");
+
+        if (menuOpen) {
+            bar.classList.remove("category-fixed");
+            placeholder.style.height = "0px";
+            return;
+        }
+
+        if (window.scrollY >= startPoint) {
+            placeholder.style.height = bar.offsetHeight + "px";
+            bar.classList.add("category-fixed");
+        } else {
+            placeholder.style.height = "0px";
+            bar.classList.remove("category-fixed");
+        }
+    }
+
+    window.addEventListener("scroll", fixCategoryBar);
+    window.addEventListener("resize", fixCategoryBar);
+
+    fixCategoryBar();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".favorite-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const button = form.querySelector(".card-icon-btn");
+            const icon = button.querySelector("i");
+
+            fetch(form.action, {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) return;
+
+                if (data.is_favorite) {
+                    button.classList.add("active");
+                    icon.className = "fa-solid fa-heart";
+                } else {
+                    button.classList.remove("active");
+                    icon.className = "fa-regular fa-heart";
+                }
+            })
+            .catch(error => {
+                console.error("Favorite error:", error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

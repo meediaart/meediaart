@@ -1,0 +1,99 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}إدارة الخدمات{% endblock %}
+
+{% block content %}
+<div class="admin-page-head">
+    <div>
+        <h2>الخدمات</h2>
+        <p>إدارة خدمات الموقع.</p>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.create_service') }}" class="admin-btn admin-btn-primary">
+            + إضافة خدمة
+        </a>
+    </div>
+</div>
+
+{% if services %}
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>الصورة</th>
+                <th>العنوان</th>
+                <th>الوصف</th>
+                <th>الحالة</th>
+                <th>الرئيسية</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for service in services %}
+            <tr class="{% if service.show_on_home %}home-highlight{% endif %}">
+
+                <td>
+                    {% if service.image %}
+                        <img src="{{ url_for('static', filename='uploads/' + service.image) }}" class="admin-table-img">
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td>{{ service.title }}</td>
+
+                <td>{{ service.description[:80] if service.description else "-" }}</td>
+
+                <td>
+                    {% if service.is_active %}
+                        <span class="status-badge status-completed">مفعل</span>
+                    {% else %}
+                        <span class="status-badge status-unpaid">مخفي</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <div class="admin-actions">
+                        {% if service.show_on_home %}
+                            <span class="status-badge status-paid">نعم</span>
+                            <a href="{{ url_for('admin.toggle_service_home', service_id=service.id) }}"
+                               class="admin-btn admin-btn-secondary">
+                                إخفاء
+                            </a>
+                        {% else %}
+                            <span class="status-badge status-unpaid">لا</span>
+                            <a href="{{ url_for('admin.toggle_service_home', service_id=service.id) }}"
+                               class="admin-btn admin-btn-primary">
+                                إظهار
+                            </a>
+                        {% endif %}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="admin-actions">
+                        <a href="{{ url_for('admin.edit_service', service_id=service.id) }}"
+                           class="admin-btn admin-btn-secondary">
+                            تعديل
+                        </a>
+
+                        <a href="{{ url_for('admin.delete_service', service_id=service.id) }}"
+                           onclick="return confirm('هل أنت متأكد من الحذف؟')"
+                           class="admin-btn admin-btn-danger">
+                            حذف
+                        </a>
+                    </div>
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+<p>لا توجد خدمات حالياً.</p>
+{% endif %}
+{% endblock %}

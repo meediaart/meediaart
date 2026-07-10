@@ -1,0 +1,49 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}نظرة عامة{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-grid">
+
+    <a href="{{ url_for('admin.services_list') }}" class="admin-stat-card">
+        <span>الخدمات</span>
+        <strong>{{ services_count }}</strong>
+    </a>
+
+    <a href="{{ url_for('admin.pages_list') }}" class="admin-stat-card">
+        <span>الصفحات</span>
+        <strong>{{ pages_count }}</strong>
+    </a>
+
+    <a href="{{ url_for('admin.home_sections_list') }}" class="admin-stat-card">
+        <span>السلايدر</span>
+        <strong>{{ sections_count }}</strong>
+    </a>
+
+    <a href="{{ url_for('admin.menu_list') }}" class="admin-stat-card">
+        <span>القائمة</span>
+        <strong>{{ menu_count }}</strong>
+    </a>
+
+    <a href="{{ url_for('admin.products_list') }}" class="admin-stat-card">
+        <span>المنتجات</span>
+        <strong>{{ products_count }}</strong>
+    </a>
+
+    <a href="{{ url_for('admin.orders_list') }}" class="admin-stat-card">
+        <span>الطلبات</span>
+        <strong>{{ orders_count }}</strong>
+    </a>
+
+    <a href="{{ url_for('admin.posts_list') }}" class="admin-stat-card">
+        <span>المقالات</span>
+        <strong>{{ posts_count }}</strong>
+    </a>
+
+    <a href="{{ url_for('admin.projects_list') }}" class="admin-stat-card">
+        <span>المشاريع</span>
+        <strong>{{ projects_count }}</strong>
+    </a>
+
+</div>
+{% endblock %}

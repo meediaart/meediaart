@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="admin-page-head">
+    <h1>إضافة شريك نجاح</h1>
+</div>
+
+<div class="page-card">
+    <form method="POST" enctype="multipart/form-data">
+
+        <div class="form-group">
+            <label>اسم الشريك</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label>الشعار</label>
+            <input type="file" name="image" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label>الترتيب</label>
+            <input type="number" name="display_order" class="form-control" value="0">
+        </div>
+
+        <label class="form-check">
+            <input type="checkbox" name="is_active" checked>
+            مفعل
+        </label>
+
+        <br>
+
+        <button type="submit" class="admin-btn admin-btn-primary">
+            حفظ
+        </button>
+
+        <a href="{{ url_for('admin.partners_index') }}" class="admin-btn admin-btn-secondary">
+            رجوع
+        </a>
+    </form>
+</div>
+{% endblock %}

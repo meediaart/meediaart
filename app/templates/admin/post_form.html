@@ -1,0 +1,204 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="admin-page-head">
+    <div>
+        <h2>{{ page_title }}</h2>
+        <p>أضف أو عدّل المقال بثلاث لغات.</p>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.posts_list') }}" class="admin-btn admin-btn-secondary">رجوع</a>
+    </div>
+</div>
+
+<div class="page-card admin-form-card">
+    <form method="POST" enctype="multipart/form-data" class="admin-post-form">
+        {{ form.hidden_tag() }}
+
+        <div class="lang-tabs">
+            <button type="button" class="lang-tab-btn active" data-tab="tab-ar">العربية</button>
+            <button type="button" class="lang-tab-btn" data-tab="tab-en">English</button>
+            <button type="button" class="lang-tab-btn" data-tab="tab-ja">日本語</button>
+        </div>
+
+        <div id="tab-ar" class="lang-tab-pane active" dir="rtl">
+            <div class="form-group">{{ form.title_ar.label }} {{ form.title_ar(class="form-control") }}</div>
+            <div class="form-group">{{ form.slug_ar.label }} {{ form.slug_ar(class="form-control") }}</div>
+            <div class="form-group">{{ form.excerpt_ar.label }} {{ form.excerpt_ar(class="form-control") }}</div>
+
+            <div class="form-group">
+                {{ form.content_ar.label }}
+                <div id="toolbar-ar" class="editor-toolbar">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-underline"></button>
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-link"></button>
+                    <button class="ql-clean"></button>
+                </div>
+                <div id="editor-ar" class="editor-box">{% if form.content_ar.data %}{{ form.content_ar.data|safe }}{% endif %}</div>
+                {{ form.content_ar(id="content-ar-hidden", class="hidden-textarea") }}
+            </div>
+
+            <div class="form-group">{{ form.keywords_ar.label }} {{ form.keywords_ar(class="form-control") }}</div>
+            <div class="form-group">{{ form.meta_title_ar.label }} {{ form.meta_title_ar(class="form-control") }}</div>
+            <div class="form-group">{{ form.meta_description_ar.label }} {{ form.meta_description_ar(class="form-control") }}</div>
+        </div>
+
+        <div id="tab-en" class="lang-tab-pane" dir="ltr">
+            <div class="form-group">{{ form.title_en.label }} {{ form.title_en(class="form-control") }}</div>
+            <div class="form-group">{{ form.slug_en.label }} {{ form.slug_en(class="form-control") }}</div>
+            <div class="form-group">{{ form.excerpt_en.label }} {{ form.excerpt_en(class="form-control") }}</div>
+
+            <div class="form-group">
+                {{ form.content_en.label }}
+                <div id="toolbar-en" class="editor-toolbar">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-underline"></button>
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-link"></button>
+                    <button class="ql-clean"></button>
+                </div>
+                <div id="editor-en" class="editor-box">{% if form.content_en.data %}{{ form.content_en.data|safe }}{% endif %}</div>
+                {{ form.content_en(id="content-en-hidden", class="hidden-textarea") }}
+            </div>
+
+            <div class="form-group">{{ form.keywords_en.label }} {{ form.keywords_en(class="form-control") }}</div>
+            <div class="form-group">{{ form.meta_title_en.label }} {{ form.meta_title_en(class="form-control") }}</div>
+            <div class="form-group">{{ form.meta_description_en.label }} {{ form.meta_description_en(class="form-control") }}</div>
+        </div>
+
+        <div id="tab-ja" class="lang-tab-pane" dir="ltr">
+            <div class="form-group">{{ form.title_ja.label }} {{ form.title_ja(class="form-control") }}</div>
+            <div class="form-group">{{ form.slug_ja.label }} {{ form.slug_ja(class="form-control") }}</div>
+            <div class="form-group">{{ form.excerpt_ja.label }} {{ form.excerpt_ja(class="form-control") }}</div>
+
+            <div class="form-group">
+                {{ form.content_ja.label }}
+                <div id="toolbar-ja" class="editor-toolbar">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-underline"></button>
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-link"></button>
+                    <button class="ql-clean"></button>
+                </div>
+                <div id="editor-ja" class="editor-box">{% if form.content_ja.data %}{{ form.content_ja.data|safe }}{% endif %}</div>
+                {{ form.content_ja(id="content-ja-hidden", class="hidden-textarea") }}
+            </div>
+
+            <div class="form-group">{{ form.keywords_ja.label }} {{ form.keywords_ja(class="form-control") }}</div>
+            <div class="form-group">{{ form.meta_title_ja.label }} {{ form.meta_title_ja(class="form-control") }}</div>
+            <div class="form-group">{{ form.meta_description_ja.label }} {{ form.meta_description_ja(class="form-control") }}</div>
+        </div>
+
+        <hr>
+
+        <div class="form-group">
+            {{ form.image.label }}
+            {{ form.image(class="form-control") }}
+        </div>
+
+        <div class="form-check">
+            {{ form.is_active() }}
+            {{ form.is_active.label }}
+        </div>
+
+        <div class="form-check">
+            {{ form.show_on_home() }}
+            {{ form.show_on_home.label }}
+        </div>
+
+        <div class="admin-actions submit-actions">
+            {{ form.submit(class="admin-btn admin-btn-primary") }}
+        </div>
+    </form>
+</div>
+
+<link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll(".lang-tab-btn");
+    const panes = document.querySelectorAll(".lang-tab-pane");
+
+    buttons.forEach(btn => {
+        btn.addEventListener("click", function () {
+            const target = this.dataset.tab;
+
+            buttons.forEach(b => b.classList.remove("active"));
+            panes.forEach(p => p.classList.remove("active"));
+
+            this.classList.add("active");
+            document.getElementById(target).classList.add("active");
+        });
+    });
+
+    const editors = [
+        {
+            editor: "#editor-ar",
+            toolbar: "#toolbar-ar",
+            hidden: "#content-ar-hidden",
+            dir: "rtl",
+            align: "right",
+            placeholder: "اكتب محتوى المقال هنا..."
+        },
+        {
+            editor: "#editor-en",
+            toolbar: "#toolbar-en",
+            hidden: "#content-en-hidden",
+            dir: "ltr",
+            align: "left",
+            placeholder: "Write the article content here..."
+        },
+        {
+            editor: "#editor-ja",
+            toolbar: "#toolbar-ja",
+            hidden: "#content-ja-hidden",
+            dir: "ltr",
+            align: "left",
+            placeholder: "記事本文を入力してください..."
+        }
+    ];
+
+    const quills = [];
+
+    editors.forEach(item => {
+        const hiddenInput = document.querySelector(item.hidden);
+
+        const quill = new Quill(item.editor, {
+            theme: "snow",
+            placeholder: item.placeholder,
+            modules: {
+                toolbar: item.toolbar
+            }
+        });
+
+        quill.root.setAttribute("dir", item.dir);
+        quill.root.style.textAlign = item.align;
+
+        if (hiddenInput.value.trim()) {
+            quill.root.innerHTML = hiddenInput.value;
+        }
+
+        quills.push({ quill: quill, hidden: hiddenInput });
+    });
+
+    const form = document.querySelector(".admin-post-form");
+
+    form.addEventListener("submit", function () {
+        quills.forEach(item => {
+            item.hidden.value = item.quill.root.innerHTML;
+        });
+    });
+});
+</script>
+{% endblock %}

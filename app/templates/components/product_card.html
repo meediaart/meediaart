@@ -1,0 +1,142 @@
+{% set product_title = product.get_title(current_lang) %}
+{% set product_description = product.get_description(current_lang) %}
+{% set product_slug = product.get_slug(current_lang) %}
+
+<div class="product-card">
+
+    <div class="product-image-wrapper">
+
+        <div class="product-card-actions-top">
+
+            <form class="favorite-form"
+                  method="POST"
+                  action="{{ url_for('shop.toggle_favorite', product_id=product.id) }}">
+
+                <button type="submit"
+                        class="card-icon-btn {% if favorite_ids is defined and product.id in favorite_ids %}active{% endif %}">
+                    {% if favorite_ids is defined and product.id in favorite_ids %}
+                        <i class="fa-solid fa-heart"></i>
+                    {% else %}
+                        <i class="fa-regular fa-heart"></i>
+                    {% endif %}
+                </button>
+            </form>
+
+            <button type="button"
+                    class="card-icon-btn"
+                    data-title="{{ product_title }}"
+                    data-url="{{ url_for('shop.product', slug=product_slug, _external=True) }}"
+                    onclick="shareProduct(this)">
+                <i class="fa-solid fa-share-nodes"></i>
+            </button>
+
+        </div>
+
+        <a href="{{ url_for('shop.product', slug=product_slug) }}">
+            <div class="product-image product-hover-image">
+                {% if product.image %}
+                    <img class="product-img-main"
+                         src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                         alt="{{ product_title }}">
+                {% elif product.images and product.images|length > 0 %}
+                    <img class="product-img-main"
+                         src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+                         alt="{{ product_title }}">
+                {% endif %}
+
+                {% if product.images and product.images|length > 0 %}
+                    <img class="product-img-hover"
+                         src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+                         alt="{{ product_title }}">
+                {% endif %}
+            </div>
+        </a>
+
+    </div>
+
+    <div class="product-content">
+
+        <a href="{{ url_for('shop.product', slug=product_slug) }}" class="product-title-link">
+            <h3>{{ product_title }}</h3>
+        </a>
+
+        <p>{{ product_description[:80] if product_description else "" }}</p>
+
+        <a href="{{ url_for('shop.product', slug=product_slug) }}" class="product-details-link">
+            {% if current_lang == "en" %}
+                View details
+            {% elif current_lang == "ja" %}
+                詳細を見る
+            {% else %}
+                عرض التفاصيل
+            {% endif %}
+        </a>
+
+        <div class="price-box">
+            {% if product.discount_percent and product.discount_percent > 0 %}
+                {% set discounted_price = product.price - (product.price * product.discount_percent / 100) %}
+
+                <span class="old-price">¥{{ product.price|round(0) }}</span>
+                <span class="price discounted-price">¥{{ discounted_price|round(0) }}</span>
+            {% else %}
+                <span class="price">¥{{ product.price|round(0) }}</span>
+            {% endif %}
+        </div>
+
+        <form method="POST" action="{{ url_for('shop.add_to_cart', product_id=product.id) }}">
+
+            <div class="card-select-options">
+                {% if product.has_colors and product.available_colors %}
+                    <div class="card-select-group">
+                        <select name="selected_color">
+                            {% for color in product.available_colors.split(',') %}
+                                <option value="{{ color.strip() }}">{{ color.strip() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
+
+                {% if product.has_sizes and product.available_sizes %}
+                    <div class="card-select-group">
+                        <select name="selected_size">
+                            {% for size in product.available_sizes.split(',') %}
+                                <option value="{{ size.strip() }}">{{ size.strip() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="product-actions">
+                <button type="submit"
+                        name="action_type"
+                        value="cart"
+                        class="btn-outline">
+                    {% if current_lang == "en" %}
+                        Add to cart
+                    {% elif current_lang == "ja" %}
+                        カートに追加
+                    {% else %}
+                        أضف للسلة
+                    {% endif %}
+                </button>
+
+                <button type="submit"
+                        name="action_type"
+                        value="buy_now"
+                        class="btn-primary">
+                    {% if current_lang == "en" %}
+                        Buy now
+                    {% elif current_lang == "ja" %}
+                        今すぐ購入
+                    {% else %}
+                        اشتري الآن
+                    {% endif %}
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+

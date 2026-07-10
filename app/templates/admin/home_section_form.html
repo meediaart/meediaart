@@ -1,0 +1,141 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="admin-page-head">
+    <div>
+        <h2>{{ page_title }}</h2>
+        <p>إضافة أو تعديل قسم من أقسام الرئيسية أو السلايدر.</p>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.home_sections_list') }}" class="admin-btn admin-btn-secondary">رجوع</a>
+    </div>
+</div>
+
+<div class="page-card service-form-card">
+    <form method="POST" enctype="multipart/form-data" class="admin-update-form">
+        {{ form.hidden_tag() }}
+
+        <div class="lang-tabs">
+            <button type="button" class="lang-tab-btn active" data-tab="tab-ar">العربية</button>
+            <button type="button" class="lang-tab-btn" data-tab="tab-en">English</button>
+            <button type="button" class="lang-tab-btn" data-tab="tab-ja">日本語</button>
+        </div>
+
+        <div id="tab-ar" class="lang-tab-pane active" dir="rtl">
+            <h3>العربية</h3>
+
+            <div class="lang-grid">
+                <div class="admin-form-group">
+                    {{ form.title_ar.label }}
+                    {{ form.title_ar(class="form-control") }}
+                </div>
+
+                <div class="admin-form-group full-width">
+                    {{ form.subtitle_ar.label }}
+                    {{ form.subtitle_ar(rows=5, class="form-control") }}
+                </div>
+
+                <div class="admin-form-group">
+                    {{ form.button_text_ar.label }}
+                    {{ form.button_text_ar(class="form-control") }}
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-en" class="lang-tab-pane" dir="ltr">
+            <h3>English</h3>
+
+            <div class="lang-grid">
+                <div class="admin-form-group">
+                    {{ form.title_en.label }}
+                    {{ form.title_en(class="form-control") }}
+                </div>
+
+                <div class="admin-form-group full-width">
+                    {{ form.subtitle_en.label }}
+                    {{ form.subtitle_en(rows=5, class="form-control") }}
+                </div>
+
+                <div class="admin-form-group">
+                    {{ form.button_text_en.label }}
+                    {{ form.button_text_en(class="form-control") }}
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-ja" class="lang-tab-pane" dir="ltr">
+            <h3>日本語</h3>
+
+            <div class="lang-grid">
+                <div class="admin-form-group">
+                    {{ form.title_ja.label }}
+                    {{ form.title_ja(class="form-control") }}
+                </div>
+
+                <div class="admin-form-group full-width">
+                    {{ form.subtitle_ja.label }}
+                    {{ form.subtitle_ja(rows=5, class="form-control") }}
+                </div>
+
+                <div class="admin-form-group">
+                    {{ form.button_text_ja.label }}
+                    {{ form.button_text_ja(class="form-control") }}
+                </div>
+            </div>
+        </div>
+
+        <div class="general-settings-box">
+            <h3>إعدادات عامة</h3>
+
+            <div class="general-grid">
+                <div class="admin-form-group">
+                    {{ form.button_link.label }}
+                    {{ form.button_link(class="form-control") }}
+                </div>
+
+                <div class="admin-form-group">
+                    {{ form.image.label }}
+                    {{ form.image(class="form-control") }}
+                </div>
+
+                <div class="admin-form-group">
+                    {{ form.display_order.label }}
+                    {{ form.display_order(class="form-control") }}
+                </div>
+            </div>
+
+            <div class="general-checks">
+                <div class="admin-checkbox">
+                    {{ form.is_active() }} {{ form.is_active.label }}
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-actions">
+            {{ form.submit(class="admin-btn admin-btn-primary") }}
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll(".lang-tab-btn");
+    const panes = document.querySelectorAll(".lang-tab-pane");
+
+    buttons.forEach(btn => {
+        btn.addEventListener("click", function () {
+            const target = this.dataset.tab;
+
+            buttons.forEach(b => b.classList.remove("active"));
+            panes.forEach(p => p.classList.remove("active"));
+
+            this.classList.add("active");
+            document.getElementById(target).classList.add("active");
+        });
+    });
+});
+</script>
+{% endblock %}

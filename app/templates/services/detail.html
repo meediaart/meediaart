@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ service.get_meta_title(current_lang) }}
+{% endblock %}
+
+{% block meta_description %}
+{{ service.get_meta_description(current_lang) }}
+{% endblock %}
+
+{% block meta_keywords %}
+{% if current_lang == "en" %}
+    {{ service.keywords_en or service.keywords_ar }}
+{% elif current_lang == "ja" %}
+    {{ service.keywords_ja or service.keywords_ar }}
+{% else %}
+    {{ service.keywords_ar }}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<section class="page-banner">
+    <h2>{{ service.get_title(current_lang) }}</h2>
+
+    {% if service.get_short_description(current_lang) %}
+    <p>{{ service.get_short_description(current_lang) }}</p>
+    {% endif %}
+</section>
+
+<section class="front-section">
+
+    {% if service.image %}
+    <div style="margin-bottom:20px;">
+        <img
+            src="{{ url_for('static', filename='uploads/' + service.image) }}"
+            alt="{{ service.get_title(current_lang) }}"
+            style="width:100%; max-height:480px; object-fit:cover; border-radius:16px;"
+        >
+    </div>
+    {% endif %}
+
+    <div class="page-card">
+
+        {% if current_lang == "en" and service.keywords_en %}
+            <p><strong>Keywords:</strong> {{ service.keywords_en }}</p>
+            <hr>
+        {% elif current_lang == "ja" and service.keywords_ja %}
+            <p><strong>キーワード:</strong> {{ service.keywords_ja }}</p>
+            <hr>
+        {% elif service.keywords_ar %}
+            <p><strong>الكلمات المفتاحية:</strong> {{ service.keywords_ar }}</p>
+            <hr>
+        {% endif %}
+
+        <div style="line-height:1.9;">
+            {{ service.get_description(current_lang) | safe }}
+        </div>
+
+        <div style="margin-top:24px;">
+            <a href="{{ url_for('contact.index') }}" class="btn-primary-site">
+                {{ tr.request_service }}
+            </a>
+        </div>
+    </div>
+
+    {% if related_services %}
+    <div style="margin-top:40px;">
+        <h3>
+            {% if current_lang == "en" %}
+                Related Services
+            {% elif current_lang == "ja" %}
+                関連サービス
+            {% else %}
+                خدمات ذات صلة
+            {% endif %}
+        </h3>
+
+        <div class="services-page-grid">
+            {% for item in related_services %}
+            <div class="service-page-card">
+                <div class="service-page-icon">
+                    {{ item.icon if item.icon else "🛠️" }}
+                </div>
+
+                <h4>{{ item.get_title(current_lang) }}</h4>
+
+                {% if item.get_short_description(current_lang) %}
+                    <p>{{ item.get_short_description(current_lang) }}</p>
+                {% endif %}
+
+                <a href="{{ url_for('services.detail', slug=item.get_slug(current_lang)) }}" class="btn-outline">
+                    {% if current_lang == "en" %}
+                        View Details
+                    {% elif current_lang == "ja" %}
+                        詳細を見る
+                    {% else %}
+                        عرض التفاصيل
+                    {% endif %}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</section>
+
+{% endblock %}

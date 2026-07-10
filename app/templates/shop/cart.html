@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == "en" %}
+    Cart
+{% elif current_lang == "ja" %}
+    カート
+{% else %}
+    السلة
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="cart-page">
+    <div class="container">
+
+        <h1 class="section-title">
+            {% if current_lang == "en" %}
+                Shopping Cart
+            {% elif current_lang == "ja" %}
+                ショッピングカート
+            {% else %}
+                سلة التسوق
+            {% endif %}
+        </h1>
+
+        {% if cart_items %}
+        <div class="cart-layout">
+
+            <div class="cart-items">
+                {% for item in cart_items %}
+
+                {% set product_title = item.product.get_title(current_lang) %}
+                {% set product_desc = item.product.get_description(current_lang) %}
+
+                <div class="cart-item-card">
+
+                    <div class="cart-item-image">
+                        {% if item.product.image %}
+                            <img src="{{ url_for('static', filename='uploads/' + item.product.image) }}"
+                                 alt="{{ product_title }}">
+                        {% else %}
+                            <div class="no-img"></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="cart-item-info">
+                        <h3>{{ product_title }}</h3>
+
+                        <p class="cart-desc">
+                            {{ (product_desc or "")[:120] }}{% if product_desc %}...{% endif %}
+                        </p>
+
+                        <div class="cart-item-options">
+                            <div>
+                                <strong>
+                                    {% if current_lang == "en" %}Color:{% elif current_lang == "ja" %}色:{% else %}اللون:{% endif %}
+                                </strong>
+                                {{ item.color or "—" }}
+                            </div>
+
+                            <div>
+                                <strong>
+                                    {% if current_lang == "en" %}Size:{% elif current_lang == "ja" %}サイズ:{% else %}الحجم:{% endif %}
+                                </strong>
+                                {{ item.size or "—" }}
+                            </div>
+
+                            <div>
+                                <strong>
+                                    {% if current_lang == "en" %}Text:{% elif current_lang == "ja" %}テキスト:{% else %}النص:{% endif %}
+                                </strong>
+                                {{ item.custom_text or "—" }}
+                            </div>
+
+                            {% if item.custom_image %}
+                            <div>
+                                <strong>
+                                    {% if current_lang == "en" %}
+                                        Uploaded image:
+                                    {% elif current_lang == "ja" %}
+                                        アップロード画像:
+                                    {% else %}
+                                        الصورة المطلوبة:
+                                    {% endif %}
+                                </strong>
+                                <br>
+                                <img src="{{ url_for('static', filename='uploads/' + item.custom_image) }}" width="80">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="cart-item-side">
+                        <div class="cart-item-price">¥{{ item.item_total }}</div>
+
+                        <div class="cart-qty-controls">
+                            <form method="POST" action="{{ url_for('shop.update_cart', index=loop.index0) }}">
+                                <input type="hidden" name="action" value="decrease">
+                                <button type="submit" class="cart-qty-btn">-</button>
+                            </form>
+
+                            <span class="cart-qty-number">{{ item.quantity }}</span>
+
+                            <form method="POST" action="{{ url_for('shop.update_cart', index=loop.index0) }}">
+                                <input type="hidden" name="action" value="increase">
+                                <button type="submit" class="cart-qty-btn">+</button>
+                            </form>
+                        </div>
+
+                        <form method="POST" action="{{ url_for('shop.remove_from_cart', product_id=loop.index0) }}">
+                            <button type="submit" class="cart-remove-link">
+                                {% if current_lang == "en" %}
+                                    Remove
+                                {% elif current_lang == "ja" %}
+                                    削除
+                                {% else %}
+                                    حذف
+                                {% endif %}
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="cart-summary">
+                <h3>
+                    {% if current_lang == "en" %}
+                        Order Summary
+                    {% elif current_lang == "ja" %}
+                        注文概要
+                    {% else %}
+                        ملخص الطلب
+                    {% endif %}
+                </h3>
+
+                <div class="summary-row">
+                    <span>
+                        {% if current_lang == "en" %}
+                            Total:
+                        {% elif current_lang == "ja" %}
+                            合計:
+                        {% else %}
+                            الإجمالي:
+                        {% endif %}
+                    </span>
+                    <strong>¥{{ total }}</strong>
+                </div>
+
+                <a href="{{ url_for('shop.checkout') }}" class="checkout-btn">
+                    {% if current_lang == "en" %}
+                        Checkout
+                    {% elif current_lang == "ja" %}
+                        注文手続きへ
+                    {% else %}
+                        إتمام الطلب
+                    {% endif %}
+                </a>
+
+                {% if current_lang == "en" %}
+                    {% set whatsapp_message = namespace(text='Hello, I would like to order the following products:%0A') %}
+                {% elif current_lang == "ja" %}
+                    {% set whatsapp_message = namespace(text='こんにちは。以下の商品を注文したいです:%0A') %}
+                {% else %}
+                    {% set whatsapp_message = namespace(text='مرحبًا، أريد طلب المنتجات التالية:%0A') %}
+                {% endif %}
+
+                {% for item in cart_items %}
+                    {% set product_title = item.product.get_title(current_lang) %}
+                    {% set whatsapp_message.text = whatsapp_message.text
+                        + '- ' + product_title
+                        + ' | ' + ('Qty' if current_lang == 'en' else '数量' if current_lang == 'ja' else 'العدد') + ': ' + (item.quantity|string)
+                        + ' | ' + ('Price' if current_lang == 'en' else '価格' if current_lang == 'ja' else 'السعر') + ': ¥' + (item.item_total|string)
+                        + ' | ' + ('Color' if current_lang == 'en' else '色' if current_lang == 'ja' else 'اللون') + ': ' + (item.color or '—')
+                        + ' | ' + ('Size' if current_lang == 'en' else 'サイズ' if current_lang == 'ja' else 'الحجم') + ': ' + (item.size or '—')
+                        + ' | ' + ('Text' if current_lang == 'en' else 'テキスト' if current_lang == 'ja' else 'النص') + ': ' + (item.custom_text or '—')
+                        + '%0A' %}
+                {% endfor %}
+
+                {% set whatsapp_message.text = whatsapp_message.text
+                    + '%0A'
+                    + ('Total: ¥' if current_lang == 'en' else '合計: ¥' if current_lang == 'ja' else 'الإجمالي الكلي: ¥')
+                    + (total|string) %}
+
+                <a href="https://wa.me/817092220205?text={{ whatsapp_message.text }}"
+                   target="_blank"
+                   class="whatsapp-checkout-btn">
+                    {% if current_lang == "en" %}
+                        Order via WhatsApp
+                    {% elif current_lang == "ja" %}
+                        WhatsAppで注文
+                    {% else %}
+                        الطلب عبر واتساب
+                    {% endif %}
+                </a>
+
+                <form method="POST" action="{{ url_for('shop.clear_cart') }}">
+                    <button class="clear-btn">
+                        {% if current_lang == "en" %}
+                            Clear Cart
+                        {% elif current_lang == "ja" %}
+                            カートを空にする
+                        {% else %}
+                            تفريغ السلة
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+
+        </div>
+        {% else %}
+            <p>
+                {% if current_lang == "en" %}
+                    Your cart is empty.
+                {% elif current_lang == "ja" %}
+                    カートは空です。
+                {% else %}
+                    السلة فارغة
+                {% endif %}
+            </p>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

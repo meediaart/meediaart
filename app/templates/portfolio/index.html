@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tr.portfolio }}{% endblock %}
+
+{% block content %}
+<section class="portfolio-section">
+    <div class="container">
+        <h1>{{ tr.portfolio }}</h1>
+
+<p>
+    {% if current_lang == "en" %}
+        Explore our creative projects and professional work.
+    {% elif current_lang == "ja" %}
+        私たちのクリエイティブな実績とプロジェクトをご覧ください。
+    {% else %}
+        استعرض مشاريعنا وأعمالنا الإبداعية الاحترافية.
+    {% endif %}
+</p>
+
+        <div class="portfolio-grid">
+            {% if projects %}
+                {% for project in projects %}
+                <div class="portfolio-card">
+
+                    <div class="portfolio-card-image">
+                        {% if project.image %}
+                            <img src="{{ url_for('static', filename='uploads/' + project.image) }}" alt="{{ project.get_title(current_lang) }}">
+                        {% else %}
+                            <div class="portfolio-card-placeholder"></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="portfolio-card-content">
+                        <h3>{{ project.get_title(current_lang) }}</h3>
+
+                        <p>
+                            {{ project.short_description or (project.description[:150] if project.description else "") }}...
+                        </p>
+
+                        <a href="{{ url_for('portfolio.detail', slug=project.get_slug(current_lang)) }}" class="btn-outline">
+                           {% if current_lang == "en" %}
+    View Project
+{% elif current_lang == "ja" %}
+    プロジェクトを見る
+{% else %}
+    عرض المشروع
+{% endif %}
+                        </a>
+                    </div>
+
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>{% if current_lang == "en" %}
+    No projects available at the moment.
+{% elif current_lang == "ja" %}
+    現在プロジェクトはありません。
+{% else %}
+    لا توجد مشاريع حالياً.
+{% endif %}</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

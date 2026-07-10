@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == "en" %}
+    Checkout
+{% elif current_lang == "ja" %}
+    注文手続き
+{% else %}
+    إتمام الطلب
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="checkout-page">
+    <div class="container">
+
+        <h1 class="section-title">
+            {% if current_lang == "en" %}
+                Checkout
+            {% elif current_lang == "ja" %}
+                注文手続き
+            {% else %}
+                إتمام الطلب
+            {% endif %}
+        </h1>
+
+        <p class="section-subtitle">
+            {% if current_lang == "en" %}
+                Enter your information to complete the order.
+            {% elif current_lang == "ja" %}
+                注文を完了するために情報を入力してください。
+            {% else %}
+                أدخل بياناتك لإرسال الطلب.
+            {% endif %}
+        </p>
+
+        <div class="checkout-layout">
+
+            <div class="checkout-form-card">
+
+                <form method="POST" class="checkout-form">
+
+                    <input type="text"
+                           name="customer_name"
+                           placeholder="{% if current_lang == 'en' %}Full name{% elif current_lang == 'ja' %}お名前{% else %}الاسم الكامل{% endif %}"
+                           required>
+
+                    <input type="text"
+                           name="customer_phone"
+                           placeholder="{% if current_lang == 'en' %}Phone number{% elif current_lang == 'ja' %}電話番号{% else %}رقم الهاتف{% endif %}">
+
+                    <input type="email"
+                           name="customer_email"
+                           placeholder="{% if current_lang == 'en' %}Email address{% elif current_lang == 'ja' %}メールアドレス{% else %}البريد الإلكتروني{% endif %}"
+                           required>
+
+                    <textarea name="customer_address"
+                              placeholder="{% if current_lang == 'en' %}Address / Notes{% elif current_lang == 'ja' %}住所・備考{% else %}العنوان / الملاحظات{% endif %}"></textarea>
+
+                    <button type="submit" class="btn-primary">
+
+                        {% if current_lang == "en" %}
+                            Confirm Order
+                        {% elif current_lang == "ja" %}
+                            注文を確定
+                        {% else %}
+                            تأكيد الطلب
+                        {% endif %}
+
+                    </button>
+
+                </form>
+
+            </div>
+
+            <div class="checkout-summary">
+
+                <h3>
+                    {% if current_lang == "en" %}
+                        Order Summary
+                    {% elif current_lang == "ja" %}
+                        注文概要
+                    {% else %}
+                        ملخص الطلب
+                    {% endif %}
+                </h3>
+
+                {% for item in cart_items %}
+
+                {% set product_title = item.product.get_title(current_lang) %}
+
+                <div class="checkout-item">
+
+                    <strong>{{ product_title }}</strong>
+
+                    <p>
+                        {% if current_lang == "en" %}
+                            Quantity:
+                        {% elif current_lang == "ja" %}
+                            数量:
+                        {% else %}
+                            الكمية:
+                        {% endif %}
+
+                        {{ item.quantity }}
+                    </p>
+
+                    <p>
+                        {% if current_lang == "en" %}
+                            Total:
+                        {% elif current_lang == "ja" %}
+                            合計:
+                        {% else %}
+                            الإجمالي:
+                        {% endif %}
+
+                        ¥{{ item.item_total }}
+                    </p>
+
+                </div>
+
+                {% endfor %}
+
+                <div class="checkout-total">
+
+                    <strong>
+
+                        {% if current_lang == "en" %}
+                            Grand Total:
+                        {% elif current_lang == "ja" %}
+                            合計金額:
+                        {% else %}
+                            الإجمالي الكلي:
+                        {% endif %}
+
+                        ¥{{ total }}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+{% endblock %}

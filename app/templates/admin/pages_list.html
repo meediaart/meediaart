@@ -1,0 +1,44 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="page-card">
+    <h1>إدارة الصفحات</h1>
+
+    <a href="{{ url_for('admin.create_page') }}">➕ إضافة صفحة</a>
+
+    <table class="admin-table">
+    <thead>
+        <tr>
+            <th>العنوان</th>
+            <th>الرابط</th>
+            <th>الحالة</th>
+            <th>الرئيسية</th>
+            <th>الإجراءات</th>
+        </tr>
+    </thead>
+<a href="{{ url_for('admin.create_service') }}" class="btn btn-primary">
+    + إضافة خدمة
+</a>
+    <tbody>
+        {% for service in services %}
+        <tr>
+            <td>{{ service.title }}</td>
+            <td>{{ service.slug }}</td>
+            <td>{{ "مفعل" if service.is_active else "مخفي" }}</td>
+            <td>{{ "نعم" if service.show_on_home else "لا" }}</td>
+
+            <td>
+                <a href="{{ url_for('admin.edit_service', service_id=service.id) }}" class="btn btn-edit">تعديل</a>
+
+                <a href="{{ url_for('admin.delete_service', service_id=service.id) }}"
+                   class="btn btn-delete"
+                   onclick="return confirm('هل أنت متأكد؟')">
+                   حذف
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

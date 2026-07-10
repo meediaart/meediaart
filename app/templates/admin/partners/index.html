@@ -1,0 +1,49 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="admin-page-head">
+    <h1>شركاء النجاح</h1>
+    <a href="{{ url_for('admin.partners_add') }}" class="admin-btn admin-btn-primary">
+        إضافة شريك
+    </a>
+</div>
+
+<div class="page-card">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>الشعار</th>
+                <th>الاسم</th>
+                <th>الحالة</th>
+                <th>الترتيب</th>
+                <th>إجراء</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for partner in partners %}
+            <tr>
+                <td>
+                    <img src="{{ url_for('static', filename='uploads/' + partner.image) }}"
+                         style="width:70px;height:50px;object-fit:contain;">
+                </td>
+                <td>{{ partner.name }}</td>
+                <td>{{ "مفعل" if partner.is_active else "موقف" }}</td>
+                <td>{{ partner.display_order }}</td>
+                <td>
+                    <a href="{{ url_for('admin.partners_delete', id=partner.id) }}"
+                       class="admin-btn admin-btn-danger"
+                       onclick="return confirm('هل تريد الحذف؟')">
+                        حذف
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">لا يوجد شركاء حالياً.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

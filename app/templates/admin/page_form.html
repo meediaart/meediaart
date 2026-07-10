@@ -1,0 +1,43 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-card">
+    <h1>{{ page_title }}</h1>
+
+    <form method="POST" class="admin-form">
+        {{ form.hidden_tag() }}
+
+        <div class="admin-form-group">
+            {{ form.title.label }}
+            {{ form.title() }}
+        </div>
+
+        <div class="admin-form-group">
+            {{ form.slug.label }}
+            {{ form.slug() }}
+        </div>
+
+        <div class="admin-form-group">
+            {{ form.content(class="rich-editor", id="page_content") }}
+        </div>
+
+        <div class="admin-checkbox">
+            {{ form.is_active() }}
+            {{ form.is_active.label }}
+        </div>
+
+        <div class="admin-actions">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+<script>
+    CKEDITOR.replace('editor');
+</script>
+{% endblock %}

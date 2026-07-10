@@ -1,0 +1,126 @@
+/* ===== ARTICLE PAGE FINAL ===== */
+
+.article-page {
+    padding: 70px 0;
+    background: #f8fafc;
+}
+
+.article-container {
+    max-width: 900px;
+    margin: auto;
+}
+
+/* الكرت */
+.article-card {
+    background: #fff;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* الصورة */
+.article-cover img {
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    display: block;
+}
+
+/* المحتوى */
+.article-content-wrap {
+    padding: 30px;
+}
+
+/* العنوان */
+.article-title {
+    font-size: 34px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    color: #0f172a;
+}
+
+/* التاريخ */
+.article-date {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* زر المشاركة */
+.share-btn {
+    background: #0f172a;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.share-btn:hover {
+    background: #2563eb;
+}
+
+/* الاقتباس */
+.article-excerpt {
+    font-size: 18px;
+    line-height: 2;
+    background: #f1f5f9;
+    border-right: 4px solid #2563eb;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+/* النص */
+.article-body {
+    font-size: 18px;
+    line-height: 2.2;
+    color: #1e293b;
+}
+
+/* الفقرات */
+.article-body p {
+    margin-bottom: 18px;
+}
+
+/* العناوين */
+.article-body h1 { font-size: 28px; }
+.article-body h2 { font-size: 24px; }
+.article-body h3 { font-size: 20px; }
+
+/* الصور */
+.article-body img {
+    max-width: 100%;
+    margin: 20px 0;
+    border-radius: 14px;
+}
+
+/* زر الرجوع */
+.article-actions {
+    margin-top: 30px;
+}
+
+.article-actions .btn-primary {
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: #2563eb;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* موبايل */
+@media (max-width: 768px) {
+    .article-title {
+        font-size: 24px;
+    }
+
+    .article-body {
+        font-size: 16px;
+    }
+
+    .article-content-wrap {
+        padding: 20px;
+    }
+}

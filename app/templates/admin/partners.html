@@ -1,0 +1,29 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+
+<h2>شركاء النجاح</h2>
+
+<a href="{{ url_for('admin.add_partner') }}" class="btn btn-primary">إضافة شريك</a>
+
+<table>
+    <tr>
+        <th>الشعار</th>
+        <th>الاسم</th>
+        <th>حذف</th>
+    </tr>
+
+    {% for partner in partners %}
+    <tr>
+        <td>
+            <img src="{{ url_for('static', filename='uploads/' + partner.image) }}" width="80">
+        </td>
+        <td>{{ partner.name }}</td>
+        <td>
+            <a href="{{ url_for('admin.delete_partner', id=partner.id) }}">حذف</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

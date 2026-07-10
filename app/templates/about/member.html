@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == "en" %}
+    Biography
+{% elif current_lang == "ja" %}
+    プロフィール
+{% else %}
+    السيرة الذاتية
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="member-section">
+    <div class="container">
+
+        <div class="member-card">
+
+            <div class="member-image"></div>
+
+            <div class="member-content">
+
+                {% if slug == "ahmed" %}
+
+                    <h1>
+                        {% if current_lang == "ja" %}
+                            アフメド・モハメド
+                        {% else %}
+                            Ahmed Mohammed
+                        {% endif %}
+                    </h1>
+
+                    <p class="role">
+                        {% if current_lang == "en" %}
+                            Graphic Designer
+                        {% elif current_lang == "ja" %}
+                            グラフィックデザイナー
+                        {% else %}
+                            مصمم جرافيك
+                        {% endif %}
+                    </p>
+
+                    <p>
+                        {% if current_lang == "en" %}
+                            A professional designer with experience in logo and visual identity design,
+                            working on projects for local and international companies.
+                        {% elif current_lang == "ja" %}
+                            ロゴやビジュアルアイデンティティ制作を専門とするデザイナーで、
+                            国内外の企業プロジェクトに携わっています。
+                        {% else %}
+                            مصمم محترف بخبرة في تصميم الشعارات والهوية البصرية،
+                            عمل على مشاريع متعددة لشركات محلية ودولية.
+                        {% endif %}
+                    </p>
+
+                {% elif slug == "sara" %}
+
+                    <h1>
+                        {% if current_lang == "ja" %}
+                            サラ・アリ
+                        {% else %}
+                            Sara Ali
+                        {% endif %}
+                    </h1>
+
+                    <p class="role">
+                        {% if current_lang == "en" %}
+                            Digital Marketer
+                        {% elif current_lang == "ja" %}
+                            デジタルマーケター
+                        {% else %}
+                            مسوقة رقمية
+                        {% endif %}
+                    </p>
+
+                    <p>
+                        {% if current_lang == "en" %}
+                            Specialized in managing advertising campaigns,
+                            performance analysis, and achieving strong digital marketing results.
+                        {% elif current_lang == "ja" %}
+                            広告キャンペーン管理、パフォーマンス分析、
+                            デジタルマーケティング成果の向上を専門としています。
+                        {% else %}
+                            متخصصة في إدارة الحملات الإعلانية وتحليل الأداء
+                            وتحقيق نتائج عالية في التسويق الرقمي.
+                        {% endif %}
+                    </p>
+
+                {% elif slug == "khaled" %}
+
+                    <h1>
+                        {% if current_lang == "ja" %}
+                            ハレド・ハサン
+                        {% else %}
+                            Khaled Hassan
+                        {% endif %}
+                    </h1>
+
+                    <p class="role">
+                        {% if current_lang == "en" %}
+                            Project Manager
+                        {% elif current_lang == "ja" %}
+                            プロジェクトマネージャー
+                        {% else %}
+                            مدير مشاريع
+                        {% endif %}
+                    </p>
+
+                    <p>
+                        {% if current_lang == "en" %}
+                            Experienced in project management, organizing teams,
+                            and ensuring projects are delivered on time.
+                        {% elif current_lang == "ja" %}
+                            プロジェクト管理、チーム運営、
+                            納期管理に豊富な経験があります。
+                        {% else %}
+                            خبرة في إدارة المشاريع وتنظيم فرق العمل
+                            وضمان تسليم المشاريع في الوقت المحدد.
+                        {% endif %}
+                    </p>
+
+                {% endif %}
+
+                <a href="{{ url_for('about.index') }}" class="btn-outline-dark">
+
+                    {% if current_lang == "en" %}
+                        Back
+                    {% elif current_lang == "ja" %}
+                        戻る
+                    {% else %}
+                        العودة
+                    {% endif %}
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+{% endblock %}

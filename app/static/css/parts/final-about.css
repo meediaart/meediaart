@@ -1,0 +1,324 @@
+/* ===== FINAL ABOUT PAGE CLEAN OVERRIDE ===== */
+
+.about-section,
+.about-values-section,
+.stats-section,
+.team-section,
+.about-cta-section {
+    position: relative !important;
+    z-index: 1 !important;
+    overflow: hidden !important;
+}
+
+/* ===== ABOUT HERO ===== */
+
+.about-section {
+    padding: 90px 0 !important;
+    background: #ffffff !important;
+}
+
+.about-section .about-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 50px !important;
+    align-items: center !important;
+}
+
+.about-content {
+    text-align: right !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+.about-content h1 {
+    font-size: 42px !important;
+    line-height: 1.4 !important;
+    margin: 0 0 20px !important;
+    color: #0f172a !important;
+}
+
+.about-content p {
+    font-size: 17px !important;
+    line-height: 2 !important;
+    margin: 0 0 14px !important;
+    color: #475569 !important;
+}
+
+.about-image {
+    width: 100% !important;
+    height: 420px !important;
+    min-height: 420px !important;
+    border-radius: 24px !important;
+    background: linear-gradient(135deg, #1d4ed8, #60a5fa) !important;
+    overflow: hidden !important;
+    transform: none !important;
+}
+
+.about-image::after {
+    display: none !important;
+}
+
+/* ===== VALUES ===== */
+
+.about-values-section {
+    padding: 85px 0 !important;
+    background: #f8fafc !important;
+    text-align: center !important;
+}
+
+.about-values-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 24px !important;
+    margin-top: 35px !important;
+}
+
+.about-value-card {
+    background: #ffffff !important;
+    padding: 32px 24px !important;
+    border-radius: 20px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06) !important;
+    text-align: center !important;
+    transform: none !important;
+}
+
+.about-value-card:hover {
+    transform: translateY(-4px) !important;
+}
+
+.about-value-card h3 {
+    font-size: 22px !important;
+    line-height: 1.5 !important;
+    margin: 0 0 10px !important;
+    color: #0f172a !important;
+}
+
+.about-value-card p {
+    font-size: 15px !important;
+    line-height: 1.9 !important;
+    margin: 0 !important;
+    color: #475569 !important;
+}
+
+/* ===== STATS ===== */
+
+.stats-section {
+    padding: 70px 0 !important;
+    background: #ffffff !important;
+}
+
+.stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 24px !important;
+    text-align: center !important;
+}
+
+.stat-box {
+    background: #ffffff !important;
+    padding: 28px 20px !important;
+    border-radius: 20px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06) !important;
+    transform: none !important;
+}
+
+.stat-box h3 {
+    font-size: 34px !important;
+    line-height: 1.3 !important;
+    margin: 0 0 8px !important;
+    color: #2563eb !important;
+}
+
+.stat-box p {
+    margin: 0 !important;
+    color: #475569 !important;
+}
+
+/* ===== TEAM ===== */
+
+.team-section {
+    padding: 90px 0 !important;
+    background: #f8fafc !important;
+    text-align: center !important;
+}
+
+.team-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+    gap: 24px !important;
+    margin-top: 35px !important;
+}
+
+.team-card {
+    background: #ffffff !important;
+    border-radius: 20px !important;
+    padding: 20px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06) !important;
+    text-align: center !important;
+    transform: none !important;
+    overflow: hidden !important;
+}
+
+.team-card:hover {
+    transform: translateY(-4px) !important;
+}
+
+.team-image {
+    width: 100% !important;
+    height: 220px !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    margin: 0 0 16px !important;
+    background: #e2e8f0 !important;
+    transform: none !important;
+}
+
+.team-image::after {
+    display: none !important;
+}
+
+.team-image img {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+    object-fit: cover !important;
+    display: block !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+.team-card:hover .team-image,
+.team-card:hover .team-image img {
+    transform: none !important;
+}
+
+.team-content h3 {
+    font-size: 20px !important;
+    line-height: 1.5 !important;
+    margin: 0 0 6px !important;
+    color: #0f172a !important;
+}
+
+.team-content p {
+    font-size: 14px !important;
+    line-height: 1.8 !important;
+    margin: 0 0 8px !important;
+    color: #475569 !important;
+}
+
+/* ===== CTA ===== */
+
+.about-cta-section {
+    padding: 85px 20px !important;
+    background: linear-gradient(to right, #1d4ed8, #2563eb) !important;
+    color: #ffffff !important;
+    text-align: center !important;
+}
+
+.about-cta-section h2 {
+    font-size: 34px !important;
+    line-height: 1.5 !important;
+    margin: 0 0 14px !important;
+    color: #ffffff !important;
+}
+
+.about-cta-section p {
+    font-size: 17px !important;
+    line-height: 1.9 !important;
+    margin: 0 auto 24px !important;
+    max-width: 700px !important;
+    color: #ffffff !important;
+}
+
+/* ===== MOBILE ===== */
+
+@media (max-width: 768px) {
+    .about-section .about-grid,
+    .about-values-grid,
+    .stats-grid,
+    .team-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .about-content {
+        text-align: center !important;
+    }
+
+    .about-content h1 {
+        font-size: 32px !important;
+    }
+
+    .about-image {
+        height: 280px !important;
+        min-height: 280px !important;
+    }
+
+    .team-image {
+        height: 220px !important;
+    }
+}
+
+/* ===== FIX TEXT OVERLAP IN ABOUT PAGE ===== */
+
+.about-section *,
+.about-values-section *,
+.stats-section *,
+.team-section *,
+.about-cta-section * {
+    line-height: normal !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    white-space: normal !important;
+}
+
+.about-section h1,
+.about-values-section h2,
+.team-section h2,
+.about-cta-section h2 {
+    line-height: 1.5 !important;
+    margin-bottom: 20px !important;
+    position: static !important;
+    transform: none !important;
+}
+
+.about-section p,
+.about-values-section p,
+.stats-section p,
+.team-section p,
+.about-cta-section p {
+    line-height: 2 !important;
+    margin-bottom: 14px !important;
+    position: static !important;
+    transform: none !important;
+}
+
+.about-section,
+.about-values-section,
+.stats-section,
+.team-section,
+.about-cta-section {
+    clear: both !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+}
+
+.about-section .container,
+.about-values-section .container,
+.stats-section .container,
+.team-section .container,
+.about-cta-section .container {
+    position: relative !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+.about-values-section {
+    margin-top: 0 !important;
+    padding-top: 90px !important;
+}

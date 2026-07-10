@@ -1,0 +1,81 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}رسائل التواصل{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-head">
+    <div>
+        <h2>رسائل التواصل</h2>
+        <p>جميع الرسائل المرسلة من صفحة التواصل.</p>
+    </div>
+</div>
+
+<div class="page-card">
+
+    {% if messages %}
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الاسم</th>
+                <th>البريد</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for message in messages %}
+            <tr>
+
+                <td>{{ message.id }}</td>
+
+                <td>{{ message.name }}</td>
+
+                <td>{{ message.email }}</td>
+
+                <td>
+                    {% if message.is_read %}
+                        <span class="badge-success">مقروءة</span>
+                    {% else %}
+                        <span class="badge-warning">جديدة</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </td>
+
+                <td>
+
+                    <a href="{{ url_for('admin.contact_message_detail', message_id=message.id) }}"
+                       class="admin-btn admin-btn-primary">
+                        عرض
+                    </a>
+
+                    <a href="{{ url_for('admin.delete_contact_message', message_id=message.id) }}"
+                       class="admin-btn admin-btn-danger">
+                        حذف
+                    </a>
+
+                </td>
+
+            </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+
+    {% else %}
+
+    <p>لا توجد رسائل حالياً.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

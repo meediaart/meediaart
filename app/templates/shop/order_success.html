@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == "en" %}
+    Order Sent
+{% elif current_lang == "ja" %}
+    注文が送信されました
+{% else %}
+    تم إرسال الطلب
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="shop-section">
+    <div class="container success-box">
+
+        <div class="success-checkmark">✅</div>
+
+        <h1 class="section-title">
+            {% if current_lang == "en" %}
+                Your order has been sent successfully
+            {% elif current_lang == "ja" %}
+                ご注文が正常に送信されました
+            {% else %}
+                تم إرسال طلبك بنجاح
+            {% endif %}
+        </h1>
+
+        <p class="section-subtitle">
+            {% if current_lang == "en" %}
+                Order number:
+            {% elif current_lang == "ja" %}
+                注文番号:
+            {% else %}
+                رقم الطلب:
+            {% endif %}
+            <strong>#{{ order.id }}</strong>
+        </p>
+
+        <p class="success-message">
+            {% if current_lang == "en" %}
+                Thank you. We have received your order and will contact you soon.
+            {% elif current_lang == "ja" %}
+                ありがとうございます。ご注文を受け付けました。近日中にご連絡いたします。
+            {% else %}
+                شكرًا لك 🌸 تم استلام طلبك وسنتواصل معك قريبًا.
+            {% endif %}
+        </p>
+
+        <div class="auto-track-box">
+            {% if current_lang == "en" %}
+                You will be redirected to the order tracking page in
+            {% elif current_lang == "ja" %}
+                注文追跡ページへ自動的に移動します：
+            {% else %}
+                سيتم تحويلك تلقائيًا إلى صفحة تتبع الطلب خلال
+            {% endif %}
+
+            <span id="countdown">5</span>
+
+            {% if current_lang == "en" %}
+                seconds...
+            {% elif current_lang == "ja" %}
+                秒後...
+            {% else %}
+                ثواني...
+            {% endif %}
+        </div>
+
+        <hr>
+
+        <h3 class="order-details-title">
+            {% if current_lang == "en" %}
+                Order Details
+            {% elif current_lang == "ja" %}
+                注文詳細
+            {% else %}
+                تفاصيل الطلب
+            {% endif %}
+        </h3>
+
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>
+                            {% if current_lang == "en" %}Product{% elif current_lang == "ja" %}商品{% else %}المنتج{% endif %}
+                        </th>
+                        <th>
+                            {% if current_lang == "en" %}Quantity{% elif current_lang == "ja" %}数量{% else %}الكمية{% endif %}
+                        </th>
+                        <th>
+                            {% if current_lang == "en" %}Price{% elif current_lang == "ja" %}価格{% else %}السعر{% endif %}
+                        </th>
+                        <th>
+                            {% if current_lang == "en" %}Details{% elif current_lang == "ja" %}詳細{% else %}التفاصيل{% endif %}
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in order.items %}
+                    <tr>
+                        <td>{{ item.product_title }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>¥{{ item.price }}</td>
+                        <td>
+                            <small>
+                                {% if current_lang == "en" %}Color:{% elif current_lang == "ja" %}色:{% else %}اللون:{% endif %}
+                                {{ item.color or "—" }}
+                            </small>
+
+                            <br>
+
+                            <small>
+                                {% if current_lang == "en" %}Size:{% elif current_lang == "ja" %}サイズ:{% else %}الحجم:{% endif %}
+                                {{ item.size or "—" }}
+                            </small>
+
+                            <br>
+
+                            <small>
+                                {% if current_lang == "en" %}Text:{% elif current_lang == "ja" %}テキスト:{% else %}النص:{% endif %}
+                                {{ item.custom_text or "—" }}
+                            </small>
+
+                            {% if item.custom_image %}
+                                <br><br>
+                                <img src="{{ url_for('static', filename='uploads/' + item.custom_image) }}"
+                                     width="80"
+                                     style="border-radius:10px;">
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="hero-buttons success-actions">
+
+            <a href="{{ url_for('shop.tracking', order_id=order.id) }}" class="btn-primary">
+                {% if current_lang == "en" %}
+                    Track Order
+                {% elif current_lang == "ja" %}
+                    注文を追跡
+                {% else %}
+                    تتبع الطلب
+                {% endif %}
+            </a>
+
+            <a href="{{ url_for('shop.index') }}" class="btn-outline">
+                {% if current_lang == "en" %}
+                    Back to Shop
+                {% elif current_lang == "ja" %}
+                    ショップに戻る
+                {% else %}
+                    العودة للمتجر
+                {% endif %}
+            </a>
+
+            <a href="{{ url_for('main.home') }}" class="btn-outline">
+                {% if current_lang == "en" %}
+                    Home
+                {% elif current_lang == "ja" %}
+                    ホーム
+                {% else %}
+                    الرئيسية
+                {% endif %}
+            </a>
+
+            <a href="https://wa.me/+817092220205?text={% if current_lang == 'en' %}Hello%2C%20this%20is%20my%20order%20number:%20{{ order.id }}{% elif current_lang == 'ja' %}こんにちは。注文番号は%20{{ order.id }}%20です{% else %}مرحبًا%20هذا%20رقم%20طلبي:%20{{ order.id }}{% endif %}"
+               target="_blank"
+               class="btn-primary">
+                {% if current_lang == "en" %}
+                    Confirm via WhatsApp
+                {% elif current_lang == "ja" %}
+                    WhatsAppで確認
+                {% else %}
+                    تأكيد الطلب عبر واتساب
+                {% endif %}
+            </a>
+
+        </div>
+
+        <div class="auto-track-box">
+            {% if current_lang == "en" %}
+                The order tracking link has been sent to your email.
+            {% elif current_lang == "ja" %}
+                注文追跡リンクをメールで送信しました。
+            {% else %}
+                تم إرسال رابط تتبع الطلب إلى بريدك الإلكتروني.
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

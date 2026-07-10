@@ -1,0 +1,68 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}أقسام الصفحة الرئيسية{% endblock %}
+
+{% block content %}
+<div class="admin-page-head">
+    <div>
+        <h2>أقسام الصفحة الرئيسية</h2>
+        <p>إدارة عناصر السلايدر في الصفحة الرئيسية.</p>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.create_home_section') }}" class="admin-btn admin-btn-primary">
+            + إضافة قسم
+        </a>
+    </div>
+</div>
+
+<div class="page-card">
+    {% if sections %}
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>العنوان</th>
+                    <th>النص</th>
+                    <th>الرابط</th>
+                    <th>الترتيب</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for section in sections %}
+                <tr>
+                    <td>{{ section.title or "-" }}</td>
+                    <td>{{ (section.subtitle or "-")[:80] }}</td>
+                    <td>{{ section.button_link or "-" }}</td>
+                    <td>{{ section.display_order or 0 }}</td>
+                    <td>
+                        {% if section.is_active %}
+                            <span class="status-badge status-completed">مفعل</span>
+                        {% else %}
+                            <span class="status-badge status-unpaid">مخفي</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="admin-actions">
+                            <a href="{{ url_for('admin.edit_home_section', id=section.id) }}" class="admin-btn admin-btn-secondary">
+                                تعديل
+                            </a>
+                            <a href="{{ url_for('admin.delete_home_section', id=section.id) }}"
+                               onclick="return confirm('هل أنت متأكد من الحذف؟')"
+                               class="admin-btn admin-btn-danger">
+                                حذف
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p>لا توجد أقسام حالياً.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-card">
+    <h1>{{ page.title }}</h1>
+    <div class="editor-content">
+    {{ page.content | safe }}
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}إدارة المستخدمين{% endblock %}
+{% block page_title %}إدارة المستخدمين{% endblock %}
+
+{% block content %}
+<div class="page-card">
+    <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">+ إضافة مستخدم</a>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>اسم المستخدم</th>
+                <th>البريد الإلكتروني</th>
+                <th>الدور</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-edit">تعديل</a>
+                    <a href="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                       class="btn btn-delete"
+                       onclick="return confirm('هل أنت متأكد؟')">
+                       حذف
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

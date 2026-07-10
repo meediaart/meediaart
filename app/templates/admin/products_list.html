@@ -1,0 +1,98 @@
+{% extends "admin/base.html" %}
+
+{% block title %}إدارة المنتجات{% endblock %}
+{% block page_title %}إدارة المنتجات{% endblock %}
+
+{% block content %}
+<div class="page-card">
+    <div class="section-header">
+        <h2>قائمة المنتجات</h2>
+        <a href="{{ url_for('admin.create_product') }}" class="admin-btn admin-btn-primary">
+    + إضافة منتج
+</a>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>الصورة</th>
+                <th>اسم المنتج</th>
+                <th>التصنيف</th>
+                <th>السعر</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+                <th>الرئيسية</th>
+            </tr>
+        </thead>
+        <tbody>
+    {% for product in products %}
+    <tr class="{% if product.show_on_home %}home-highlight{% endif %}">
+
+        <td>
+            {% if product.image %}
+                <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="admin-table-img">
+            {% else %}
+                -
+            {% endif %}
+        </td>
+
+        <td>{{ product.title }}</td>
+
+        <td>
+            {{ product.category.name if product.category else "-" }}
+        </td>
+
+        <td>¥{{ product.price }}</td>
+
+        <td>
+    <div class="admin-actions">
+        {% if product.is_active %}
+            <span class="status-badge status-completed">مفعل</span>
+            <a href="{{ url_for('admin.toggle_product_active', product_id=product.id) }}" class="admin-btn admin-btn-secondary">
+                تعطيل
+            </a>
+        {% else %}
+            <span class="status-badge status-unpaid">مخفي</span>
+            <a href="{{ url_for('admin.toggle_product_active', product_id=product.id) }}" class="admin-btn admin-btn-primary">
+                تفعيل
+            </a>
+        {% endif %}
+    </div>
+</td>
+
+        <td>
+    <div class="admin-actions">
+        {% if product.show_on_home %}
+            <span class="status-badge status-paid">نعم</span>
+            <a href="{{ url_for('admin.toggle_product_home', product_id=product.id) }}" class="admin-btn admin-btn-secondary">
+                إخفاء
+            </a>
+        {% else %}
+            <span class="status-badge status-unpaid">لا</span>
+            <a href="{{ url_for('admin.toggle_product_home', product_id=product.id) }}" class="admin-btn admin-btn-primary">
+                إظهار
+            </a>
+        {% endif %}
+    </div>
+</td>
+
+        <td>
+            <div class="admin-actions">
+                <a href="{{ url_for('admin.edit_product', product_id=product.id) }}" class="admin-btn admin-btn-secondary">
+                    تعديل
+                </a>
+
+                <a href="{{ url_for('admin.delete_product', product_id=product.id) }}"
+                   onclick="return confirm('هل أنت متأكد من الحذف؟')"
+                   class="admin-btn admin-btn-danger">
+                    حذف
+                </a>
+            </div>
+        </td>
+
+    </tr>
+    {% endfor %}
+</tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ member.get_name(current_lang) }}
+{% endblock %}
+
+{% block content %}
+<div class="page-card">
+
+    {% set member_name = member.get_name(current_lang) %}
+    {% set member_job = member.get_job_title(current_lang) %}
+    {% set member_bio = member.get_full_bio(current_lang) %}
+
+    {% if member.image %}
+        <img src="{{ url_for('static', filename='uploads/' + member.image) }}"
+             alt="{{ member_name }}"
+             style="max-width:300px; border-radius:12px; margin-bottom:20px;">
+    {% endif %}
+
+    <h1>{{ member_name }}</h1>
+
+    {% if member_job %}
+        <p><strong>{{ member_job }}</strong></p>
+    {% endif %}
+
+    {% if member_bio %}
+        <div class="member-bio">
+            {{ member_bio | safe }}
+        </div>
+    {% endif %}
+
+    <button type="button"
+            class="share-btn"
+            data-title="{{ member_name }}"
+            data-url="{{ request.url }}"
+            onclick="shareMember(this)">
+        🔗
+        {% if current_lang == "en" %}
+            Share
+        {% elif current_lang == "ja" %}
+            共有
+        {% else %}
+            مشاركة
+        {% endif %}
+    </button>
+
+</div>
+
+<script>
+function shareMember(button) {
+    const title = button.dataset.title;
+    const url = button.dataset.url;
+
+    let text = "شاهد هذا 🔥";
+
+    {% if current_lang == "en" %}
+        text = "Check this out 🔥";
+    {% elif current_lang == "ja" %}
+        text = "こちらをご覧ください 🔥";
+    {% endif %}
+
+    sharePage(title, text, url);
+}
+</script>
+{% endblock %}

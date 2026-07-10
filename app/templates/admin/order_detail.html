@@ -1,0 +1,71 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}تفاصيل الطلب{% endblock %}
+
+{% block content %}
+<div class="page-card">
+    <h2>تفاصيل الطلب #{{ order.id }}</h2>
+
+<div class="admin-actions" style="margin: 15px 0;">
+    <a href="{{ url_for('admin.order_invoice', order_id=order.id) }}"
+       class="admin-btn admin-btn-primary">
+        🧾 تحميل الفاتورة
+    </a>
+</div>
+
+    <p><strong>العميل:</strong> {{ order.customer_name }}</p>
+    <p><strong>الهاتف:</strong> {{ order.customer_phone or "-" }}</p>
+    <p><strong>البريد:</strong> {{ order.customer_email or "-" }}</p>
+    <p><strong>العنوان:</strong> {{ order.customer_address or "-" }}</p>
+    <p><strong>طريقة الدفع:</strong> {{ order.payment_method }}</p>
+    <p><strong>حالة الدفع:</strong> {{ order.payment_status }}</p>
+    <p><strong>حالة الطلب:</strong> {{ order.status }}</p>
+    <p><strong>الإجمالي:</strong> ¥{{ order.total_price }}</p>
+
+    <hr>
+
+    <h3>المنتجات وتفاصيل طلب العميل</h3>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>المنتج</th>
+                <th>الكمية</th>
+                <th>السعر</th>
+                <th>اللون</th>
+                <th>الحجم</th>
+                <th>النص المطلوب</th>
+                <th>الصورة المطلوبة</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in order.items %}
+            <tr>
+                <td>{{ item.product_title }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>¥{{ item.price }}</td>
+                <td>{{ item.color or "—" }}</td>
+                <td>{{ item.size or "—" }}</td>
+                <td>{{ item.custom_text or "—" }}</td>
+                <td>
+                    {% if item.custom_image %}
+                        <a href="{{ url_for('static', filename='uploads/' + item.custom_image) }}" target="_blank">
+                            <img src="{{ url_for('static', filename='uploads/' + item.custom_image) }}"
+                                 width="90"
+                                 style="border-radius:8px;">
+                        </a>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="admin-actions" style="margin-top:20px;">
+        <a href="{{ url_for('admin.orders_list') }}" class="admin-btn admin-btn-secondary">رجوع</a>
+    </div>
+</div>
+{% endblock %}

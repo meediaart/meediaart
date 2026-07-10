@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tr.about }}{% endblock %}
+
+{% block content %}
+<section class="about-section">
+    <div class="container about-grid">
+
+        <div class="about-content">
+            <h1>{{ tr.about }}</h1>
+
+            <p>
+                {% if current_lang == "en" %}
+                    We are a company specialized in design, printing, and digital marketing.
+                    We aim to build a strong visual identity that helps our clients stand out in the market.
+                {% elif current_lang == "ja" %}
+                    私たちは、デザイン・印刷・デジタルマーケティングを専門とする会社です。
+                    お客様が市場で際立つための強いビジュアルアイデンティティを構築します。
+                {% else %}
+                    نحن شركة متخصصة في التصميم، الطباعة، والتسويق الرقمي،
+                    نهدف إلى بناء هوية بصرية قوية تساعد عملاءنا على التميز في السوق.
+                {% endif %}
+            </p>
+
+            <p>
+                {% if current_lang == "en" %}
+                    We provide integrated creative solutions that combine visual beauty and professionalism to achieve the best results.
+                {% elif current_lang == "ja" %}
+                    視覚的な美しさと専門性を組み合わせた総合的なクリエイティブソリューションを提供します。
+                {% else %}
+                    نعمل على تقديم حلول إبداعية متكاملة تجمع بين الجمال البصري
+                    والاحترافية لتحقيق أفضل النتائج.
+                {% endif %}
+            </p>
+
+            <a href="{{ url_for('contact.index') }}" class="btn-primary">
+                {{ tr.contact }}
+            </a>
+        </div>
+
+        <div class="about-image"></div>
+
+    </div>
+</section>
+
+<section class="about-values-section">
+    <div class="container">
+        <h2 class="section-title">
+            {% if current_lang == "en" %}
+                Our Values
+            {% elif current_lang == "ja" %}
+                私たちの価値観
+            {% else %}
+                قيمنا
+            {% endif %}
+        </h2>
+
+        <div class="about-values-grid">
+            <div class="about-value-card">
+                <h3>
+                    {% if current_lang == "en" %}
+                        Creativity
+                    {% elif current_lang == "ja" %}
+                        創造性
+                    {% else %}
+                        الإبداع
+                    {% endif %}
+                </h3>
+
+                <p>
+                    {% if current_lang == "en" %}
+                        We design innovative visual solutions that reflect the strength of the brand.
+                    {% elif current_lang == "ja" %}
+                        ブランドの力を表現する革新的なビジュアルソリューションを設計します。
+                    {% else %}
+                        نصمم حلولًا بصرية مبتكرة تعكس قوة العلامة التجارية.
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="about-value-card">
+                <h3>
+                    {% if current_lang == "en" %}
+                        Professionalism
+                    {% elif current_lang == "ja" %}
+                        プロフェッショナリズム
+                    {% else %}
+                        الاحتراف
+                    {% endif %}
+                </h3>
+
+                <p>
+                    {% if current_lang == "en" %}
+                        We are committed to quality and precision in every project from start to delivery.
+                    {% elif current_lang == "ja" %}
+                        すべてのプロジェクトにおいて、開始から納品まで品質と正確さを大切にします。
+                    {% else %}
+                        نلتزم بالجودة والدقة في كل مشروع من البداية حتى التسليم.
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="about-value-card">
+                <h3>
+                    {% if current_lang == "en" %}
+                        Results
+                    {% elif current_lang == "ja" %}
+                        成果
+                    {% else %}
+                        النتائج
+                    {% endif %}
+                </h3>
+
+                <p>
+                    {% if current_lang == "en" %}
+                        Our goal is to create work that has a real impact on the client’s growth and presence.
+                    {% elif current_lang == "ja" %}
+                        お客様の成長と存在感に実際の効果をもたらす成果を目指します。
+                    {% else %}
+                        هدفنا أن تكون أعمالنا ذات أثر حقيقي في نمو حضور العميل.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="stats-section">
+    <div class="container stats-grid">
+
+        <div class="stat-box">
+            <h3>+100</h3>
+            <p>
+                {% if current_lang == "en" %}
+                    Completed Projects
+                {% elif current_lang == "ja" %}
+                    完了プロジェクト
+                {% else %}
+                    مشروع منجز
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="stat-box">
+            <h3>+50</h3>
+            <p>
+                {% if current_lang == "en" %}
+                    Happy Clients
+                {% elif current_lang == "ja" %}
+                    満足したお客様
+                {% else %}
+                    عميل سعيد
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="stat-box">
+            <h3>+5</h3>
+            <p>
+                {% if current_lang == "en" %}
+                    Years of Experience
+                {% elif current_lang == "ja" %}
+                    年以上の経験
+                {% else %}
+                    سنوات خبرة
+                {% endif %}
+            </p>
+        </div>
+
+    </div>
+</section>
+
+<section class="team-section">
+    <div class="container">
+        <h2 class="section-title">{{ tr.team }}</h2>
+
+        <div class="team-grid">
+            {% if members %}
+                {% for member in members %}
+                <div class="team-card">
+                    <div class="team-image">
+                        {% if member.image %}
+                            <img src="{{ url_for('static', filename='uploads/' + member.image) }}"
+                                 alt="{{ member.name }}">
+                        {% endif %}
+                    </div>
+
+                    <div class="team-content">
+                        <h3>{{ member.get_name(current_lang) }}</h3>
+                        <p>{{ member.get_job_title(current_lang) }}</p>
+
+                        {% if member.short_bio %}
+                            <p>{{ member.get_short_bio(current_lang) }}</p>
+                        {% endif %}
+
+                        <a href="{{ url_for('main.team_member_profile', slug=member.get_slug(current_lang)) }}" class="btn-outline">
+                            {% if current_lang == "en" %}
+                                Biography
+                            {% elif current_lang == "ja" %}
+                                プロフィール
+                            {% else %}
+                                السيرة الذاتية
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>
+                    {% if current_lang == "en" %}
+                        No team members are available at the moment.
+                    {% elif current_lang == "ja" %}
+                        現在、チームメンバーはいません。
+                    {% else %}
+                        لا يوجد أعضاء فريق حالياً.
+                    {% endif %}
+                </p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="about-cta-section">
+    <div class="container">
+        <h2>
+            {% if current_lang == "en" %}
+                Ready to build a stronger presence for your brand?
+            {% elif current_lang == "ja" %}
+                ブランドの存在感をさらに高める準備はできていますか？
+            {% else %}
+                جاهزون لصناعة حضور أقوى لعلامتك التجارية
+            {% endif %}
+        </h2>
+
+        <p>
+            {% if current_lang == "en" %}
+                Let us help you turn your ideas into professional visual and marketing work.
+            {% elif current_lang == "ja" %}
+                あなたのアイデアを、プロフェッショナルなビジュアルとマーケティングに変えるお手伝いをします。
+            {% else %}
+                دعنا نساعدك في تحويل أفكارك إلى أعمال بصرية وتسويقية احترافية.
+            {% endif %}
+        </p>
+
+        <a href="{{ url_for('contact.index') }}" class="btn-primary">
+            {% if current_lang == "en" %}
+                Start With Us
+            {% elif current_lang == "ja" %}
+                はじめる
+            {% else %}
+                ابدأ معنا
+            {% endif %}
+        </a>
+    </div>
+</section>
+{% endblock %}

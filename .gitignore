@@ -1,0 +1,29 @@
+# البيئة الافتراضية
+venv/
+venv_old/
+
+# الأسرار
+.env
+
+# ملفات Python المؤقتة
+__pycache__/
+*.py[cod]
+
+# ملفات macOS
+.DS_Store
+
+# ملفات المحررات
+.vscode/
+.idea/
+
+# النسخ الاحتياطية لقواعد البيانات
+*_backup*.db
+backup_*.db
+
+# ملفات أُنشئت بالخطأ
+open .env
+touch .env
+
+# ملفات مؤقتة
+*.log
+get-pip.py

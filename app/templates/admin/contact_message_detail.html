@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}تفاصيل الرسالة{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-head">
+
+    <div>
+        <h2>تفاصيل الرسالة</h2>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.contact_messages') }}"
+           class="admin-btn admin-btn-secondary">
+            رجوع
+        </a>
+    </div>
+
+</div>
+
+<div class="page-card">
+
+    <div class="form-group">
+        <strong>الاسم:</strong>
+        <p>{{ message.name }}</p>
+    </div>
+
+    <div class="form-group">
+        <strong>البريد:</strong>
+        <p>{{ message.email }}</p>
+    </div>
+
+    <div class="form-group">
+        <strong>العنوان:</strong>
+        <p>{{ message.subject or '-' }}</p>
+    </div>
+
+    <div class="form-group">
+        <strong>الرسالة:</strong>
+        <p style="white-space: pre-line;">
+            {{ message.message }}
+        </p>
+    </div>
+
+    <div class="form-group">
+        <strong>التاريخ:</strong>
+        <p>
+            {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
+        </p>
+    </div>
+
+</div>
+
+{% endblock %}

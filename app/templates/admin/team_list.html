@@ -1,0 +1,47 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}إدارة فريق العمل{% endblock %}
+{% block page_title %}إدارة فريق العمل{% endblock %}
+
+{% block content %}
+<div class="page-card">
+    <div class="section-header">
+        <h2>قائمة فريق العمل</h2>
+        <a href="{{ url_for('admin.create_team_member') }}" class="btn btn-primary">+ إضافة عضو</a>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>الصورة</th>
+                <th>الاسم</th>
+                <th>الصفة</th>
+                <th>الترتيب</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in members %}
+            <tr>
+                <td>
+                    {% if member.image %}
+                        <img src="{{ url_for('static', filename='uploads/' + member.image) }}" width="70">
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ member.name }}</td>
+                <td>{{ member.job_title }}</td>
+                <td>{{ member.display_order }}</td>
+                <td>{{ "ظاهر" if member.is_active else "مخفي" }}</td>
+                <td>
+                    <a href="{{ url_for('admin.edit_team_member', member_id=member.id) }}" class="btn btn-edit">تعديل</a>
+                    <a href="{{ url_for('admin.delete_team_member', member_id=member.id) }}" class="btn btn-delete" onclick="return confirm('هل أنت متأكد؟')">حذف</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
