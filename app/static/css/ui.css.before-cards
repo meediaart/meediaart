@@ -1,0 +1,130 @@
+/* ==================================================
+   MEDIAART UI KIT
+================================================== */
+
+
+/* ======================================
+   BUTTONS
+====================================== */
+
+.ma-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+
+    min-height:44px;
+    padding:0 22px;
+
+    border:none;
+    border-radius:var(--ma-radius-md);
+
+    cursor:pointer;
+
+    font-size:var(--ma-font-md);
+    font-weight:600;
+
+    text-decoration:none;
+
+    transition:var(--ma-transition);
+
+    user-select:none;
+}
+
+/* الزر الأساسي */
+
+.ma-btn-primary{
+
+    background:var(--ma-accent);
+
+    color:#fff;
+}
+
+.ma-btn-primary:hover{
+
+    background:var(--ma-accent-hover);
+
+    transform:translateY(-2px);
+
+    box-shadow:var(--ma-shadow-md);
+}
+
+/* الزر الثانوي */
+
+.ma-btn-secondary{
+
+    background:var(--ma-surface);
+
+    color:var(--ma-text);
+
+    border:1px solid var(--ma-border);
+}
+
+.ma-btn-secondary:hover{
+
+    border-color:var(--ma-accent);
+
+    color:var(--ma-accent);
+}
+
+/* زر شفاف */
+
+.ma-btn-outline{
+
+    background:transparent;
+
+    color:var(--ma-text);
+
+    border:1px solid var(--ma-border);
+}
+
+.ma-btn-outline:hover{
+
+    background:var(--ma-accent-soft);
+
+    border-color:var(--ma-accent);
+}
+
+/* زر حذف */
+
+.ma-btn-danger{
+
+    background:var(--ma-danger);
+
+    color:#fff;
+}
+
+.ma-btn-danger:hover{
+
+    filter:brightness(.92);
+}
+
+
+
+/* ======================================
+   CARDS
+====================================== */
+
+
+
+/* ======================================
+   INPUTS
+====================================== */
+
+
+
+/* ======================================
+   BADGES
+====================================== */
+
+
+
+/* ======================================
+   TABLES
+====================================== */
+
+
+
+/* ======================================
+   ALERTS
+====================================== */

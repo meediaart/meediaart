@@ -5,34 +5,157 @@
 
 {% block content %}
 <div class="page-card">
-    <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">+ إضافة مستخدم</a>
 
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>اسم المستخدم</th>
-                <th>البريد الإلكتروني</th>
-                <th>الدور</th>
-                <th>الإجراءات</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-            <tr>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.role }}</td>
-                <td>
-                    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-edit">تعديل</a>
-                    <a href="{{ url_for('admin.delete_user', user_id=user.id) }}"
-                       class="btn btn-delete"
-                       onclick="return confirm('هل أنت متأكد؟')">
-                       حذف
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="section-header">
+        <div>
+            <h2>قائمة المستخدمين</h2>
+
+            <p class="admin-results-text">
+                عدد النتائج:
+                <strong id="usersResultsCount">{{ users|length }}</strong>
+            </p>
+        </div>
+
+        <a
+            href="{{ url_for('admin.create_user') }}"
+            class="btn btn-primary"
+        >
+            + إضافة مستخدم
+        </a>
+    </div>
+
+    <div class="admin-filters">
+
+        <div class="admin-filter-group admin-filter-search">
+            <label for="userSearch">البحث</label>
+
+            <input
+                type="search"
+                id="userSearch"
+                class="admin-input"
+                placeholder="ابحث بالاسم أو البريد الإلكتروني..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="admin-filter-group">
+            <label for="roleFilter">الدور</label>
+
+            <select id="roleFilter" class="admin-select">
+                <option value="">جميع الأدوار</option>
+
+                {% set roles_list = [] %}
+
+                {% for user in users %}
+                    {% if user.role and user.role not in roles_list %}
+                        {% set _ = roles_list.append(user.role) %}
+
+                        <option value="{{ user.role|lower }}">
+                            {{ user.role }}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="admin-filter-group admin-filter-button">
+            <button
+                type="button"
+                id="resetUserFilters"
+                class="btn btn-edit"
+            >
+                إعادة تعيين
+            </button>
+        </div>
+
+    </div>
+
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>اسم المستخدم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الدور</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+
+            <tbody id="usersTableBody">
+
+                {% for user in users %}
+                <tr
+                    class="user-row"
+                    data-username="{{ user.username|lower }}"
+                    data-email="{{ user.email|lower }}"
+                    data-role="{{ user.role|lower if user.role else '' }}"
+                >
+                    <td>
+                        <strong>{{ user.username }}</strong>
+                    </td>
+
+                    <td>
+                        {{ user.email }}
+                    </td>
+
+                    <td>
+                        {% if user.role %}
+                            <span class="status-badge">
+                                {{ user.role }}
+                            </span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <div class="admin-actions">
+
+                            <a
+                                href="{{ url_for('admin.edit_user', user_id=user.id) }}"
+                                class="btn btn-edit"
+                            >
+                                تعديل
+                            </a>
+
+                            <a
+                                href="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                                class="btn btn-delete js-confirm-delete"
+                                data-confirm-message="هل أنت متأكد من حذف هذا المستخدم؟"
+                            >
+                                حذف
+                            </a>
+
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+
+                <tr id="noUsersResults" hidden>
+                    <td colspan="4" class="admin-empty-state">
+                        لا توجد نتائج مطابقة للبحث أو الفلاتر.
+                    </td>
+                </tr>
+
+                {% if not users %}
+                <tr>
+                    <td colspan="4" class="admin-empty-state">
+                        لا يوجد مستخدمون حاليًا.
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+
+        </table>
+    </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script
+    src="{{ url_for('static', filename='js/admin/users-list.js') }}?v=2"
+></script>
 {% endblock %}

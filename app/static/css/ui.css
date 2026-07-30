@@ -1,0 +1,501 @@
+/* ==================================================
+   MEDIAART UI KIT
+================================================== */
+
+
+/* ======================================
+   BUTTONS
+====================================== */
+
+.ma-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+
+    min-height:44px;
+    padding:0 22px;
+
+    border:none;
+    border-radius:var(--ma-radius-md);
+
+    cursor:pointer;
+
+    font-size:var(--ma-font-md);
+    font-weight:600;
+
+    text-decoration:none;
+
+    transition:var(--ma-transition);
+
+    user-select:none;
+}
+
+/* الزر الأساسي */
+
+.ma-btn-primary{
+
+    background:var(--ma-accent);
+
+    color:#fff;
+}
+
+.ma-btn-primary:hover{
+
+    background:var(--ma-accent-hover);
+
+    transform:translateY(-2px);
+
+    box-shadow:var(--ma-shadow-md);
+}
+
+/* الزر الثانوي */
+
+.ma-btn-secondary{
+
+    background:var(--ma-surface);
+
+    color:var(--ma-text);
+
+    border:1px solid var(--ma-border);
+}
+
+.ma-btn-secondary:hover{
+
+    border-color:var(--ma-accent);
+
+    color:var(--ma-accent);
+}
+
+/* زر شفاف */
+
+.ma-btn-outline{
+
+    background:transparent;
+
+    color:var(--ma-text);
+
+    border:1px solid var(--ma-border);
+}
+
+.ma-btn-outline:hover{
+
+    background:var(--ma-accent-soft);
+
+    border-color:var(--ma-accent);
+}
+
+/* زر حذف */
+
+.ma-btn-danger{
+
+    background:var(--ma-danger);
+
+    color:#fff;
+}
+
+.ma-btn-danger:hover{
+
+    filter:brightness(.92);
+}
+
+
+
+/* ======================================
+   CARDS
+====================================== */
+
+
+
+/* ======================================
+   INPUTS
+====================================== */
+
+
+
+/* ======================================
+   BADGES
+====================================== */
+
+
+
+/* ======================================
+   TABLES
+====================================== */
+
+
+
+/* ======================================
+   ALERTS
+====================================== */
+
+/* ==================================================
+   MEDIAART CARD SYSTEM
+================================================== */
+
+/*
+|--------------------------------------------------------------------------
+| البطاقة الأساسية
+|--------------------------------------------------------------------------
+*/
+
+.ma-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    overflow: hidden;
+
+    background: var(--ma-surface);
+    color: var(--ma-text);
+
+    border: 1px solid var(--ma-border);
+    border-radius: var(--ma-radius-lg);
+
+    box-shadow: var(--ma-shadow-sm);
+
+    transition:
+        transform var(--ma-transition),
+        box-shadow var(--ma-transition),
+        border-color var(--ma-transition);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| البطاقة القابلة للنقر أو التفاعل
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-interactive {
+    cursor: pointer;
+}
+
+.ma-card-interactive:hover {
+    transform: translateY(-4px);
+    border-color: var(--ma-border-strong);
+    box-shadow: var(--ma-shadow-md);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| صورة البطاقة
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-media {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+
+    background: var(--ma-surface-soft);
+    aspect-ratio: 16 / 10;
+}
+
+.ma-card-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition: transform var(--ma-transition-slow);
+}
+
+.ma-card-interactive:hover .ma-card-media img {
+    transform: scale(1.035);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| جسم البطاقة
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    padding: var(--ma-space-5);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| رأس البطاقة
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ma-space-3);
+
+    margin-bottom: var(--ma-space-3);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| عنوان البطاقة
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-title {
+    margin: 0;
+
+    color: var(--ma-text);
+
+    font-size: var(--ma-font-lg);
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.ma-card-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.ma-card-title a:hover {
+    color: var(--ma-accent);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| وصف البطاقة
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-text {
+    margin: 0;
+
+    color: var(--ma-text-secondary);
+
+    font-size: var(--ma-font-md);
+    line-height: 1.75;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| معلومات إضافية
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--ma-space-2);
+    flex-wrap: wrap;
+
+    margin-bottom: var(--ma-space-3);
+
+    color: var(--ma-text-muted);
+
+    font-size: var(--ma-font-sm);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| ذيل البطاقة
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ma-space-3);
+    flex-wrap: wrap;
+
+    margin-top: auto;
+    padding-top: var(--ma-space-5);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| بطاقة أفقية
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-horizontal {
+    display: grid;
+    grid-template-columns: minmax(220px, 38%) 1fr;
+}
+
+.ma-card-horizontal .ma-card-media {
+    height: 100%;
+    aspect-ratio: auto;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| بطاقة بدون حدود
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-borderless {
+    border-color: transparent;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| بطاقة مسطحة بدون ظل
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-flat {
+    box-shadow: none;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| بطاقة مميزة
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-featured {
+    border-color: var(--ma-accent);
+    box-shadow: var(--ma-shadow-md);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| أحجام الحشو
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-compact .ma-card-body {
+    padding: var(--ma-space-4);
+}
+
+.ma-card-spacious .ma-card-body {
+    padding: var(--ma-space-6);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| شبكة البطاقات
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ma-space-5);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| تحديد عدد أسطر النص
+|--------------------------------------------------------------------------
+*/
+
+.ma-line-clamp-2 {
+    display: -webkit-box;
+    overflow: hidden;
+
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.ma-line-clamp-3 {
+    display: -webkit-box;
+    overflow: hidden;
+
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| الوصول عبر لوحة المفاتيح
+|--------------------------------------------------------------------------
+*/
+
+.ma-card-interactive:focus-visible {
+    outline: 3px solid var(--ma-accent-soft);
+    outline-offset: 3px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| الشاشات المتوسطة
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 992px) {
+    .ma-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ma-card-horizontal {
+        grid-template-columns: minmax(180px, 34%) 1fr;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| الهواتف
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 640px) {
+    .ma-card-grid {
+        grid-template-columns: 1fr;
+        gap: var(--ma-space-4);
+    }
+
+    .ma-card-horizontal {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ma-card-horizontal .ma-card-media {
+        aspect-ratio: 16 / 10;
+    }
+
+    .ma-card-body {
+        padding: var(--ma-space-4);
+    }
+
+    .ma-card-interactive:hover {
+        transform: none;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| تقليل الحركة حسب إعدادات المستخدم
+|--------------------------------------------------------------------------
+*/
+
+@media (prefers-reduced-motion: reduce) {
+    .ma-card,
+    .ma-card-media img {
+        transition: none;
+    }
+
+    .ma-card-interactive:hover,
+    .ma-card-interactive:hover .ma-card-media img {
+        transform: none;
+    }
+}

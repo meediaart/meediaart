@@ -1,0 +1,392 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}إدارة المشاريع{% endblock %}
+
+{% block content %}
+
+<!-- رأس الصفحة -->
+<div class="admin-page-head">
+    <div>
+        <h2>قائمة المشاريع</h2>
+        <p>
+            إدارة معرض الأعمال.
+            عدد النتائج:
+            <strong id="projectsResultsCount">{{ projects|length }}</strong>
+        </p>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.create_project') }}"
+           class="admin-btn admin-btn-primary">
+            + إضافة مشروع
+        </a>
+    </div>
+</div>
+
+<div class="page-card">
+
+    <!-- البحث والفلاتر -->
+    <div class="admin-filters">
+
+        <!-- البحث -->
+        <div class="admin-filter-group admin-filter-search">
+            <label for="projectSearch">البحث</label>
+
+            <input
+                type="search"
+                id="projectSearch"
+                class="admin-input"
+                placeholder="ابحث بالعنوان أو العميل أو النوع..."
+                autocomplete="off"
+            >
+        </div>
+
+        <!-- فلتر نوع المشروع -->
+        <div class="admin-filter-group">
+            <label for="projectTypeFilter">نوع المشروع</label>
+
+            <select id="projectTypeFilter" class="admin-select">
+                <option value="">جميع الأنواع</option>
+
+                {% set project_types = [] %}
+
+                {% for project in projects %}
+                    {% if project.project_type and project.project_type not in project_types %}
+                        {% set _ = project_types.append(project.project_type) %}
+
+                        <option value="{{ project.project_type|lower }}">
+                            {{ project.project_type }}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- فلتر حالة المشروع -->
+        <div class="admin-filter-group">
+            <label for="projectStatusFilter">الحالة</label>
+
+            <select id="projectStatusFilter" class="admin-select">
+                <option value="">جميع الحالات</option>
+                <option value="active">منشور</option>
+                <option value="inactive">مخفي</option>
+            </select>
+        </div>
+
+        <!-- فلتر الظهور في الرئيسية -->
+        <div class="admin-filter-group">
+            <label for="projectHomeFilter">الظهور في الرئيسية</label>
+
+            <select id="projectHomeFilter" class="admin-select">
+                <option value="">الكل</option>
+                <option value="yes">يظهر في الرئيسية</option>
+                <option value="no">لا يظهر في الرئيسية</option>
+            </select>
+        </div>
+
+        <!-- زر إعادة التعيين -->
+        <div class="admin-filter-group admin-filter-button">
+            <button
+                type="button"
+                id="resetProjectFilters"
+                class="admin-btn admin-btn-secondary"
+            >
+                إعادة تعيين
+            </button>
+        </div>
+
+    </div>
+
+    <!-- جدول المشاريع -->
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>العنوان</th>
+                    <th>العميل</th>
+                    <th>النوع</th>
+                    <th>الحالة</th>
+                    <th>الرئيسية</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+
+            <tbody id="projectsTableBody">
+
+                {% for project in projects %}
+
+                {% set project_status = 'active' if project.is_active else 'inactive' %}
+                {% set project_home = 'yes' if project.show_on_home else 'no' %}
+                {% set project_client = project.client_name if project.client_name else '' %}
+                {% set project_type = project.project_type if project.project_type else '' %}
+
+                <tr
+                    class="project-row {% if project.show_on_home %}home-highlight{% endif %}"
+                    data-title="{{ project.title|lower }}"
+                    data-client="{{ project_client|lower }}"
+                    data-type="{{ project_type|lower }}"
+                    data-status="{{ project_status }}"
+                    data-home="{{ project_home }}"
+                >
+
+                    <!-- عنوان المشروع -->
+                    <td>
+                        <strong>{{ project.title }}</strong>
+                    </td>
+
+                    <!-- اسم العميل -->
+                    <td>
+                        {{ project.client_name or "-" }}
+                    </td>
+
+                    <!-- نوع المشروع -->
+                    <td>
+                        {{ project.project_type or "-" }}
+                    </td>
+
+                    <!-- حالة المشروع -->
+                    <td>
+                        <div class="admin-actions">
+
+                            {% if project.is_active %}
+
+                                <span class="status-badge status-completed">
+                                    منشور
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_project_active', project_id=project.id) }}"
+                                    class="admin-btn admin-btn-secondary"
+                                >
+                                    إخفاء
+                                </a>
+
+                            {% else %}
+
+                                <span class="status-badge status-unpaid">
+                                    مخفي
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_project_active', project_id=project.id) }}"
+                                    class="admin-btn admin-btn-primary"
+                                >
+                                    نشر
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+                    </td>
+
+                    <!-- الظهور في الصفحة الرئيسية -->
+                    <td>
+                        <div class="admin-actions">
+
+                            {% if project.show_on_home %}
+
+                                <span class="status-badge status-paid">
+                                    نعم
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_project_home', project_id=project.id) }}"
+                                    class="admin-btn admin-btn-secondary"
+                                >
+                                    إخفاء
+                                </a>
+
+                            {% else %}
+
+                                <span class="status-badge status-unpaid">
+                                    لا
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_project_home', project_id=project.id) }}"
+                                    class="admin-btn admin-btn-primary"
+                                >
+                                    إظهار
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+                    </td>
+
+                    <!-- الإجراءات -->
+                    <td>
+                        <div class="admin-actions">
+
+                            <a
+                                href="{{ url_for('admin.edit_project', project_id=project.id) }}"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                تعديل
+                            </a>
+
+                            <a
+                                href="{{ url_for('admin.delete_project', project_id=project.id) }}"
+                                onclick="return confirm('هل أنت متأكد من حذف هذا المشروع؟')"
+                                class="admin-btn admin-btn-danger"
+                            >
+                                حذف
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                <!-- رسالة عدم وجود نتائج -->
+                <tr id="noProjectsResults" style="display: none;">
+                    <td colspan="6" class="admin-empty-state">
+                        لا توجد مشاريع مطابقة للبحث أو الفلاتر.
+                    </td>
+                </tr>
+
+                <!-- عند عدم وجود مشاريع أصلًا -->
+                {% if not projects %}
+                <tr>
+                    <td colspan="6" class="admin-empty-state">
+                        لا توجد مشاريع حاليًا.
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // عناصر البحث والفلاتر
+    const searchInput = document.getElementById("projectSearch");
+    const typeFilter = document.getElementById("projectTypeFilter");
+    const statusFilter = document.getElementById("projectStatusFilter");
+    const homeFilter = document.getElementById("projectHomeFilter");
+    const resetButton = document.getElementById("resetProjectFilters");
+
+    // جميع صفوف المشاريع
+    const projectRows = Array.from(
+        document.querySelectorAll(".project-row")
+    );
+
+    // عداد النتائج
+    const resultsCount = document.getElementById("projectsResultsCount");
+
+    // رسالة عدم وجود نتائج
+    const noResultsRow = document.getElementById("noProjectsResults");
+
+    /**
+     * تنظيف وتوحيد النصوص قبل البحث والمقارنة.
+     */
+    function normalizeText(value) {
+        return String(value || "")
+            .toLowerCase()
+            .trim();
+    }
+
+    /**
+     * تطبيق البحث والفلاتر على صفوف المشاريع.
+     */
+    function filterProjects() {
+
+        const searchValue = normalizeText(searchInput.value);
+        const typeValue = normalizeText(typeFilter.value);
+        const statusValue = normalizeText(statusFilter.value);
+        const homeValue = normalizeText(homeFilter.value);
+
+        let visibleCount = 0;
+
+        projectRows.forEach(function (row) {
+
+            const title = normalizeText(row.dataset.title);
+            const client = normalizeText(row.dataset.client);
+            const type = normalizeText(row.dataset.type);
+            const status = normalizeText(row.dataset.status);
+            const home = normalizeText(row.dataset.home);
+
+            // البحث يشمل العنوان واسم العميل ونوع المشروع
+            const matchesSearch =
+                searchValue === "" ||
+                title.includes(searchValue) ||
+                client.includes(searchValue) ||
+                type.includes(searchValue);
+
+            // فلتر نوع المشروع
+            const matchesType =
+                typeValue === "" ||
+                type === typeValue;
+
+            // فلتر حالة النشر
+            const matchesStatus =
+                statusValue === "" ||
+                status === statusValue;
+
+            // فلتر الظهور في الرئيسية
+            const matchesHome =
+                homeValue === "" ||
+                home === homeValue;
+
+            const shouldShow =
+                matchesSearch &&
+                matchesType &&
+                matchesStatus &&
+                matchesHome;
+
+            row.style.display = shouldShow ? "" : "none";
+
+            if (shouldShow) {
+                visibleCount++;
+            }
+        });
+
+        // تحديث عداد النتائج
+        resultsCount.textContent = visibleCount;
+
+        // إظهار رسالة عدم وجود نتائج
+        if (projectRows.length > 0 && visibleCount === 0) {
+            noResultsRow.style.display = "";
+        } else {
+            noResultsRow.style.display = "none";
+        }
+    }
+
+    /**
+     * إعادة البحث والفلاتر إلى الوضع الافتراضي.
+     */
+    function resetFilters() {
+        searchInput.value = "";
+        typeFilter.value = "";
+        statusFilter.value = "";
+        homeFilter.value = "";
+
+        filterProjects();
+        searchInput.focus();
+    }
+
+    // البحث المباشر أثناء الكتابة
+    searchInput.addEventListener("input", filterProjects);
+
+    // تشغيل الفلاتر عند تغيير القيم
+    typeFilter.addEventListener("change", filterProjects);
+    statusFilter.addEventListener("change", filterProjects);
+    homeFilter.addEventListener("change", filterProjects);
+
+    // زر إعادة التعيين
+    resetButton.addEventListener("click", resetFilters);
+
+    // تشغيل أولي عند فتح الصفحة
+    filterProjects();
+});
+</script>
+
+{% endblock %}

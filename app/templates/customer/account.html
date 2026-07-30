@@ -3,17 +3,31 @@
 {% block title %}حسابي{% endblock %}
 
 {% block content %}
-<section class="shop-section">
+<section class="shop-section customer-account-page">
     <div class="container">
         <h1 class="section-title">حسابي</h1>
 
-        <div class="page-card" style="max-width:700px;margin:auto;padding:24px;">
-            <p>مرحبًا، {{ current_user.username }}</p>
-            <p>البريد: {{ current_user.email }}</p>
+        <div class="page-card customer-account-card">
+            <div class="customer-account-info">
+                <p>
+                    <strong>اسم المستخدم:</strong>
+                    <span>{{ current_user.username }}</span>
+                </p>
 
-            <a href="{{ url_for('customer_auth.logout') }}" class="btn-outline">
-                تسجيل الخروج
-            </a>
+                <p>
+                    <strong>البريد الإلكتروني:</strong>
+                    <span>{{ current_user.email }}</span>
+                </p>
+            </div>
+
+            <div class="customer-account-actions">
+                <a
+                    href="{{ url_for('customer_auth.logout') }}"
+                    class="btn-outline"
+                >
+                    تسجيل الخروج
+                </a>
+            </div>
         </div>
     </div>
 </section>

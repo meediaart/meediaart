@@ -4,24 +4,127 @@
 {% block page_title %}{{ page_title }}{% endblock %}
 
 {% block content %}
+
 <div class="page-card">
+
     <h1>{{ page_title }}</h1>
 
     <form method="POST" class="admin-form">
+
         {{ form.hidden_tag() }}
 
+        <h3>العناوين</h3>
+
         <div class="admin-form-group">
-            {{ form.title.label }}
-            {{ form.title() }}
+            {{ form.title_ar.label }}
+            {{ form.title_ar() }}
         </div>
 
         <div class="admin-form-group">
-            {{ form.slug.label }}
-            {{ form.slug() }}
+            {{ form.title_en.label }}
+            {{ form.title_en() }}
         </div>
 
         <div class="admin-form-group">
-            {{ form.content(class="rich-editor", id="page_content") }}
+            {{ form.title_ja.label }}
+            {{ form.title_ja() }}
+        </div>
+
+        <hr>
+
+        <h3>الروابط</h3>
+
+        <div class="admin-form-group">
+            {{ form.slug_ar.label }}
+            {{ form.slug_ar() }}
+        </div>
+
+        <div class="admin-form-group">
+            {{ form.slug_en.label }}
+            {{ form.slug_en() }}
+        </div>
+
+        <div class="admin-form-group">
+            {{ form.slug_ja.label }}
+            {{ form.slug_ja() }}
+        </div>
+
+        <hr>
+
+        <h3>إعدادات الصفحة</h3>
+
+        <div class="admin-form-group">
+            {{ form.page_type.label }}
+            {{ form.page_type() }}
+        </div>
+
+        <div class="admin-form-group">
+            {{ form.parent_id.label }}
+            {{ form.parent_id(class="form-control") }}
+        </div>
+
+        <div class="admin-form-group">
+            {{ form.template.label }}
+            {{ form.template() }}
+        </div>
+
+        <div class="admin-form-group">
+            {{ form.display_order.label }}
+            {{ form.display_order() }}
+        </div>
+
+        <hr>
+
+        <h3>محتوى الصفحة</h3>
+
+        <div class="admin-form-group">
+            {{ form.content_ar.label }}
+            {{ form.content_ar(
+                id="page_content_ar",
+                class="form-control",
+                rows="10"
+            ) }}
+        </div>
+
+        <div class="admin-form-group">
+            {{ form.content_en.label }}
+            {{ form.content_en(
+                id="page_content_en",
+                class="form-control",
+                rows="10"
+            ) }}
+        </div>
+
+        <div class="admin-form-group">
+            {{ form.content_ja.label }}
+            {{ form.content_ja(
+                id="page_content_ja",
+                class="form-control",
+                rows="10"
+            ) }}
+        </div>
+
+        <div style="display: none;">
+            {{ form.content(id="page_content") }}
+        </div>
+
+        <hr>
+
+        <h3>أماكن الظهور</h3>
+
+        <div class="admin-checkbox">
+            {{ form.show_in_menu() }}
+            {{ form.show_in_menu.label }}
+        </div>
+
+        <div class="admin-checkbox">
+            {{ form.show_on_home() }}
+            {{ form.show_on_home.label }}
+        </div>
+
+        <div class="admin-checkbox">
+            {{ form.show_in_footer() }}
+            {{ form.show_in_footer.label }}
         </div>
 
         <div class="admin-checkbox">
@@ -31,13 +134,21 @@
 
         <div class="admin-actions">
             {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary">إلغاء</a>
+
+            <a href="{{ url_for('admin.pages_list') }}"
+               class="btn btn-secondary">
+                إلغاء
+            </a>
         </div>
+
     </form>
+
 </div>
 
 <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+
 <script>
-    CKEDITOR.replace('editor');
+CKEDITOR.replace("page_content");
 </script>
+
 {% endblock %}

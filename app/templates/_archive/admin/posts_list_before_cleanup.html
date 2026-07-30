@@ -1,0 +1,350 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}إدارة المقالات{% endblock %}
+
+{% block content %}
+
+<!-- رأس الصفحة -->
+<div class="admin-page-head">
+    <div>
+        <h2>قائمة المقالات</h2>
+        <p>
+            إدارة مقالات المدونة والتحكم في ظهورها.
+            عدد النتائج:
+            <strong id="postsResultsCount">{{ posts|length }}</strong>
+        </p>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.create_post') }}"
+           class="admin-btn admin-btn-primary">
+            + إضافة مقال
+        </a>
+    </div>
+</div>
+
+<div class="page-card">
+
+    <!-- البحث والفلاتر -->
+    <div class="admin-filters">
+
+        <!-- البحث -->
+        <div class="admin-filter-group admin-filter-search">
+            <label for="postSearch">البحث</label>
+
+            <input
+                type="search"
+                id="postSearch"
+                class="admin-input"
+                placeholder="ابحث بعنوان المقال أو الرابط..."
+                autocomplete="off"
+            >
+        </div>
+
+        <!-- فلتر حالة المقال -->
+        <div class="admin-filter-group">
+            <label for="postStatusFilter">الحالة</label>
+
+            <select id="postStatusFilter" class="admin-select">
+                <option value="">جميع الحالات</option>
+                <option value="active">منشور</option>
+                <option value="inactive">مخفي</option>
+            </select>
+        </div>
+
+        <!-- فلتر الظهور في الرئيسية -->
+        <div class="admin-filter-group">
+            <label for="postHomeFilter">الظهور في الرئيسية</label>
+
+            <select id="postHomeFilter" class="admin-select">
+                <option value="">الكل</option>
+                <option value="yes">يظهر في الرئيسية</option>
+                <option value="no">لا يظهر في الرئيسية</option>
+            </select>
+        </div>
+
+        <!-- إعادة التعيين -->
+        <div class="admin-filter-group admin-filter-button">
+            <button
+                type="button"
+                id="resetPostFilters"
+                class="admin-btn admin-btn-secondary"
+            >
+                إعادة تعيين
+            </button>
+        </div>
+
+    </div>
+
+    <!-- جدول المقالات -->
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>العنوان</th>
+                    <th>الرابط</th>
+                    <th>الحالة</th>
+                    <th>الرئيسية</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+
+            <tbody id="postsTableBody">
+
+                {% for post in posts %}
+
+                {% set post_status = 'active' if post.is_active else 'inactive' %}
+                {% set post_home = 'yes' if post.show_on_home else 'no' %}
+
+                <tr
+                    class="post-row {% if post.show_on_home %}home-highlight{% endif %}"
+                    data-title="{{ post.title|lower }}"
+                    data-slug="{{ post.slug|lower }}"
+                    data-status="{{ post_status }}"
+                    data-home="{{ post_home }}"
+                >
+
+                    <!-- عنوان المقال -->
+                    <td>
+                        <strong>{{ post.title }}</strong>
+                    </td>
+
+                    <!-- الرابط -->
+                    <td>
+                        {{ post.slug }}
+                    </td>
+
+                    <!-- الحالة -->
+                    <td>
+                        <div class="admin-actions">
+
+                            {% if post.is_active %}
+
+                                <span class="status-badge status-completed">
+                                    منشور
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_post_active', post_id=post.id) }}"
+                                    class="admin-btn admin-btn-secondary"
+                                >
+                                    إخفاء
+                                </a>
+
+                            {% else %}
+
+                                <span class="status-badge status-unpaid">
+                                    مخفي
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_post_active', post_id=post.id) }}"
+                                    class="admin-btn admin-btn-primary"
+                                >
+                                    نشر
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+                    </td>
+
+                    <!-- الظهور في الصفحة الرئيسية -->
+                    <td>
+                        <div class="admin-actions">
+
+                            {% if post.show_on_home %}
+
+                                <span class="status-badge status-paid">
+                                    نعم
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_post_home', post_id=post.id) }}"
+                                    class="admin-btn admin-btn-secondary"
+                                >
+                                    إخفاء
+                                </a>
+
+                            {% else %}
+
+                                <span class="status-badge status-unpaid">
+                                    لا
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_post_home', post_id=post.id) }}"
+                                    class="admin-btn admin-btn-primary"
+                                >
+                                    إظهار
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+                    </td>
+
+                    <!-- الإجراءات -->
+                    <td>
+                        <div class="admin-actions">
+
+                            <a
+                                href="{{ url_for('admin.edit_post', post_id=post.id) }}"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                تعديل
+                            </a>
+
+                            <a
+                                href="{{ url_for('admin.delete_post', post_id=post.id) }}"
+                                onclick="return confirm('هل أنت متأكد من حذف هذا المقال؟')"
+                                class="admin-btn admin-btn-danger"
+                            >
+                                حذف
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                <!-- رسالة عدم وجود نتائج -->
+                <tr id="noPostsResults" style="display: none;">
+                    <td colspan="5" class="admin-empty-state">
+                        لا توجد مقالات مطابقة للبحث أو الفلاتر.
+                    </td>
+                </tr>
+
+                <!-- عند عدم وجود مقالات أصلًا -->
+                {% if not posts %}
+                <tr>
+                    <td colspan="5" class="admin-empty-state">
+                        لا توجد مقالات حاليًا.
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // عناصر البحث والفلاتر
+    const searchInput = document.getElementById("postSearch");
+    const statusFilter = document.getElementById("postStatusFilter");
+    const homeFilter = document.getElementById("postHomeFilter");
+    const resetButton = document.getElementById("resetPostFilters");
+
+    // صفوف المقالات
+    const postRows = Array.from(
+        document.querySelectorAll(".post-row")
+    );
+
+    // عداد النتائج
+    const resultsCount = document.getElementById("postsResultsCount");
+
+    // صف رسالة عدم وجود نتائج
+    const noResultsRow = document.getElementById("noPostsResults");
+
+    /**
+     * توحيد النص قبل المقارنة والبحث.
+     */
+    function normalizeText(value) {
+        return String(value || "")
+            .toLowerCase()
+            .trim();
+    }
+
+    /**
+     * تطبيق البحث والفلاتر على المقالات.
+     */
+    function filterPosts() {
+
+        const searchValue = normalizeText(searchInput.value);
+        const statusValue = normalizeText(statusFilter.value);
+        const homeValue = normalizeText(homeFilter.value);
+
+        let visibleCount = 0;
+
+        postRows.forEach(function (row) {
+
+            const title = normalizeText(row.dataset.title);
+            const slug = normalizeText(row.dataset.slug);
+            const status = normalizeText(row.dataset.status);
+            const home = normalizeText(row.dataset.home);
+
+            // البحث في العنوان والرابط
+            const matchesSearch =
+                searchValue === "" ||
+                title.includes(searchValue) ||
+                slug.includes(searchValue);
+
+            // مطابقة حالة النشر
+            const matchesStatus =
+                statusValue === "" ||
+                status === statusValue;
+
+            // مطابقة الظهور في الرئيسية
+            const matchesHome =
+                homeValue === "" ||
+                home === homeValue;
+
+            const shouldShow =
+                matchesSearch &&
+                matchesStatus &&
+                matchesHome;
+
+            row.style.display = shouldShow ? "" : "none";
+
+            if (shouldShow) {
+                visibleCount++;
+            }
+        });
+
+        // تحديث عدد النتائج
+        resultsCount.textContent = visibleCount;
+
+        // إظهار رسالة عند عدم وجود نتائج
+        if (postRows.length > 0 && visibleCount === 0) {
+            noResultsRow.style.display = "";
+        } else {
+            noResultsRow.style.display = "none";
+        }
+    }
+
+    /**
+     * تصفير البحث والفلاتر.
+     */
+    function resetFilters() {
+        searchInput.value = "";
+        statusFilter.value = "";
+        homeFilter.value = "";
+
+        filterPosts();
+        searchInput.focus();
+    }
+
+    // البحث يعمل أثناء الكتابة
+    searchInput.addEventListener("input", filterPosts);
+
+    // تشغيل الفلاتر عند التغيير
+    statusFilter.addEventListener("change", filterPosts);
+    homeFilter.addEventListener("change", filterPosts);
+
+    // زر إعادة التعيين
+    resetButton.addEventListener("click", resetFilters);
+
+    // تشغيل أولي
+    filterPosts();
+});
+</script>
+
+{% endblock %}

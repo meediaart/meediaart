@@ -1,47 +1,192 @@
-{% extends "admin/layout.html" %}
+{% extends "admin/base.html" %}
 
-{% block title %}إدارة فريق العمل{% endblock %}
-{% block page_title %}إدارة فريق العمل{% endblock %}
+{% block admin_page_title %}إدارة فريق العمل{% endblock %}
 
 {% block content %}
-<div class="page-card">
-    <div class="section-header">
-        <h2>قائمة فريق العمل</h2>
-        <a href="{{ url_for('admin.create_team_member') }}" class="btn btn-primary">+ إضافة عضو</a>
+
+<div class="admin-page-head">
+    <div>
+        <h2>فريق العمل</h2>
+        <p>
+            إدارة أعضاء فريق العمل.
+            عدد النتائج:
+            <strong id="teamResultsCount">{{ members|length }}</strong>
+        </p>
     </div>
 
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>الصورة</th>
-                <th>الاسم</th>
-                <th>الصفة</th>
-                <th>الترتيب</th>
-                <th>الحالة</th>
-                <th>الإجراءات</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for member in members %}
-            <tr>
-                <td>
-                    {% if member.image %}
-                        <img src="{{ url_for('static', filename='uploads/' + member.image) }}" width="70">
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td>{{ member.name }}</td>
-                <td>{{ member.job_title }}</td>
-                <td>{{ member.display_order }}</td>
-                <td>{{ "ظاهر" if member.is_active else "مخفي" }}</td>
-                <td>
-                    <a href="{{ url_for('admin.edit_team_member', member_id=member.id) }}" class="btn btn-edit">تعديل</a>
-                    <a href="{{ url_for('admin.delete_team_member', member_id=member.id) }}" class="btn btn-delete" onclick="return confirm('هل أنت متأكد؟')">حذف</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="admin-actions">
+        <a
+            href="{{ url_for('admin.create_team_member') }}"
+            class="admin-btn admin-btn-primary"
+        >
+            + إضافة عضو
+        </a>
+    </div>
 </div>
+
+<div class="page-card">
+
+    <div class="admin-filters">
+
+        <div class="admin-filter-group admin-filter-search">
+            <label for="teamSearch">البحث</label>
+
+            <input
+                type="search"
+                id="teamSearch"
+                class="admin-input"
+                placeholder="ابحث باسم العضو أو صفته..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="admin-filter-group">
+            <label for="teamStatusFilter">الحالة</label>
+
+            <select id="teamStatusFilter" class="admin-select">
+                <option value="">جميع الحالات</option>
+                <option value="active">ظاهر</option>
+                <option value="inactive">مخفي</option>
+            </select>
+        </div>
+
+        <div class="admin-filter-group">
+            <label for="teamOrderFilter">الترتيب</label>
+
+            <select id="teamOrderFilter" class="admin-select">
+                <option value="">الترتيب الافتراضي</option>
+                <option value="asc">من الأصغر إلى الأكبر</option>
+                <option value="desc">من الأكبر إلى الأصغر</option>
+            </select>
+        </div>
+
+        <div class="admin-filter-group admin-filter-button">
+            <button
+                type="button"
+                id="resetTeamFilters"
+                class="admin-btn admin-btn-secondary"
+            >
+                إعادة تعيين
+            </button>
+        </div>
+
+    </div>
+
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>الصورة</th>
+                    <th>الاسم</th>
+                    <th>الصفة</th>
+                    <th>الترتيب</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+
+            <tbody id="teamTableBody">
+
+                {% for member in members %}
+
+                {% set member_status = 'active' if member.is_active else 'inactive' %}
+                {% set member_name = member.name or '' %}
+                {% set member_job = member.job_title or '' %}
+                {% set member_order = member.display_order if member.display_order is not none else 0 %}
+
+                <tr
+                    class="team-row"
+                    data-name="{{ member_name|lower }}"
+                    data-job="{{ member_job|lower }}"
+                    data-status="{{ member_status }}"
+                    data-order="{{ member_order }}"
+                >
+
+                    <td>
+                        {% if member.image %}
+                            <img
+                                src="{{ url_for('static', filename='uploads/' + member.image) }}"
+                                class="admin-table-img"
+                                alt="{{ member_name }}"
+                            >
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <strong>{{ member_name or "-" }}</strong>
+                    </td>
+
+                    <td>
+                        {{ member_job or "-" }}
+                    </td>
+
+                    <td>
+                        {{ member_order }}
+                    </td>
+
+                    <td>
+                        {% if member.is_active %}
+                            <span class="status-badge status-completed">
+                                ظاهر
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-unpaid">
+                                مخفي
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <div class="admin-actions">
+
+                            <a
+                                href="{{ url_for('admin.edit_team_member', member_id=member.id) }}"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                تعديل
+                            </a>
+
+                            <a
+                                href="{{ url_for('admin.delete_team_member', member_id=member.id) }}"
+                                class="admin-btn admin-btn-danger js-confirm-delete"
+                                data-confirm-message="هل أنت متأكد من حذف هذا العضو؟"
+                            >
+                                حذف
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                <tr id="noTeamResults" class="admin-hidden">
+                    <td colspan="6" class="admin-empty-state">
+                        لا توجد نتائج مطابقة للبحث أو الفلاتر.
+                    </td>
+                </tr>
+
+                {% if not members %}
+                <tr>
+                    <td colspan="6" class="admin-empty-state">
+                        لا يوجد أعضاء في فريق العمل حاليًا.
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/team-list.js') }}?v=1"></script>
 {% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}حسابي{% endblock %}
+
+{% block content %}
+<section class="shop-section">
+    <div class="container">
+        <h1 class="section-title">حسابي</h1>
+
+        <div class="page-card" style="max-width:700px;margin:auto;padding:24px;">
+            <p>مرحبًا، {{ current_user.username }}</p>
+            <p>البريد: {{ current_user.email }}</p>
+
+            <a href="{{ url_for('customer_auth.logout') }}" class="btn-outline">
+                تسجيل الخروج
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

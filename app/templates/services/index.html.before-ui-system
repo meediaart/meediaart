@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ tr.services }}
+{% endblock %}
+
+{% block content %}
+
+<section class="services-page-section">
+
+    <div class="container">
+
+        <h1 class="section-title">
+            {{ tr.services }}
+        </h1>
+
+        <p class="section-subtitle">
+            {% if current_lang == "en" %}
+                Professional integrated solutions in design, printing and digital marketing.
+            {% elif current_lang == "ja" %}
+                デザイン・印刷・デジタルマーケティングの総合ソリューションを提供します。
+            {% else %}
+                نقدم حلولًا متكاملة في التصميم والطباعة والتسويق الرقمي لبناء حضور بصري قوي لعلامتك التجارية.
+            {% endif %}
+        </p>
+
+        <div class="services-image-grid">
+
+            {% set services_list = services if services is defined else home_services %}
+
+            {% if services_list %}
+
+                {% for service in services_list %}
+
+                    {% set service_title =
+                        service.get_title(current_lang)
+                        if service.get_title is defined
+                        else service.title
+                    %}
+
+                    {% set service_slug =
+                        service.get_slug(current_lang)
+                        if service.get_slug is defined
+                        else service.slug
+                    %}
+
+                    {% set service_short =
+                        service.get_short_description(current_lang)
+                        if service.get_short_description is defined
+                        else service.short_description
+                    %}
+
+                    {% set service_description =
+                        service.get_description(current_lang)
+                        if service.get_description is defined
+                        else service.description
+                    %}
+
+                    <article class="service-image-card">
+
+                        <a
+                            href="{{ url_for('services.detail', slug=service_slug) }}"
+                            class="service-image-link"
+                        >
+                            <div class="service-image-wrapper">
+
+                                {% if service.image %}
+                                    <img
+                                        src="{{ url_for('static', filename='uploads/' ~ service.image) }}"
+                                        alt="{{ service_title }}"
+                                        loading="lazy"
+                                    >
+                                {% else %}
+                                    <div class="service-image-placeholder">
+                                        <i class="fa-solid fa-image"></i>
+                                    </div>
+                                {% endif %}
+
+                                <div class="service-floating-icon">
+                                    <i class="fa-solid fa-pen-ruler"></i>
+                                </div>
+
+                            </div>
+                        </a>
+
+                        <div class="service-image-content">
+
+                            <a
+                                href="{{ url_for('services.detail', slug=service_slug) }}"
+                                class="service-title-link"
+                            >
+                                <h3>{{ service_title }}</h3>
+                            </a>
+
+                            <div class="service-rating" aria-label="5 stars">
+                                <span>★</span>
+                                <span>★</span>
+                                <span>★</span>
+                                <span>★</span>
+                                <span>★</span>
+                            </div>
+
+                            {% if service_short %}
+
+                                <p>{{ service_short }}</p>
+
+                            {% elif service_description %}
+
+                                <p>
+                                    {{ service_description[:130] }}
+                                    {% if service_description|length > 130 %}
+                                        ...
+                                    {% endif %}
+                                </p>
+
+                            {% else %}
+
+                                <p>
+                                    {% if current_lang == "en" %}
+                                        Professional service details will appear here.
+                                    {% elif current_lang == "ja" %}
+                                        サービスの詳細はここに表示されます。
+                                    {% else %}
+                                        تفاصيل الخدمة الاحترافية ستظهر هنا.
+                                    {% endif %}
+                                </p>
+
+                            {% endif %}
+
+                            <div class="service-card-actions">
+
+                                <a
+                                    href="{{ url_for('services.detail', slug=service_slug) }}"
+                                    class="service-details-btn"
+                                >
+                                    {% if current_lang == "en" %}
+                                        View Details
+                                    {% elif current_lang == "ja" %}
+                                        詳細を見る
+                                    {% else %}
+                                        عرض التفاصيل
+                                    {% endif %}
+                                </a>
+
+                                <a
+                                    href="{{ url_for('contact.index') }}"
+                                    class="service-order-btn"
+                                >
+                                    {% if current_lang == "en" %}
+                                        Request Service
+                                    {% elif current_lang == "ja" %}
+                                        サービスを依頼
+                                    {% else %}
+                                        اطلب الخدمة
+                                    {% endif %}
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            {% else %}
+
+                <p class="services-empty-message">
+                    {% if current_lang == "en" %}
+                        No services are currently available.
+                    {% elif current_lang == "ja" %}
+                        現在、表示できるサービスはありません。
+                    {% else %}
+                        لا توجد خدمات ظاهرة حالياً.
+                    {% endif %}
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

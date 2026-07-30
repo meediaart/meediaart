@@ -1,0 +1,141 @@
+/* ==================================================
+   MEDIAART DESIGN SYSTEM
+   الهوية البصرية الأساسية للموقع
+================================================== */
+
+:root {
+
+    /* ==============================================
+       BRAND COLORS
+    ============================================== */
+
+    /*
+    لون الهوية الهادئ:
+    أزرق رمادي غير مزعج، يستخدم فقط للعناصر المهمة.
+    */
+    --ma-accent: #526575;
+    --ma-accent-hover: #3f505e;
+    --ma-accent-soft: rgba(82, 101, 117, 0.12);
+
+    /* الخلفيات */
+    --ma-background: #f7f8f9;
+    --ma-surface: #ffffff;
+    --ma-surface-soft: #f1f3f5;
+
+    /* النصوص */
+    --ma-text: #17202a;
+    --ma-text-secondary: #5f6b76;
+    --ma-text-muted: #87919b;
+
+    /* الحدود */
+    --ma-border: #e3e7ea;
+    --ma-border-strong: #d4dadd;
+
+    /* الهيدر والفوتر */
+    --ma-dark: #111820;
+    --ma-dark-soft: #18212b;
+    --ma-footer-text: #c5cbd1;
+    --ma-footer-muted: #9099a3;
+
+    /* حالات النظام */
+    --ma-success: #39745b;
+    --ma-warning: #a07132;
+    --ma-danger: #a84b4b;
+
+    /* ==============================================
+       TYPOGRAPHY
+    ============================================== */
+
+    --ma-font-family: "Cairo", sans-serif;
+
+    --ma-font-xs: 12px;
+    --ma-font-sm: 14px;
+    --ma-font-md: 16px;
+    --ma-font-lg: 18px;
+    --ma-font-xl: 22px;
+    --ma-font-2xl: 30px;
+    --ma-font-3xl: 42px;
+
+    /* ==============================================
+       SPACING
+    ============================================== */
+
+    --ma-space-1: 4px;
+    --ma-space-2: 8px;
+    --ma-space-3: 12px;
+    --ma-space-4: 16px;
+    --ma-space-5: 24px;
+    --ma-space-6: 32px;
+    --ma-space-7: 48px;
+    --ma-space-8: 64px;
+
+    /* ==============================================
+       BORDER RADIUS
+    ============================================== */
+
+    --ma-radius-sm: 6px;
+    --ma-radius-md: 10px;
+    --ma-radius-lg: 16px;
+    --ma-radius-xl: 24px;
+    --ma-radius-round: 999px;
+
+    /* ==============================================
+       SHADOWS
+    ============================================== */
+
+    --ma-shadow-sm:
+        0 2px 8px rgba(17, 24, 32, 0.05);
+
+    --ma-shadow-md:
+        0 8px 24px rgba(17, 24, 32, 0.08);
+
+    --ma-shadow-lg:
+        0 18px 45px rgba(17, 24, 32, 0.10);
+
+    /* ==============================================
+       MOTION
+    ============================================== */
+
+    --ma-transition-fast: 0.15s ease;
+    --ma-transition: 0.25s ease;
+    --ma-transition-slow: 0.4s ease;
+
+    /* ==============================================
+       LAYOUT
+    ============================================== */
+
+    --ma-container-width: 1240px;
+    --ma-header-height: 66px;
+}
+
+
+/* ==================================================
+   BASE NORMALIZATION
+================================================== */
+
+body {
+    background: var(--ma-background);
+    color: var(--ma-text);
+    font-family: var(--ma-font-family);
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+a {
+    transition:
+        color var(--ma-transition),
+        background-color var(--ma-transition),
+        border-color var(--ma-transition),
+        opacity var(--ma-transition),
+        transform var(--ma-transition);
+}
+
+::selection {
+    background: var(--ma-accent-soft);
+    color: var(--ma-text);
+}

@@ -1,0 +1,343 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}إدارة الخدمات{% endblock %}
+
+{% block content %}
+
+<!-- رأس الصفحة -->
+<div class="admin-page-head">
+    <div>
+        <h2>الخدمات</h2>
+        <p>
+            إدارة خدمات الموقع.
+            عدد النتائج:
+            <strong id="servicesResultsCount">{{ services|length }}</strong>
+        </p>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.create_service') }}"
+           class="admin-btn admin-btn-primary">
+            + إضافة خدمة
+        </a>
+    </div>
+</div>
+
+<div class="page-card">
+
+    <!-- البحث والفلاتر -->
+    <div class="admin-filters">
+
+        <!-- البحث -->
+        <div class="admin-filter-group admin-filter-search">
+            <label for="serviceSearch">البحث</label>
+
+            <input
+                type="search"
+                id="serviceSearch"
+                class="admin-input"
+                placeholder="ابحث بعنوان الخدمة أو الوصف..."
+                autocomplete="off"
+            >
+        </div>
+
+        <!-- فلتر الحالة -->
+        <div class="admin-filter-group">
+            <label for="serviceStatusFilter">الحالة</label>
+
+            <select id="serviceStatusFilter" class="admin-select">
+                <option value="">جميع الحالات</option>
+                <option value="active">مفعل</option>
+                <option value="inactive">مخفي</option>
+            </select>
+        </div>
+
+        <!-- فلتر الرئيسية -->
+        <div class="admin-filter-group">
+            <label for="serviceHomeFilter">الظهور في الرئيسية</label>
+
+            <select id="serviceHomeFilter" class="admin-select">
+                <option value="">الكل</option>
+                <option value="yes">يظهر في الرئيسية</option>
+                <option value="no">لا يظهر في الرئيسية</option>
+            </select>
+        </div>
+
+        <!-- إعادة التعيين -->
+        <div class="admin-filter-group admin-filter-button">
+            <button
+                type="button"
+                id="resetServiceFilters"
+                class="admin-btn admin-btn-secondary"
+            >
+                إعادة تعيين
+            </button>
+        </div>
+
+    </div>
+
+    <!-- جدول الخدمات -->
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>الصورة</th>
+                    <th>العنوان</th>
+                    <th>الوصف</th>
+                    <th>الحالة</th>
+                    <th>الرئيسية</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+
+            <tbody id="servicesTableBody">
+
+                {% for service in services %}
+
+                {% set service_status = 'active' if service.is_active else 'inactive' %}
+                {% set service_home = 'yes' if service.show_on_home else 'no' %}
+                {% set service_description = service.description if service.description else '' %}
+
+                <tr
+                    class="service-row {% if service.show_on_home %}home-highlight{% endif %}"
+                    data-title="{{ service.title|lower }}"
+                    data-description="{{ service_description|lower }}"
+                    data-status="{{ service_status }}"
+                    data-home="{{ service_home }}"
+                >
+
+                    <!-- الصورة -->
+                    <td>
+                        {% if service.image %}
+                            <img
+                                src="{{ url_for('static', filename='uploads/' + service.image) }}"
+                                class="admin-table-img"
+                                alt="{{ service.title }}"
+                            >
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <!-- العنوان -->
+                    <td>
+                        <strong>{{ service.title }}</strong>
+                    </td>
+
+                    <!-- الوصف -->
+                    <td>
+                        {{ service.description[:80] if service.description else "-" }}
+                    </td>
+
+                    <!-- الحالة -->
+                    <td>
+                        {% if service.is_active %}
+                            <span class="status-badge status-completed">
+                                مفعل
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-unpaid">
+                                مخفي
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- الظهور في الرئيسية -->
+                    <td>
+                        <div class="admin-actions">
+
+                            {% if service.show_on_home %}
+
+                                <span class="status-badge status-paid">
+                                    نعم
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_service_home', service_id=service.id) }}"
+                                    class="admin-btn admin-btn-secondary"
+                                >
+                                    إخفاء
+                                </a>
+
+                            {% else %}
+
+                                <span class="status-badge status-unpaid">
+                                    لا
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_service_home', service_id=service.id) }}"
+                                    class="admin-btn admin-btn-primary"
+                                >
+                                    إظهار
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+                    </td>
+
+                    <!-- الإجراءات -->
+                    <td>
+                        <div class="admin-actions">
+
+                            <a
+                                href="{{ url_for('admin.edit_service', service_id=service.id) }}"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                تعديل
+                            </a>
+
+                            <a
+                                href="{{ url_for('admin.delete_service', service_id=service.id) }}"
+                                onclick="return confirm('هل أنت متأكد من حذف هذه الخدمة؟')"
+                                class="admin-btn admin-btn-danger"
+                            >
+                                حذف
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                <!-- لا توجد نتائج مطابقة -->
+                <tr id="noServicesResults" style="display: none;">
+                    <td colspan="6" class="admin-empty-state">
+                        لا توجد خدمات مطابقة للبحث أو الفلاتر.
+                    </td>
+                </tr>
+
+                <!-- لا توجد خدمات أصلًا -->
+                {% if not services %}
+                <tr>
+                    <td colspan="6" class="admin-empty-state">
+                        لا توجد خدمات حاليًا.
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // عناصر البحث والفلاتر
+    const searchInput = document.getElementById("serviceSearch");
+    const statusFilter = document.getElementById("serviceStatusFilter");
+    const homeFilter = document.getElementById("serviceHomeFilter");
+    const resetButton = document.getElementById("resetServiceFilters");
+
+    // صفوف الخدمات
+    const serviceRows = Array.from(
+        document.querySelectorAll(".service-row")
+    );
+
+    // عداد النتائج
+    const resultsCount = document.getElementById("servicesResultsCount");
+
+    // رسالة عدم وجود نتائج
+    const noResultsRow = document.getElementById("noServicesResults");
+
+    /**
+     * توحيد النصوص قبل البحث والمقارنة.
+     */
+    function normalizeText(value) {
+        return String(value || "")
+            .toLowerCase()
+            .trim();
+    }
+
+    /**
+     * تطبيق البحث والفلاتر.
+     */
+    function filterServices() {
+
+        const searchValue = normalizeText(searchInput.value);
+        const statusValue = normalizeText(statusFilter.value);
+        const homeValue = normalizeText(homeFilter.value);
+
+        let visibleCount = 0;
+
+        serviceRows.forEach(function (row) {
+
+            const title = normalizeText(row.dataset.title);
+            const description = normalizeText(row.dataset.description);
+            const status = normalizeText(row.dataset.status);
+            const home = normalizeText(row.dataset.home);
+
+            // البحث في العنوان والوصف
+            const matchesSearch =
+                searchValue === "" ||
+                title.includes(searchValue) ||
+                description.includes(searchValue);
+
+            // فلتر الحالة
+            const matchesStatus =
+                statusValue === "" ||
+                status === statusValue;
+
+            // فلتر الظهور في الرئيسية
+            const matchesHome =
+                homeValue === "" ||
+                home === homeValue;
+
+            const shouldShow =
+                matchesSearch &&
+                matchesStatus &&
+                matchesHome;
+
+            row.style.display = shouldShow ? "" : "none";
+
+            if (shouldShow) {
+                visibleCount++;
+            }
+        });
+
+        // تحديث عداد النتائج
+        resultsCount.textContent = visibleCount;
+
+        // إظهار رسالة عدم وجود نتائج
+        if (serviceRows.length > 0 && visibleCount === 0) {
+            noResultsRow.style.display = "";
+        } else {
+            noResultsRow.style.display = "none";
+        }
+    }
+
+    /**
+     * إعادة البحث والفلاتر إلى الوضع الافتراضي.
+     */
+    function resetFilters() {
+        searchInput.value = "";
+        statusFilter.value = "";
+        homeFilter.value = "";
+
+        filterServices();
+        searchInput.focus();
+    }
+
+    // البحث المباشر أثناء الكتابة
+    searchInput.addEventListener("input", filterServices);
+
+    // الفلاتر
+    statusFilter.addEventListener("change", filterServices);
+    homeFilter.addEventListener("change", filterServices);
+
+    // إعادة التعيين
+    resetButton.addEventListener("click", resetFilters);
+
+    // تشغيل أولي
+    filterServices();
+});
+</script>
+
+{% endblock %}

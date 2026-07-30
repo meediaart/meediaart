@@ -1,3 +1,4 @@
+@import url("./components/cards.css");
 /* Main CSS Loader */
 
 /* الأساس الجديد */
@@ -20,9 +21,7 @@
 @import url("./parts/final-article.css");
 @import url("./parts/final-about.css");
 @import url("./parts/final-responsive.css");
-@import url("./parts/final-admin.css");
 @import url("./parts/final-contact.css");
-
 
 
 /* زر القائمة للجوال */
@@ -87,11 +86,10 @@
 @import url("./parts/final-services.css");
 @import url("./parts/final-blog.css");
 @import url("./parts/final-article.css");
-@import url("./parts/final-portfolio-detail.css");
+
 @import url("./parts/final-portfolio.css");
 @import url("./parts/final-about.css");
 @import url("./parts/final-hero.css");
-
 
 
 
@@ -1147,4 +1145,128 @@ html[dir="rtl"] .blog-card-content .btn-outline {
     background: #dbeafe;
     border-color: #2563eb;
     box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+}
+
+
+.payment-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.payment-status-paid {
+    color: #166534;
+    background-color: #dcfce7;
+    border: 1px solid #86efac;
+}
+
+.payment-status-unpaid {
+    color: #92400e;
+    background-color: #fef3c7;
+    border: 1px solid #fcd34d;
+}
+
+.payment-status-failed {
+    color: #991b1b;
+    background-color: #fee2e2;
+    border: 1px solid #fca5a5;
+}
+
+
+/* ==================================================
+   Customer authentication and account pages
+================================================== */
+
+.customer-auth-page,
+.customer-account-page {
+    padding-block: 60px;
+}
+
+.customer-auth-card {
+    width: min(100%, 500px);
+    margin-inline: auto;
+    padding: 30px;
+    background: #ffffff;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 12px 35px rgba(17, 24, 39, 0.08);
+}
+
+.customer-auth-card .section-title {
+    margin-bottom: 28px;
+    text-align: center;
+}
+
+.customer-auth-form {
+    display: grid;
+    gap: 20px;
+}
+
+.customer-form-group {
+    display: grid;
+    gap: 8px;
+}
+
+.customer-form-group label {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.customer-form-group .form-control {
+    width: 100%;
+}
+
+.customer-auth-submit {
+    width: 100%;
+    margin-top: 4px;
+}
+
+.customer-account-card {
+    width: min(100%, 700px);
+    margin-inline: auto;
+    padding: 24px;
+}
+
+.customer-account-info {
+    display: grid;
+    gap: 14px;
+}
+
+.customer-account-info p {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+.customer-account-actions {
+    display: flex;
+    margin-top: 24px;
+}
+
+@media (max-width: 600px) {
+    .customer-auth-page,
+    .customer-account-page {
+        padding-block: 35px;
+    }
+
+    .customer-auth-card,
+    .customer-account-card {
+        padding: 20px;
+    }
+}
+
+
+/* Form validation messages */
+.form-error {
+    margin: 0;
+    color: #dc2626;
+    font-size: 14px;
+    line-height: 1.6;
 }

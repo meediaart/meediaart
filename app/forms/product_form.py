@@ -67,4 +67,15 @@ class ProductForm(FlaskForm):
     allow_custom_text = BooleanField("السماح بنص مخصص", default=False)
     allow_custom_image = BooleanField("السماح برفع صورة مخصصة", default=False)
 
+        # ===== التقييمات والتعليقات =====
+    ratings_enabled = BooleanField(
+        "تفعيل تقييم النجوم",
+        default=True
+    )
+
+    comments_enabled = BooleanField(
+        "تفعيل التعليقات والصور",
+        default=True
+    )
+
     submit = SubmitField("حفظ المنتج")

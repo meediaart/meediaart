@@ -1,27 +1,51 @@
 {% extends "base.html" %}
 
-{% block title %}تسجيل الدخول{% endblock %}
+{% block title %}تسجيل دخول الإدارة{% endblock %}
 
 {% block content %}
-<div class="page-card" style="max-width: 420px; margin: 40px auto;">
-    <h2>تسجيل الدخول</h2>
+<section class="shop-section customer-auth-page">
+    <div class="container">
+        <div class="customer-auth-card">
+            <h1 class="section-title">تسجيل دخول الإدارة</h1>
 
-    <form method="POST">
-        {{ form.hidden_tag() }}
+            <form method="POST" class="customer-auth-form">
+                {{ form.hidden_tag() }}
 
-        <p>
-            {{ form.username.label }}<br>
-            {{ form.username() }}
-        </p>
+                <div class="customer-form-group">
+                    {{ form.username.label }}
 
-        <p>
-            {{ form.password.label }}<br>
-            {{ form.password() }}
-        </p>
+                    {{ form.username(
+                        class_="form-control",
+                        autocomplete="username"
+                    ) }}
 
-        <p>
-            {{ form.submit() }}
-        </p>
-    </form>
-</div>
+                    {% for error in form.username.errors %}
+                        <p class="form-error" role="alert">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+                </div>
+
+                <div class="customer-form-group">
+                    {{ form.password.label }}
+
+                    {{ form.password(
+                        class_="form-control",
+                        autocomplete="current-password"
+                    ) }}
+
+                    {% for error in form.password.errors %}
+                        <p class="form-error" role="alert">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+                </div>
+
+                {{ form.submit(
+                    class_="btn-primary customer-auth-submit"
+                ) }}
+            </form>
+        </div>
+    </div>
+</section>
 {% endblock %}

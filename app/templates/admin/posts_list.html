@@ -3,83 +3,242 @@
 {% block admin_page_title %}إدارة المقالات{% endblock %}
 
 {% block content %}
+
+<!-- رأس الصفحة -->
 <div class="admin-page-head">
     <div>
         <h2>قائمة المقالات</h2>
-        <p>إدارة مقالات المدونة والتحكم في ظهورها.</p>
+        <p>
+            إدارة مقالات المدونة والتحكم في ظهورها.
+            عدد النتائج:
+            <strong id="postsResultsCount">{{ posts|length }}</strong>
+        </p>
     </div>
 
     <div class="admin-actions">
-        <a href="{{ url_for('admin.create_post') }}" class="admin-btn admin-btn-primary">
+        <a href="{{ url_for('admin.create_post') }}"
+           class="admin-btn admin-btn-primary">
             + إضافة مقال
         </a>
     </div>
 </div>
 
 <div class="page-card">
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>العنوان</th>
-                <th>الرابط</th>
-                <th>الحالة</th>
-                <th>الرئيسية</th>
-                <th>الإجراءات</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for post in posts %}
-            <tr class="{% if post.show_on_home %}home-highlight{% endif %}">
-                <td>{{ post.title }}</td>
-                <td>{{ post.slug }}</td>
 
-                <td>
-                    <div class="admin-actions">
-                        {% if post.is_active %}
-                            <span class="status-badge status-completed">منشور</span>
-                            <a href="{{ url_for('admin.toggle_post_active', post_id=post.id) }}" class="admin-btn admin-btn-secondary">
-                                إخفاء
-                            </a>
-                        {% else %}
-                            <span class="status-badge status-unpaid">مخفي</span>
-                            <a href="{{ url_for('admin.toggle_post_active', post_id=post.id) }}" class="admin-btn admin-btn-primary">
-                                نشر
-                            </a>
-                        {% endif %}
-                    </div>
-                </td>
+    <!-- البحث والفلاتر -->
+    <div class="admin-filters">
 
-                <td>
-                    <div class="admin-actions">
-                        {% if post.show_on_home %}
-                            <span class="status-badge status-paid">نعم</span>
-                            <a href="{{ url_for('admin.toggle_post_home', post_id=post.id) }}" class="admin-btn admin-btn-secondary">
-                                إخفاء
-                            </a>
-                        {% else %}
-                            <span class="status-badge status-unpaid">لا</span>
-                            <a href="{{ url_for('admin.toggle_post_home', post_id=post.id) }}" class="admin-btn admin-btn-primary">
-                                إظهار
-                            </a>
-                        {% endif %}
-                    </div>
-                </td>
+        <!-- البحث -->
+        <div class="admin-filter-group admin-filter-search">
+            <label for="postSearch">البحث</label>
 
-                <td>
-                    <div class="admin-actions">
-                        <a href="{{ url_for('admin.edit_post', post_id=post.id) }}" class="admin-btn admin-btn-secondary">
-                            تعديل
-                        </a>
-                        <a href="{{ url_for('admin.delete_post', post_id=post.id) }}"
-                           onclick="return confirm('هل أنت متأكد من الحذف؟')"
-                           class="admin-btn admin-btn-danger">
-                            حذف
-                        </a>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            <input
+                type="search"
+                id="postSearch"
+                class="admin-input"
+                placeholder="ابحث بعنوان المقال أو الرابط..."
+                autocomplete="off"
+            >
+        </div>
+
+        <!-- فلتر حالة المقال -->
+        <div class="admin-filter-group">
+            <label for="postStatusFilter">الحالة</label>
+
+            <select id="postStatusFilter" class="admin-select">
+                <option value="">جميع الحالات</option>
+                <option value="active">منشور</option>
+                <option value="inactive">مخفي</option>
+            </select>
+        </div>
+
+        <!-- فلتر الظهور في الرئيسية -->
+        <div class="admin-filter-group">
+            <label for="postHomeFilter">الظهور في الرئيسية</label>
+
+            <select id="postHomeFilter" class="admin-select">
+                <option value="">الكل</option>
+                <option value="yes">يظهر في الرئيسية</option>
+                <option value="no">لا يظهر في الرئيسية</option>
+            </select>
+        </div>
+
+        <!-- إعادة التعيين -->
+        <div class="admin-filter-group admin-filter-button">
+            <button
+                type="button"
+                id="resetPostFilters"
+                class="admin-btn admin-btn-secondary"
+            >
+                إعادة تعيين
+            </button>
+        </div>
+
+    </div>
+
+    <!-- جدول المقالات -->
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>العنوان</th>
+                    <th>الرابط</th>
+                    <th>الحالة</th>
+                    <th>الرئيسية</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+
+            <tbody id="postsTableBody">
+
+                {% for post in posts %}
+
+                {% set post_status = 'active' if post.is_active else 'inactive' %}
+                {% set post_home = 'yes' if post.show_on_home else 'no' %}
+
+                <tr
+                    class="post-row {% if post.show_on_home %}home-highlight{% endif %}"
+                    data-title="{{ post.title|lower }}"
+                    data-slug="{{ post.slug|lower }}"
+                    data-status="{{ post_status }}"
+                    data-home="{{ post_home }}"
+                >
+
+                    <!-- عنوان المقال -->
+                    <td>
+                        <strong>{{ post.title }}</strong>
+                    </td>
+
+                    <!-- الرابط -->
+                    <td>
+                        {{ post.slug }}
+                    </td>
+
+                    <!-- الحالة -->
+                    <td>
+                        <div class="admin-actions">
+
+                            {% if post.is_active %}
+
+                                <span class="status-badge status-completed">
+                                    منشور
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_post_active', post_id=post.id) }}"
+                                    class="admin-btn admin-btn-secondary"
+                                >
+                                    إخفاء
+                                </a>
+
+                            {% else %}
+
+                                <span class="status-badge status-unpaid">
+                                    مخفي
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_post_active', post_id=post.id) }}"
+                                    class="admin-btn admin-btn-primary"
+                                >
+                                    نشر
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+                    </td>
+
+                    <!-- الظهور في الصفحة الرئيسية -->
+                    <td>
+                        <div class="admin-actions">
+
+                            {% if post.show_on_home %}
+
+                                <span class="status-badge status-paid">
+                                    نعم
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_post_home', post_id=post.id) }}"
+                                    class="admin-btn admin-btn-secondary"
+                                >
+                                    إخفاء
+                                </a>
+
+                            {% else %}
+
+                                <span class="status-badge status-unpaid">
+                                    لا
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_post_home', post_id=post.id) }}"
+                                    class="admin-btn admin-btn-primary"
+                                >
+                                    إظهار
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+                    </td>
+
+                    <!-- الإجراءات -->
+                    <td>
+                        <div class="admin-actions">
+
+                            <a
+                                href="{{ url_for('admin.edit_post', post_id=post.id) }}"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                تعديل
+                            </a>
+
+                            <a
+    href="{{ url_for('admin.delete_post', post_id=post.id) }}"
+    class="admin-btn admin-btn-danger js-confirm-delete"
+    data-confirm-message="هل أنت متأكد من حذف هذا المقال؟"
+>
+    حذف
+</a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                <!-- رسالة عدم وجود نتائج -->
+                <tr id="noPostsResults" class="admin-hidden"></tr>
+                    <td colspan="5" class="admin-empty-state">
+                        لا توجد مقالات مطابقة للبحث أو الفلاتر.
+                    </td>
+                </tr>
+
+                <!-- عند عدم وجود مقالات أصلًا -->
+                {% if not posts %}
+                <tr>
+                    <td colspan="5" class="admin-empty-state">
+                        لا توجد مقالات حاليًا.
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+
+        </table>
+    </div>
+
 </div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script
+    src="{{ url_for('static', filename='js/admin/posts-list.js') }}?v=2"
+></script>
 {% endblock %}

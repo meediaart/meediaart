@@ -1,0 +1,214 @@
+/* ===========================
+   Admin Page Header
+=========================== */
+
+.admin-page-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    flex-wrap:wrap;
+    margin-bottom:25px;
+}
+
+.admin-page-head h2{
+    margin:0;
+    font-size:28px;
+}
+
+.admin-page-head p{
+    margin-top:8px;
+    color:#777;
+}
+
+/* ===========================
+   Card
+=========================== */
+
+.page-card{
+    background:#fff;
+    border-radius:14px;
+    padding:22px;
+    box-shadow:0 8px 20px rgba(0,0,0,.06);
+}
+
+/* ===========================
+   Filters
+=========================== */
+
+.admin-filters{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:25px;
+}
+
+.admin-filter-group{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.admin-filter-search{
+    flex:1;
+    min-width:280px;
+}
+
+.admin-input,
+.admin-select{
+
+    width:100%;
+    padding:11px 14px;
+
+    border:1px solid #ddd;
+    border-radius:10px;
+
+    transition:.2s;
+}
+
+.admin-input:focus,
+.admin-select:focus{
+
+    outline:none;
+    border-color:#1f7ae0;
+}
+
+/* ===========================
+   Buttons
+=========================== */
+
+.admin-btn{
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:8px;
+
+    padding:10px 16px;
+
+    border:none;
+    border-radius:10px;
+
+    cursor:pointer;
+    text-decoration:none;
+    transition:.2s;
+}
+
+.admin-btn-primary{
+
+    background:#1f7ae0;
+    color:#fff;
+}
+
+.admin-btn-secondary{
+
+    background:#ececec;
+    color:#222;
+}
+
+.admin-btn-danger{
+
+    background:#e53935;
+    color:#fff;
+}
+
+.admin-btn:hover{
+
+    transform:translateY(-2px);
+}
+
+
+
+/* ===========================
+   Table
+=========================== */
+
+.admin-table-wrapper{
+
+    overflow:auto;
+}
+
+.admin-table{
+
+    width:100%;
+    border-collapse:collapse;
+}
+
+.admin-table th{
+
+    background:#f6f7fa;
+    padding:14px;
+    text-align:right;
+}
+
+.admin-table td{
+
+    padding:14px;
+    border-top:1px solid #eee;
+    vertical-align:middle;
+}
+
+.admin-table tr:hover{
+
+    background:#fafafa;
+}
+
+/* ===========================
+   Images
+=========================== */
+
+.admin-table-img{
+
+    width:70px;
+    height:70px;
+
+    object-fit:cover;
+
+    border-radius:10px;
+}
+
+/* ===========================
+   Status
+=========================== */
+
+.status-badge{
+
+    display:inline-block;
+
+    padding:6px 12px;
+
+    border-radius:20px;
+
+    font-size:13px;
+}
+
+.status-completed{
+
+    background:#dff5e3;
+    color:#18763b;
+}
+
+.status-unpaid{
+
+    background:#fde3e3;
+    color:#b12020;
+}
+
+/* ===========================
+   Helpers
+=========================== */
+
+.admin-hidden{
+
+    display:none !important;
+}
+
+.admin-empty-state{
+
+    text-align:center;
+    padding:35px;
+    color:#777;
+}
+
+

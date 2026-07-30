@@ -3,6 +3,7 @@
 {% block admin_page_title %}{{ page_title }}{% endblock %}
 
 {% block content %}
+
 <div class="admin-page-head">
     <div>
         <h2>{{ page_title }}</h2>
@@ -10,25 +11,60 @@
     </div>
 
     <div class="admin-actions">
-        <a href="{{ url_for('admin.products_list') }}" class="admin-btn admin-btn-secondary">رجوع</a>
+        <a
+            href="{{ url_for('admin.products_list') }}"
+            class="admin-btn admin-btn-secondary"
+        >
+            رجوع
+        </a>
     </div>
 </div>
 
 <div class="page-card service-form-card">
-    <form method="POST" enctype="multipart/form-data" class="admin-update-form">
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        class="admin-update-form"
+    >
         {{ form.hidden_tag() }}
 
         <div class="lang-tabs">
-            <button type="button" class="lang-tab-btn active" data-tab="tab-ar">العربية</button>
-            <button type="button" class="lang-tab-btn" data-tab="tab-en">English</button>
-            <button type="button" class="lang-tab-btn" data-tab="tab-ja">日本語</button>
+            <button
+                type="button"
+                class="lang-tab-btn active"
+                data-tab="tab-ar"
+            >
+                العربية
+            </button>
+
+            <button
+                type="button"
+                class="lang-tab-btn"
+                data-tab="tab-en"
+            >
+                English
+            </button>
+
+            <button
+                type="button"
+                class="lang-tab-btn"
+                data-tab="tab-ja"
+            >
+                日本語
+            </button>
         </div>
 
         <!-- العربية -->
-        <div id="tab-ar" class="lang-tab-pane active" dir="rtl">
+        <div
+            id="tab-ar"
+            class="lang-tab-pane active"
+            dir="rtl"
+        >
             <h3>العربية</h3>
 
             <div class="lang-grid">
+
                 <div class="admin-form-group">
                     {{ form.title_ar.label }}
                     {{ form.title_ar(class="form-control") }}
@@ -58,22 +94,30 @@
                     {{ form.meta_description_ar.label }}
                     {{ form.meta_description_ar(class="form-control") }}
                 </div>
+
                 <div class="admin-form-group">
-    {{ form.display_order.label }}
-    {{ form.display_order(class="form-control") }}
-</div>
+                    {{ form.display_order.label }}
+                    {{ form.display_order(class="form-control") }}
+                </div>
+
             </div>
 
             <div class="admin-checkbox">
-                {{ form.is_active_ar() }} {{ form.is_active_ar.label }}
+                {{ form.is_active_ar() }}
+                {{ form.is_active_ar.label }}
             </div>
         </div>
 
         <!-- الإنجليزية -->
-        <div id="tab-en" class="lang-tab-pane" dir="ltr">
+        <div
+            id="tab-en"
+            class="lang-tab-pane"
+            dir="ltr"
+        >
             <h3>English</h3>
 
             <div class="lang-grid">
+
                 <div class="admin-form-group">
                     {{ form.title_en.label }}
                     {{ form.title_en(class="form-control") }}
@@ -103,18 +147,25 @@
                     {{ form.meta_description_en.label }}
                     {{ form.meta_description_en(class="form-control") }}
                 </div>
+
             </div>
 
             <div class="admin-checkbox ltr-check">
-                {{ form.is_active_en() }} {{ form.is_active_en.label }}
+                {{ form.is_active_en() }}
+                {{ form.is_active_en.label }}
             </div>
         </div>
 
         <!-- اليابانية -->
-        <div id="tab-ja" class="lang-tab-pane" dir="ltr">
+        <div
+            id="tab-ja"
+            class="lang-tab-pane"
+            dir="ltr"
+        >
             <h3>日本語</h3>
 
             <div class="lang-grid">
+
                 <div class="admin-form-group">
                     {{ form.title_ja.label }}
                     {{ form.title_ja(class="form-control") }}
@@ -144,26 +195,34 @@
                     {{ form.meta_description_ja.label }}
                     {{ form.meta_description_ja(class="form-control") }}
                 </div>
+
             </div>
 
             <div class="admin-checkbox ltr-check">
-                {{ form.is_active_ja() }} {{ form.is_active_ja.label }}
+                {{ form.is_active_ja() }}
+                {{ form.is_active_ja.label }}
             </div>
         </div>
 
         <!-- إعدادات عامة -->
         <div class="general-settings-box">
+
             <h3>إعدادات عامة</h3>
 
             <div class="general-grid">
+
                 <div class="admin-form-group">
                     {{ form.price.label }}
                     {{ form.price(class="form-control") }}
                 </div>
+
                 <div class="admin-form-group">
-    {{ form.discount_percent.label }}
-    {{ form.discount_percent(class="form-control", placeholder="مثال: 10") }}
-</div>
+                    {{ form.discount_percent.label }}
+                    {{ form.discount_percent(
+                        class="form-control",
+                        placeholder="مثال: 10"
+                    ) }}
+                </div>
 
                 <div class="admin-form-group">
                     {{ form.category_id.label }}
@@ -171,19 +230,21 @@
                 </div>
 
                 <div class="admin-form-group">
-    {{ form.image.label }}
-    {{ form.image(class="form-control") }}
+                    {{ form.image.label }}
+                    {{ form.image(class="form-control") }}
 
-    {% if form.image.data %}
-        <small>الصورة الرئيسية الحالية محفوظة.</small>
-    {% endif %}
-</div>
+                    {% if form.image.data %}
+                        <small>الصورة الرئيسية الحالية محفوظة.</small>
+                    {% endif %}
+                </div>
 
-<div class="admin-form-group">
-    {{ form.images.label }}
-    {{ form.images(class="form-control") }}
-    <small>يمكنك اختيار أكثر من صورة إضافية للمنتج.</small>
-</div>
+                <div class="admin-form-group">
+                    {{ form.images.label }}
+                    {{ form.images(class="form-control") }}
+                    <small>
+                        يمكنك اختيار أكثر من صورة إضافية للمنتج.
+                    </small>
+                </div>
 
                 <div class="admin-form-group">
                     {{ form.has_colors.label }}
@@ -214,23 +275,41 @@
                     {{ form.allow_custom_image.label }}
                     {{ form.allow_custom_image() }}
                 </div>
+
             </div>
 
             <div class="general-checks">
+
                 <div class="admin-checkbox">
-                    {{ form.is_active() }} {{ form.is_active.label }}
+                    {{ form.is_active() }}
+                    {{ form.is_active.label }}
                 </div>
 
                 <div class="admin-checkbox">
-                    {{ form.show_on_home() }} {{ form.show_on_home.label }}
+                    {{ form.show_on_home() }}
+                    {{ form.show_on_home.label }}
                 </div>
+
+                <div class="admin-checkbox">
+                    {{ form.ratings_enabled() }}
+                    {{ form.ratings_enabled.label }}
+                </div>
+
+                <div class="admin-checkbox">
+                    {{ form.comments_enabled() }}
+                    {{ form.comments_enabled.label }}
+                </div>
+
             </div>
+
         </div>
 
         <div class="admin-actions">
             {{ form.submit(class="admin-btn admin-btn-primary") }}
         </div>
+
     </form>
+
 </div>
 
 <script>
@@ -238,17 +317,27 @@ document.addEventListener("DOMContentLoaded", function () {
     const buttons = document.querySelectorAll(".lang-tab-btn");
     const panes = document.querySelectorAll(".lang-tab-pane");
 
-    buttons.forEach(btn => {
-        btn.addEventListener("click", function () {
+    buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
             const target = this.dataset.tab;
+            const targetPane = document.getElementById(target);
 
-            buttons.forEach(b => b.classList.remove("active"));
-            panes.forEach(p => p.classList.remove("active"));
+            buttons.forEach(function (item) {
+                item.classList.remove("active");
+            });
+
+            panes.forEach(function (pane) {
+                pane.classList.remove("active");
+            });
 
             this.classList.add("active");
-            document.getElementById(target).classList.add("active");
+
+            if (targetPane) {
+                targetPane.classList.add("active");
+            }
         });
     });
 });
 </script>
+
 {% endblock %}

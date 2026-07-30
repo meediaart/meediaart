@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}تسجيل الدخول{% endblock %}
+
+{% block content %}
+<div class="page-card" style="max-width: 420px; margin: 40px auto;">
+    <h2>تسجيل الدخول</h2>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <p>
+            {{ form.username.label }}<br>
+            {{ form.username() }}
+        </p>
+
+        <p>
+            {{ form.password.label }}<br>
+            {{ form.password() }}
+        </p>
+
+        <p>
+            {{ form.submit() }}
+        </p>
+    </form>
+</div>
+{% endblock %}

@@ -72,17 +72,94 @@
                             </div>
 
                             <div>
-                                <span>
-                                    {% if current_lang == "en" %}
-                                        Payment
-                                    {% elif current_lang == "ja" %}
-                                        支払い
-                                    {% else %}
-                                        الدفع
-                                    {% endif %}
-                                </span>
-                                <strong>{{ order.payment_method }}</strong>
-                            </div>
+    <span>
+        {% if current_lang == "en" %}
+            Payment Method
+        {% elif current_lang == "ja" %}
+            支払い方法
+        {% else %}
+            طريقة الدفع
+        {% endif %}
+    </span>
+
+    <strong>
+        {% if order.payment_method == "whatsapp" %}
+            {% if current_lang == "en" %}
+                WhatsApp
+            {% elif current_lang == "ja" %}
+                WhatsApp
+            {% else %}
+                واتساب
+            {% endif %}
+
+        {% elif order.payment_method == "stripe" %}
+            Stripe
+
+        {% elif order.payment_method == "cod" %}
+            {% if current_lang == "en" %}
+                Cash on Delivery
+            {% elif current_lang == "ja" %}
+                代金引換
+            {% else %}
+                الدفع عند التسليم
+            {% endif %}
+
+        {% elif order.payment_method == "pending" %}
+            {% if current_lang == "en" %}
+                Not selected yet
+            {% elif current_lang == "ja" %}
+                未選択
+            {% else %}
+                لم يحدد بعد
+            {% endif %}
+
+        {% else %}
+            {{ order.payment_method or "-" }}
+        {% endif %}
+    </strong>
+</div>
+
+<div>
+    <span>
+        {% if current_lang == "en" %}
+            Payment Status
+        {% elif current_lang == "ja" %}
+            支払い状況
+        {% else %}
+            حالة الدفع
+        {% endif %}
+    </span>
+
+    <strong class="payment-status-badge payment-status-{{ order.payment_status }}">
+        {% if order.payment_status == "paid" %}
+            {% if current_lang == "en" %}
+                Paid
+            {% elif current_lang == "ja" %}
+                支払い済み
+            {% else %}
+                مدفوع
+            {% endif %}
+
+        {% elif order.payment_status == "failed" %}
+            {% if current_lang == "en" %}
+                Payment Failed
+            {% elif current_lang == "ja" %}
+                支払い失敗
+            {% else %}
+                فشل الدفع
+            {% endif %}
+
+        {% else %}
+            {% if current_lang == "en" %}
+                Unpaid
+            {% elif current_lang == "ja" %}
+                未払い
+            {% else %}
+                غير مدفوع
+            {% endif %}
+        {% endif %}
+    </strong>
+</div>
 
                             <div>
                                 <span>

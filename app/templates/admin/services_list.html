@@ -3,97 +3,235 @@
 {% block admin_page_title %}إدارة الخدمات{% endblock %}
 
 {% block content %}
+
+<!-- رأس الصفحة -->
 <div class="admin-page-head">
     <div>
         <h2>الخدمات</h2>
-        <p>إدارة خدمات الموقع.</p>
+        <p>
+            إدارة خدمات الموقع.
+            عدد النتائج:
+            <strong id="servicesResultsCount">{{ services|length }}</strong>
+        </p>
     </div>
 
     <div class="admin-actions">
-        <a href="{{ url_for('admin.create_service') }}" class="admin-btn admin-btn-primary">
+        <a href="{{ url_for('admin.create_service') }}"
+           class="admin-btn admin-btn-primary">
             + إضافة خدمة
         </a>
     </div>
 </div>
 
-{% if services %}
-<div class="admin-table-wrap">
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>الصورة</th>
-                <th>العنوان</th>
-                <th>الوصف</th>
-                <th>الحالة</th>
-                <th>الرئيسية</th>
-                <th>الإجراءات</th>
-            </tr>
-        </thead>
+<div class="page-card">
 
-        <tbody>
-            {% for service in services %}
-            <tr class="{% if service.show_on_home %}home-highlight{% endif %}">
+    <!-- البحث والفلاتر -->
+    <div class="admin-filters">
 
-                <td>
-                    {% if service.image %}
-                        <img src="{{ url_for('static', filename='uploads/' + service.image) }}" class="admin-table-img">
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
+        <!-- البحث -->
+        <div class="admin-filter-group admin-filter-search">
+            <label for="serviceSearch">البحث</label>
 
-                <td>{{ service.title }}</td>
+            <input
+                type="search"
+                id="serviceSearch"
+                class="admin-input"
+                placeholder="ابحث بعنوان الخدمة أو الوصف..."
+                autocomplete="off"
+            >
+        </div>
 
-                <td>{{ service.description[:80] if service.description else "-" }}</td>
+        <!-- فلتر الحالة -->
+        <div class="admin-filter-group">
+            <label for="serviceStatusFilter">الحالة</label>
 
-                <td>
-                    {% if service.is_active %}
-                        <span class="status-badge status-completed">مفعل</span>
-                    {% else %}
-                        <span class="status-badge status-unpaid">مخفي</span>
-                    {% endif %}
-                </td>
+            <select id="serviceStatusFilter" class="admin-select">
+                <option value="">جميع الحالات</option>
+                <option value="active">مفعل</option>
+                <option value="inactive">مخفي</option>
+            </select>
+        </div>
 
-                <td>
-                    <div class="admin-actions">
-                        {% if service.show_on_home %}
-                            <span class="status-badge status-paid">نعم</span>
-                            <a href="{{ url_for('admin.toggle_service_home', service_id=service.id) }}"
-                               class="admin-btn admin-btn-secondary">
-                                إخفاء
-                            </a>
+        <!-- فلتر الرئيسية -->
+        <div class="admin-filter-group">
+            <label for="serviceHomeFilter">الظهور في الرئيسية</label>
+
+            <select id="serviceHomeFilter" class="admin-select">
+                <option value="">الكل</option>
+                <option value="yes">يظهر في الرئيسية</option>
+                <option value="no">لا يظهر في الرئيسية</option>
+            </select>
+        </div>
+
+        <!-- إعادة التعيين -->
+        <div class="admin-filter-group admin-filter-button">
+            <button
+                type="button"
+                id="resetServiceFilters"
+                class="admin-btn admin-btn-secondary"
+            >
+                إعادة تعيين
+            </button>
+        </div>
+
+    </div>
+
+    <!-- جدول الخدمات -->
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>الصورة</th>
+                    <th>العنوان</th>
+                    <th>الوصف</th>
+                    <th>الحالة</th>
+                    <th>الرئيسية</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+
+            <tbody id="servicesTableBody">
+
+                {% for service in services %}
+
+                {% set service_status = 'active' if service.is_active else 'inactive' %}
+                {% set service_home = 'yes' if service.show_on_home else 'no' %}
+                {% set service_title = service.title_ar or service.title_en or service.title_ja or '' %}
+{% set service_description = service.short_description_ar or service.short_description_en or service.short_description_ja or '' %}
+
+                <tr
+                    class="service-row {% if service.show_on_home %}home-highlight{% endif %}"
+                    data-title="{{ service_title|lower }}"
+                    data-description="{{ service_description|lower }}"
+                    data-status="{{ service_status }}"
+                    data-home="{{ service_home }}"
+                >
+
+                    <!-- الصورة -->
+                    <td>
+                        {% if service.image %}
+                            <img
+                                src="{{ url_for('static', filename='uploads/' + service.image) }}"
+                                class="admin-table-img"
+                                alt="{{ service_title }}"
+                            >
                         {% else %}
-                            <span class="status-badge status-unpaid">لا</span>
-                            <a href="{{ url_for('admin.toggle_service_home', service_id=service.id) }}"
-                               class="admin-btn admin-btn-primary">
-                                إظهار
-                            </a>
+                            -
                         {% endif %}
-                    </div>
+                    </td>
+
+                    <!-- العنوان -->
+                    <td>
+                        <strong>{{ service_title }}</strong>
+                    </td>
+
+                    <!-- الوصف -->
+                    <td>
+                        {{ service_description[:80] if service_description else "-" }}
+                    </td>
+
+                    <!-- الحالة -->
+                    <td>
+                        {% if service.is_active %}
+                            <span class="status-badge status-completed">
+                                مفعل
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-unpaid">
+                                مخفي
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- الظهور في الرئيسية -->
+                    <td>
+                        <div class="admin-actions">
+
+                            {% if service.show_on_home %}
+
+                                <span class="status-badge status-paid">
+                                    نعم
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_service_home', service_id=service.id) }}"
+                                    class="admin-btn admin-btn-secondary"
+                                >
+                                    إخفاء
+                                </a>
+
+                            {% else %}
+
+                                <span class="status-badge status-unpaid">
+                                    لا
+                                </span>
+
+                                <a
+                                    href="{{ url_for('admin.toggle_service_home', service_id=service.id) }}"
+                                    class="admin-btn admin-btn-primary"
+                                >
+                                    إظهار
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+                    </td>
+
+                    <!-- الإجراءات -->
+                    <td>
+                        <div class="admin-actions">
+
+                            <a
+                                href="{{ url_for('admin.edit_service', service_id=service.id) }}"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                تعديل
+                            </a>
+
+                            <a
+                                href="{{ url_for('admin.delete_service', service_id=service.id) }}"
+                                class="admin-btn admin-btn-danger js-confirm-delete"
+                                data-confirm-message="هل أنت متأكد من حذف هذه الخدمة؟"
+                            >
+                                حذف
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                <!-- لا توجد نتائج مطابقة -->
+                <tr id="noServicesResults" class="admin-hidden">
+                <td colspan="6" class="admin-empty-state">
+                    لا توجد خدمات مطابقة للبحث أو الفلاتر.
                 </td>
-
-                <td>
-                    <div class="admin-actions">
-                        <a href="{{ url_for('admin.edit_service', service_id=service.id) }}"
-                           class="admin-btn admin-btn-secondary">
-                            تعديل
-                        </a>
-
-                        <a href="{{ url_for('admin.delete_service', service_id=service.id) }}"
-                           onclick="return confirm('هل أنت متأكد من الحذف؟')"
-                           class="admin-btn admin-btn-danger">
-                            حذف
-                        </a>
-                    </div>
-                </td>
-
             </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+                <!-- لا توجد خدمات أصلًا -->
+                {% if not services %}
+                <tr>
+                    <td colspan="6" class="admin-empty-state">
+                        لا توجد خدمات حاليًا.
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+
+        </table>
+    </div>
+
 </div>
 
-{% else %}
-<p>لا توجد خدمات حالياً.</p>
-{% endif %}
+
+{% endblock %}
+{% block extra_js %}
+<script
+    src="{{ url_for('static', filename='js/admin/services-list.js') }}?v=1"
+></script>
 {% endblock %}

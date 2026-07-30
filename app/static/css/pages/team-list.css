@@ -1,0 +1,110 @@
+.team-page-card {
+        overflow: hidden;
+    }
+
+    .team-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        margin-top: 20px;
+    }
+
+    .team-table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+    }
+
+    .team-table th,
+    .team-table td {
+        padding: 12px 10px;
+        vertical-align: middle;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .team-table th:first-child,
+    .team-table td:first-child {
+        width: 90px;
+        text-align: center;
+    }
+
+    .team-member-image {
+        width: 70px;
+        height: 70px;
+        max-width: 70px;
+        min-width: 70px;
+        object-fit: cover;
+        object-position: center;
+        border-radius: 10px;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .team-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .team-filters {
+        display: grid;
+        grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(170px, 1fr)) auto;
+        gap: 15px;
+        align-items: end;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .team-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .team-filter-group label {
+        font-weight: 600;
+    }
+
+    .team-filter-group input,
+    .team-filter-group select {
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 12px;
+        border: 1px solid #d8dce3;
+        border-radius: 8px;
+        background: #fff;
+        box-sizing: border-box;
+    }
+
+    .team-reset-button {
+        min-height: 42px;
+        white-space: nowrap;
+    }
+
+    .team-empty-state {
+        text-align: center !important;
+        padding: 28px !important;
+    }
+
+    @media (max-width: 900px) {
+        .team-filters {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .team-filters {
+            grid-template-columns: 1fr;
+        }
+
+        .team-reset-button {
+            width: 100%;
+        }
+
+        .section-header {
+            align-items: flex-start;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+    }

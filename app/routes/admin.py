@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import login_required
 from werkzeug.utils import secure_filename
 import os
+
 
 from config import UPLOAD_FOLDER
 from app.extensions import db
@@ -17,6 +19,7 @@ from app.forms.category_form import CategoryForm
 from app.forms.user_form import UserForm
 from app.forms.project_form import ProjectForm
 from app.forms.post_form import PostForm
+from app.models.product_review import ProductReview
 
 
 from app.models.service import Service
@@ -45,6 +48,7 @@ from app.models.newsletter_subscriber import NewsletterSubscriber
 import csv
 from io import StringIO
 from flask import Response
+from app.utils.image_helper import optimize_image
 
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/dash770813890")
@@ -101,12 +105,20 @@ def create_service():
         if form.slug_ja.data and Service.query.filter_by(slug_ja=form.slug_ja.data).first():
             flash("الرابط الياباني مستخدم مسبقًا", "error")
             return render_template("admin/service_form.html", form=form, page_title="إضافة خدمة")
-
         filename = None
-        if form.image.data and hasattr(form.image.data, "filename") and form.image.data.filename:
-            file = form.image.data
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
+
+        if (
+        form.image.data
+        and hasattr(form.image.data, "filename")
+        and form.image.data.filename
+        ):
+         filename = optimize_image(
+            file=form.image.data,
+            upload_folder=UPLOAD_FOLDER,
+            quality=85,
+            max_width=1600
+        )
+        
         if form.validate_on_submit():
             slug_en = form.slug_en.data.strip() if form.slug_en.data else None
             slug_ja = form.slug_ja.data.strip() if form.slug_ja.data else None
@@ -190,7 +202,7 @@ def edit_service(service_id):
 
         # العربية
         service.title_ar = form.title_ar.data
-        service.slug_ar = form.slug_ar.data
+        service.slug_ar = form.slug_ja.data.strip() if form.slug_ar.data else None
         service.short_description_ar = form.short_description_ar.data
         service.description_ar = form.description_ar.data
         service.keywords_ar = form.keywords_ar.data
@@ -200,7 +212,7 @@ def edit_service(service_id):
 
         # الإنجليزية
         service.title_en = form.title_en.data
-        service.slug_en = form.slug_en.data
+        service.slug_en = form.slug_en.data.strip() if form.slug_en.data else None
         service.short_description_en = form.short_description_en.data
         service.description_en = form.description_en.data
         service.keywords_en = form.keywords_en.data
@@ -210,7 +222,7 @@ def edit_service(service_id):
 
         # اليابانية
         service.title_ja = form.title_ja.data
-        service.slug_ja = form.slug_ja.data
+        service.slug_ja = form.slug_ja.data.strip() if form.slug_ja.data else None
         service.short_description_ja = form.short_description_ja.data
         service.description_ja = form.description_ja.data
         service.keywords_ja = form.keywords_ja.data
@@ -224,6 +236,12 @@ def edit_service(service_id):
         service.display_order = form.display_order.data or 0
         service.is_active = form.is_active.data
         service.show_on_home = form.show_on_home.data
+        
+        print("=" * 50)
+        print("slug_ar:", repr(form.slug_ar.data))
+        print("slug_en:", repr(form.slug_en.data))
+        print("slug_ja:", repr(form.slug_ja.data))
+        print("=" * 50)
 
         db.session.commit()
 
@@ -255,49 +273,156 @@ def pages_list():
 @login_required
 def create_page():
     form = PageForm()
-
+    form.parent_id.choices = [(0, "— لا يوجد —")] + [
+    (
+        p.id,
+        p.title_ar or p.title
+    )
+    for p in Page.query
+    .filter_by(is_active=True)
+    .order_by(Page.display_order.asc())
+    .all()
+]
     if form.validate_on_submit():
-        existing = Page.query.filter_by(slug=form.slug.data).first()
+
+        # التحقق من عدم تكرار الرابط العربي
+        existing = Page.query.filter_by(
+            slug_ar=form.slug_ar.data
+        ).first()
+
         if existing:
-            flash("الرابط مستخدم مسبقًا", "error")
-            return render_template("admin/page_form.html", form=form, page_title="إضافة صفحة")
+            flash("الرابط العربي مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/page_form.html",
+                form=form,
+                page_title="إضافة صفحة"
+            )
 
         page = Page(
-            title=form.title.data,
-            slug=form.slug.data,
-            content=form.content.data,
-            is_active=form.is_active.data
+            
+
+            # العناوين
+            title=form.title_ar.data,
+            title_ar=form.title_ar.data,
+            title_en=form.title_en.data,
+            title_ja=form.title_ja.data,
+
+            # الروابط
+            slug=form.slug_ar.data,
+            slug_ar=form.slug_ar.data,
+            slug_en=form.slug_en.data,
+            slug_ja=form.slug_ja.data,
+
+            # المحتوى القديم — نُبقيه مؤقتًا حتى لا تتعطل الصفحات القديمة
+            content=form.content_ar.data or "",
+
+            # المحتوى متعدد اللغات
+            content_ar=form.content_ar.data,
+            content_en=form.content_en.data,
+            content_ja=form.content_ja.data,
+            # الإعدادات
+            page_type=form.page_type.data,
+            template=form.template.data,
+            display_order=form.display_order.data,
+
+            # أماكن الظهور
+            show_in_menu=form.show_in_menu.data,
+            show_on_home=form.show_on_home.data,
+            show_in_footer=form.show_in_footer.data,
+
+            # الحالة
+            is_active=form.is_active.data,
+            
+            parent_id = (
+            form.parent_id.data
+            if form.parent_id.data != 0
+            else None
+            ),
         )
 
         db.session.add(page)
         db.session.commit()
 
-        flash("تمت إضافة الصفحة", "success")
+        flash("تمت إضافة الصفحة بنجاح", "success")
         return redirect(url_for("admin.pages_list"))
 
-    return render_template("admin/page_form.html", form=form, page_title="إضافة صفحة")
-
-
+    return render_template(
+        "admin/page_form.html",
+        form=form,
+        page_title="إضافة صفحة"
+    )
+    
 @admin_bp.route("/pages/edit/<int:page_id>", methods=["GET", "POST"])
 @login_required
 def edit_page(page_id):
     page = Page.query.get_or_404(page_id)
+
     form = PageForm(obj=page)
 
+    form.parent_id.choices = [(0, "— لا يوجد —")] + [
+        (p.id, p.title_ar or p.title)
+        for p in Page.query.filter(
+            Page.is_active == True,
+            Page.id != page.id
+        )
+        .order_by(Page.display_order.asc()).all()
+    ]
+
+    if not form.is_submitted():
+        form.parent_id.data = page.parent_id or 0
+
     if form.validate_on_submit():
-        page.title = form.title.data
-        page.slug = form.slug.data
-        page.content = form.content.data
+
+        # العناوين
+        page.title = form.title_ar.data
+        page.title_ar = form.title_ar.data
+        page.title_en = form.title_en.data
+        page.title_ja = form.title_ja.data
+
+        # الروابط
+        page.slug = form.slug_ar.data
+        page.slug_ar = form.slug_ar.data
+        page.slug_en = form.slug_en.data
+        page.slug_ja = form.slug_ja.data
+
+        # المحتوى القديم — نُبقيه مرتبطًا بالمحتوى العربي مؤقتًا
+        page.content = form.content_ar.data or ""
+
+        # المحتوى متعدد اللغات
+        page.content_ar = form.content_ar.data
+        page.content_en = form.content_en.data
+        page.content_ja = form.content_ja.data
+
+        # الإعدادات
+        page.page_type = form.page_type.data
+        page.parent_id = (
+            form.parent_id.data
+            if form.parent_id.data != 0
+            else None
+        )
+        page.template = form.template.data
+        page.display_order = form.display_order.data
+
+        # أماكن الظهور
+        page.show_in_menu = form.show_in_menu.data
+        page.show_on_home = form.show_on_home.data
+        page.show_in_footer = form.show_in_footer.data
+
+        # الحالة
         page.is_active = form.is_active.data
 
         db.session.commit()
 
-        flash("تم تعديل الصفحة", "success")
+        flash("تم تعديل الصفحة بنجاح", "success")
         return redirect(url_for("admin.pages_list"))
 
-    return render_template("admin/page_form.html", form=form, page_title="تعديل صفحة")
-
-
+    return render_template(
+        "admin/page_form.html",
+        form=form,
+        page_title="تعديل صفحة"
+    )
+    
+    
 @admin_bp.route("/pages/delete/<int:page_id>")
 @login_required
 def delete_page(page_id):
@@ -325,10 +450,17 @@ def create_home_section():
     if form.validate_on_submit():
         filename = None
 
-        if form.image.data and hasattr(form.image.data, "filename") and form.image.data.filename:
-            file = form.image.data
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
+    if (
+        form.image.data
+        and hasattr(form.image.data, "filename")
+        and form.image.data.filename
+    ):
+        filename = optimize_image(
+            file=form.image.data,
+            upload_folder=UPLOAD_FOLDER,
+            quality=85,
+            max_width=1600
+        )
 
         section = HomeSection(
 
@@ -574,10 +706,17 @@ def create_team_member():
 
         filename = None
 
-        if form.image.data and hasattr(form.image.data, "filename") and form.image.data.filename:
-            file = form.image.data
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
+        if (
+            form.image.data
+            and hasattr(form.image.data, "filename")
+            and form.image.data.filename
+        ):
+            filename = optimize_image(
+                file=form.image.data,
+                upload_folder=UPLOAD_FOLDER,
+                quality=85,
+                max_width=1600
+            )
 
         member = TeamMember(
             # العربية
@@ -753,11 +892,17 @@ def create_category():
 
         filename = None
 
-        if form.image.data and hasattr(form.image.data, "filename") and form.image.data.filename:
-            file = form.image.data
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-
+        if (
+            form.image.data
+            and hasattr(form.image.data, "filename")
+            and form.image.data.filename
+        ):
+            filename = optimize_image(
+                file=form.image.data,
+                upload_folder=UPLOAD_FOLDER,
+                quality=85,
+                max_width=1600
+            )
         category = Category(
             name=form.name_ar.data,
             slug=slug_ar,
@@ -868,9 +1013,276 @@ def delete_category(category_id):
 @admin_bp.route("/products")
 @login_required
 def products_list():
-    products = Product.query.order_by(Product.id.desc()).all()
-    return render_template("admin/products_list.html", products=products)
+    """
+    عرض قائمة المنتجات والتصنيفات المستخدمة في الإجراءات الجماعية.
+    """
 
+    products = Product.query.order_by(
+        Product.id.desc()
+    ).all()
+
+    categories = Category.query.order_by(
+        Category.display_order.asc(),
+        Category.id.asc()
+    ).all()
+
+    return render_template(
+        "admin/products_list.html",
+        products=products,
+        categories=categories
+    )
+@admin_bp.route("/products/bulk-action", methods=["POST"])
+@login_required
+def bulk_products_action():
+    """
+    تنفيذ إجراء واحد على مجموعة من المنتجات المحددة.
+    """
+
+    selected_ids = request.form.getlist("product_ids")
+    action = request.form.get("bulk_action", "").strip()
+
+    # التأكد من تحديد منتجات
+    if not selected_ids:
+        flash("يرجى تحديد منتج واحد على الأقل.", "error")
+        return redirect(url_for("admin.products_list"))
+
+    # تحويل المعرفات إلى أرقام صحيحة فقط
+    product_ids = []
+
+    for product_id in selected_ids:
+        try:
+            product_ids.append(int(product_id))
+        except (TypeError, ValueError):
+            continue
+
+    if not product_ids:
+        flash("لم يتم العثور على منتجات صالحة للتعديل.", "error")
+        return redirect(url_for("admin.products_list"))
+
+    products = Product.query.filter(
+        Product.id.in_(product_ids)
+    ).all()
+
+    if not products:
+        flash("لم يتم العثور على المنتجات المحددة.", "error")
+        return redirect(url_for("admin.products_list"))
+
+    # =========================
+    # نشر المنتجات
+    # =========================
+    if action == "activate":
+
+        for product in products:
+            product.is_active = True
+
+        message = f"تم نشر {len(products)} منتج بنجاح."
+
+    # =========================
+    # إلغاء نشر المنتجات
+    # =========================
+    elif action == "deactivate":
+
+        for product in products:
+            product.is_active = False
+
+        message = f"تم إلغاء نشر {len(products)} منتج."
+
+    # =========================
+    # إظهار في الرئيسية
+    # =========================
+    elif action == "show_home":
+
+        for product in products:
+            product.show_on_home = True
+
+        message = f"تم إظهار {len(products)} منتج في الصفحة الرئيسية."
+
+    # =========================
+    # إزالة من الرئيسية
+    # =========================
+    elif action == "hide_home":
+
+        for product in products:
+            product.show_on_home = False
+
+        message = f"تمت إزالة {len(products)} منتج من الصفحة الرئيسية."
+
+    # =========================
+    # تفعيل تقييم النجوم
+    # =========================
+    elif action == "enable_ratings":
+
+        for product in products:
+            product.ratings_enabled = True
+
+        message = f"تم تفعيل تقييم النجوم لـ {len(products)} منتج."
+
+    # =========================
+    # إيقاف تقييم النجوم
+    # =========================
+    elif action == "disable_ratings":
+
+        for product in products:
+            product.ratings_enabled = False
+
+        message = f"تم إيقاف تقييم النجوم لـ {len(products)} منتج."
+
+    # =========================
+    # تفعيل التعليقات والصور
+    # =========================
+    elif action == "enable_comments":
+
+        for product in products:
+            product.comments_enabled = True
+
+        message = f"تم تفعيل التعليقات والصور لـ {len(products)} منتج."
+
+    # =========================
+    # إيقاف التعليقات والصور
+    # =========================
+    elif action == "disable_comments":
+
+        for product in products:
+            product.comments_enabled = False
+
+        message = f"تم إيقاف التعليقات والصور لـ {len(products)} منتج."
+
+    # =========================
+    # تغيير التصنيف
+    # =========================
+    elif action == "change_category":
+
+        category_id = request.form.get("bulk_category_id", "").strip()
+
+        if not category_id.isdigit():
+            flash("يرجى اختيار التصنيف الجديد.", "error")
+            return redirect(url_for("admin.products_list"))
+
+        category = Category.query.get(int(category_id))
+
+        if not category:
+            flash("التصنيف المحدد غير موجود.", "error")
+            return redirect(url_for("admin.products_list"))
+
+        for product in products:
+            product.category_id = category.id
+
+        message = (
+            f"تم نقل {len(products)} منتج إلى تصنيف "
+            f"{category.name or category.name_ar}."
+        )
+
+    # =========================
+    # تعيين خصم جماعي
+    # =========================
+    elif action == "set_discount":
+
+        discount_value = request.form.get(
+            "bulk_discount_percent",
+            ""
+        ).strip()
+
+        try:
+            discount_percent = float(discount_value)
+        except (TypeError, ValueError):
+            flash("يرجى إدخال نسبة خصم صحيحة.", "error")
+            return redirect(url_for("admin.products_list"))
+
+        if discount_percent < 0 or discount_percent > 100:
+            flash("نسبة الخصم يجب أن تكون بين 0 و100.", "error")
+            return redirect(url_for("admin.products_list"))
+
+        for product in products:
+            product.discount_percent = discount_percent
+
+        message = (
+            f"تم تعيين خصم {discount_percent:g}% "
+            f"على {len(products)} منتج."
+        )
+
+    # =========================
+    # حذف جماعي
+    # =========================
+    elif action == "delete":
+
+        deleted_count = 0
+
+        for product in products:
+
+            # حذف الصورة الرئيسية
+            if product.image:
+                image_path = os.path.join(
+                    UPLOAD_FOLDER,
+                    product.image
+                )
+
+                if os.path.exists(image_path):
+                    try:
+                        os.remove(image_path)
+                    except OSError:
+                        pass
+
+            # حذف الصور الإضافية
+            for product_image in list(product.images):
+                if product_image.image:
+                    additional_image_path = os.path.join(
+                        UPLOAD_FOLDER,
+                        product_image.image
+                    )
+
+                    if os.path.exists(additional_image_path):
+                        try:
+                            os.remove(additional_image_path)
+                        except OSError:
+                            pass
+
+            # حذف صور التقييمات
+            for review in product.reviews.all():
+                if review.image:
+                    review_image_path = os.path.join(
+                        current_app.root_path,
+                        "static",
+                        "uploads",
+                        "reviews",
+                        review.image
+                    )
+
+                    if os.path.exists(review_image_path):
+                        try:
+                            os.remove(review_image_path)
+                        except OSError:
+                            pass
+
+            db.session.delete(product)
+            deleted_count += 1
+
+        message = f"تم حذف {deleted_count} منتج نهائيًا."
+
+    else:
+        flash("يرجى اختيار إجراء جماعي صحيح.", "error")
+        return redirect(url_for("admin.products_list"))
+
+    try:
+        db.session.commit()
+
+    except Exception as error:
+        db.session.rollback()
+
+        current_app.logger.exception(
+            "Bulk products action failed: %s",
+            error
+        )
+
+        flash(
+            "تعذر تنفيذ الإجراء الجماعي. يرجى المحاولة مرة أخرى.",
+            "error"
+        )
+
+        return redirect(url_for("admin.products_list"))
+
+    flash(message, "success")
+
+    return redirect(url_for("admin.products_list"))
 
 @admin_bp.route("/products/create", methods=["GET", "POST"])
 @login_required
@@ -898,11 +1310,17 @@ def create_product():
 
         filename = None
 
-        if form.image.data and hasattr(form.image.data, "filename") and form.image.data.filename:
-            file = form.image.data
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-
+        if (
+            form.image.data
+            and hasattr(form.image.data, "filename")
+            and form.image.data.filename
+        ):
+            filename = optimize_image(
+                file=form.image.data,
+                upload_folder=UPLOAD_FOLDER,
+                quality=85,
+                max_width=1600
+            )
         product = Product(
             title=form.title_ar.data,
             slug=form.slug_ar.data,
@@ -945,26 +1363,32 @@ def create_product():
             available_sizes=form.available_sizes.data,
 
             allow_custom_text=form.allow_custom_text.data,
-            allow_custom_image=form.allow_custom_image.data
+            allow_custom_image=form.allow_custom_image.data,
+            ratings_enabled=form.ratings_enabled.data,
+            comments_enabled=form.comments_enabled.data,
         )
 
         db.session.add(product)
         db.session.commit()
 
-        # حفظ الصور الإضافية
-        files = request.files.getlist("images")
+            # حفظ الصور الإضافية بعد تحسينها
+    files = request.files.getlist("images")
 
-        for file in files:
-            if file and file.filename:
-                extra_filename = secure_filename(file.filename)
-                file.save(os.path.join(UPLOAD_FOLDER, extra_filename))
+    for file in files:
+        if file and file.filename:
+            extra_filename = optimize_image(
+                file=file,
+                upload_folder=UPLOAD_FOLDER,
+                quality=85,
+                max_width=1600
+            )
 
-                product_image = ProductImage(
-                    product_id=product.id,
-                    image=extra_filename
-                )
+            product_image = ProductImage(
+                product_id=product.id,
+                image=extra_filename
+            )
 
-                db.session.add(product_image)
+            db.session.add(product_image)
 
         db.session.commit()
 
@@ -999,11 +1423,19 @@ def edit_product(product_id):
             flash("الرابط الياباني مستخدم مسبقًا", "error")
             return render_template("admin/product_form.html", form=form, page_title="تعديل منتج")
 
-        if form.image.data and hasattr(form.image.data, "filename") and form.image.data.filename:
-            file = form.image.data
-            filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-            product.image = filename
+        if (
+        form.image.data
+        and hasattr(form.image.data, "filename")
+        and form.image.data.filename
+    ):
+         filename = optimize_image(
+            file=form.image.data,
+            upload_folder=UPLOAD_FOLDER,
+            quality=85,
+            max_width=1600
+        )
+
+        product.image = filename
 
         product.title = form.title_ar.data
         product.slug = form.slug_ar.data
@@ -1047,24 +1479,29 @@ def edit_product(product_id):
 
         product.allow_custom_text = form.allow_custom_text.data
         product.allow_custom_image = form.allow_custom_image.data
+        product.ratings_enabled = form.ratings_enabled.data
+        product.comments_enabled = form.comments_enabled.data
 
         db.session.commit()
 
-        # حفظ الصور الإضافية الجديدة
-        files = request.files.getlist("images")
+            # حفظ الصور الإضافية الجديدة بعد تحسينها
+    files = request.files.getlist("images")
 
-        for file in files:
-            if file and file.filename:
-                extra_filename = secure_filename(file.filename)
-                file.save(os.path.join(UPLOAD_FOLDER, extra_filename))
+    for file in files:
+        if file and file.filename:
+            extra_filename = optimize_image(
+                file=file,
+                upload_folder=UPLOAD_FOLDER,
+                quality=85,
+                max_width=1600
+            )
 
-                product_image = ProductImage(
-                    product_id=product.id,
-                    image=extra_filename
-                )
+            product_image = ProductImage(
+                product_id=product.id,
+                image=extra_filename
+            )
 
-                db.session.add(product_image)
-
+            db.session.add(product_image)
         db.session.commit()
 
         flash("تم تعديل المنتج بنجاح", "success")
@@ -1110,6 +1547,103 @@ def toggle_product_active(product_id):
 
     flash("تم تحديث حالة المنتج", "success")
     return redirect(url_for("admin.products_list"))
+
+@admin_bp.route("/products/export")
+@login_required
+def export_products():
+    """
+    تصدير جميع المنتجات إلى ملف CSV.
+    """
+
+    products = Product.query.order_by(
+        Product.id.asc()
+    ).all()
+
+    output = StringIO()
+
+    # utf-8-sig يجعل العربية تظهر صحيحة عند فتح الملف في Excel.
+    output.write("\ufeff")
+
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "id",
+        "title_ar",
+        "slug_ar",
+        "description_ar",
+        "title_en",
+        "slug_en",
+        "description_en",
+        "title_ja",
+        "slug_ja",
+        "description_ja",
+        "price",
+        "discount_percent",
+        "category_id",
+        "category_name",
+        "display_order",
+        "is_active",
+        "show_on_home",
+        "ratings_enabled",
+        "comments_enabled",
+        "has_colors",
+        "available_colors",
+        "has_sizes",
+        "available_sizes",
+        "allow_custom_text",
+        "allow_custom_image",
+        "image"
+    ])
+
+    for product in products:
+        category_name = ""
+
+        if product.category:
+            category_name = (
+                getattr(product.category, "name", None)
+                or getattr(product.category, "name_ar", None)
+                or ""
+            )
+
+        writer.writerow([
+            product.id,
+            product.title_ar or "",
+            product.slug_ar or "",
+            product.description_ar or "",
+            product.title_en or "",
+            product.slug_en or "",
+            product.description_en or "",
+            product.title_ja or "",
+            product.slug_ja or "",
+            product.description_ja or "",
+            product.price or 0,
+            product.discount_percent or 0,
+            product.category_id or "",
+            category_name,
+            product.display_order or 0,
+            1 if product.is_active else 0,
+            1 if product.show_on_home else 0,
+            1 if product.ratings_enabled else 0,
+            1 if product.comments_enabled else 0,
+            1 if product.has_colors else 0,
+            product.available_colors or "",
+            1 if product.has_sizes else 0,
+            product.available_sizes or "",
+            1 if product.allow_custom_text else 0,
+            1 if product.allow_custom_image else 0,
+            product.image or ""
+        ])
+
+    response = Response(
+        output.getvalue(),
+        mimetype="text/csv; charset=utf-8"
+    )
+
+    response.headers["Content-Disposition"] = (
+        "attachment; filename=products.csv"
+    )
+
+    return response
 
 
 @admin_bp.route("/orders")
@@ -1157,10 +1691,18 @@ def create_project():
             return render_template("admin/project_form.html", form=form, page_title="إضافة مشروع")
 
         filename = None
-        if form.image.data and hasattr(form.image.data, "filename") and form.image.data.filename:
-           file = form.image.data
-           filename = secure_filename(file.filename)
-           file.save(os.path.join(UPLOAD_FOLDER, filename))
+
+        if (
+            form.image.data
+            and hasattr(form.image.data, "filename")
+            and form.image.data.filename
+        ):
+            filename = optimize_image(
+                file=form.image.data,
+                upload_folder=UPLOAD_FOLDER,
+                quality=85,
+                max_width=1600
+            )
 
         project = Project(
 
@@ -1322,10 +1864,17 @@ def create_post():
 
         filename = None
 
-        if form.image.data and hasattr(form.image.data, "filename") and form.image.data.filename:
-            file = form.image.data
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
+        if (
+            form.image.data
+            and hasattr(form.image.data, "filename")
+            and form.image.data.filename
+        ):
+            filename = optimize_image(
+                file=form.image.data,
+                upload_folder=UPLOAD_FOLDER,
+                quality=85,
+                max_width=1600
+            )
 
         post = Post(
             # للتوافق القديم
@@ -1477,6 +2026,13 @@ def menu_list():
 @login_required
 def create_menu_item():
     form = MenuItemForm()
+    
+    from app.models.page import Page
+
+    form.page_id.choices = [(0, "-- اختر صفحة --")] + [
+        (page.id, page.title_ar or page.title)
+        for page in Page.query.order_by(Page.display_order.asc()).all()
+    ]
 
     if form.validate_on_submit():
         item = MenuItem(
@@ -1496,6 +2052,7 @@ def create_menu_item():
             content_type=form.content_type.data or None,
             endpoint=form.endpoint.data or None,
             custom_url=form.custom_url.data or None,
+            page_id=form.page_id.data or None,
 
             display_order=form.display_order.data or 0,
             is_active=form.is_active.data,
@@ -1512,12 +2069,23 @@ def create_menu_item():
         "admin/menu_form.html",
         form=form,
         page_title="إضافة عنصر قائمة"
+        
     )
 @admin_bp.route("/menu/edit/<int:item_id>", methods=["GET", "POST"])
 @login_required
 def edit_menu_item(item_id):
     item = MenuItem.query.get_or_404(item_id)
     form = MenuItemForm(obj=item)
+    
+    from app.models.page import Page
+
+    form.page_id.choices = [(0, "-- اختر صفحة --")] + [
+        (page.id, page.title_ar or page.title)
+        for page in Page.query.order_by(Page.display_order.asc()).all()
+    ]
+
+    if request.method == "GET":
+        form.page_id.data = item.page_id or 0
 
     if form.validate_on_submit():
         # للتوافق القديم
@@ -1536,6 +2104,7 @@ def edit_menu_item(item_id):
         item.content_type = form.content_type.data or None
         item.endpoint = form.endpoint.data or None
         item.custom_url = form.custom_url.data or None
+        item.page_id = form.page_id.data or None
 
         item.display_order = form.display_order.data or 0
         item.is_active = form.is_active.data
@@ -1640,12 +2209,179 @@ def toggle_menu_home(item_id):
 def update_order_status(order_id):
     order = Order.query.get_or_404(order_id)
 
-    order.status = request.form.get("status", order.status)
-    order.payment_status = request.form.get("payment_status", order.payment_status)
+    # الحالات الجديدة المسموح بها
+    allowed_statuses = {
+        "created",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled",
+    }
+
+    # حالات الدفع المسموح بها
+    allowed_payment_statuses = {
+        "unpaid",
+        "paid",
+        "failed",
+    }
+
+    # تحويل الحالات القديمة إلى النظام الجديد
+    old_status_mapping = {
+        "pending": "created",
+        "in_progress": "processing",
+        "completed": "delivered",
+        "cancelled": "cancelled",
+    }
+
+    new_status = request.form.get("status", "").strip()
+    new_payment_status = request.form.get("payment_status", "").strip()
+
+    # تحويل القيمة القديمة إن وصلت من صفحة قديمة
+    new_status = old_status_mapping.get(new_status, new_status)
+
+    if new_status not in allowed_statuses:
+        flash("حالة الطلب المحددة غير صحيحة.", "danger")
+        return redirect(url_for("admin.orders_list"))
+
+    if new_payment_status not in allowed_payment_statuses:
+        flash("حالة الدفع المحددة غير صحيحة.", "danger")
+        return redirect(url_for("admin.orders_list"))
+
+    order.status = new_status
+    order.payment_status = new_payment_status
 
     db.session.commit()
-    flash("تم تحديث حالة الطلب والدفع", "success")
+
+    flash("تم تحديث حالة الطلب وحالة الدفع بنجاح.", "success")
     return redirect(url_for("admin.orders_list"))
+
+@admin_bp.route("/orders/bulk-update", methods=["POST"])
+@login_required
+def bulk_update_orders():
+    """
+    تحديث حالة الطلب أو حالة الدفع
+    لعدة طلبات في عملية واحدة.
+    """
+
+    # استقبال أرقام جميع الطلبات المحددة
+    order_ids = request.form.getlist("order_ids")
+
+    # استقبال الإجراء، مثل:
+    # status:processing
+    # payment:paid
+    bulk_action = request.form.get(
+        "bulk_action",
+        ""
+    ).strip()
+
+    # التأكد من وجود طلبات محددة
+    if not order_ids:
+        flash(
+            "لم يتم تحديد أي طلب.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin.orders_list")
+        )
+
+    # التأكد من صيغة الإجراء
+    if ":" not in bulk_action:
+        flash(
+            "الإجراء الجماعي المحدد غير صحيح.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin.orders_list")
+        )
+
+    action_type, action_value = bulk_action.split(
+        ":",
+        1
+    )
+
+    allowed_order_statuses = {
+        "created",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled",
+    }
+
+    allowed_payment_statuses = {
+        "unpaid",
+        "paid",
+        "failed",
+    }
+
+    # جلب الطلبات المحددة فقط
+    orders = Order.query.filter(
+        Order.id.in_(order_ids)
+    ).all()
+
+    if not orders:
+        flash(
+            "لم يتم العثور على الطلبات المحددة.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin.orders_list")
+        )
+
+    # تحديث حالة الطلب
+    if action_type == "status":
+
+        if action_value not in allowed_order_statuses:
+            flash(
+                "حالة الطلب المحددة غير صحيحة.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("admin.orders_list")
+            )
+
+        for order in orders:
+            order.status = action_value
+
+    # تحديث حالة الدفع
+    elif action_type == "payment":
+
+        if action_value not in allowed_payment_statuses:
+            flash(
+                "حالة الدفع المحددة غير صحيحة.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("admin.orders_list")
+            )
+
+        for order in orders:
+            order.payment_status = action_value
+
+    else:
+        flash(
+            "نوع الإجراء المحدد غير صحيح.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin.orders_list")
+        )
+
+    db.session.commit()
+
+    flash(
+        f"تم تحديث {len(orders)} طلب بنجاح.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin.orders_list")
+    )
 
 @admin_bp.route("/orders/<int:order_id>")
 @login_required
@@ -1902,3 +2638,242 @@ def export_subscribers():
     response.headers["Content-Disposition"] = "attachment; filename=subscribers.csv"
 
     return response
+
+# =========================================================
+# إدارة تقييمات وتعليقات المنتجات
+# =========================================================
+
+@admin_bp.route("/product-reviews")
+@login_required
+def product_reviews_list():
+    """
+    عرض جميع تقييمات المنتجات مع دعم البحث والفلاتر.
+    """
+
+    search = request.args.get("search", "").strip()
+    rating = request.args.get("rating", "").strip()
+    status = request.args.get("status", "").strip()
+    image_status = request.args.get("image", "").strip()
+    product_id = request.args.get("product_id", "").strip()
+
+    query = ProductReview.query
+
+    # البحث باسم العميل أو بريده أو التعليق
+    if search:
+        search_pattern = f"%{search}%"
+
+        query = query.filter(
+            db.or_(
+                ProductReview.customer_name.ilike(search_pattern),
+                ProductReview.customer_email.ilike(search_pattern),
+                ProductReview.comment.ilike(search_pattern)
+            )
+        )
+
+    # فلتر عدد النجوم
+    if rating in {"1", "2", "3", "4", "5"}:
+        query = query.filter(
+            ProductReview.rating == int(rating)
+        )
+
+    # فلتر حالة الاعتماد
+    if status == "approved":
+        query = query.filter(
+            ProductReview.is_approved.is_(True)
+        )
+
+    elif status == "pending":
+        query = query.filter(
+            ProductReview.is_approved.is_(False)
+        )
+
+    # فلتر وجود الصورة
+    if image_status == "with_image":
+        query = query.filter(
+            ProductReview.image.isnot(None),
+            ProductReview.image != ""
+        )
+
+    elif image_status == "without_image":
+        query = query.filter(
+            db.or_(
+                ProductReview.image.is_(None),
+                ProductReview.image == ""
+            )
+        )
+
+    # فلتر المنتج
+    if product_id.isdigit():
+        query = query.filter(
+            ProductReview.product_id == int(product_id)
+        )
+
+    reviews = query.order_by(
+        ProductReview.created_at.desc(),
+        ProductReview.id.desc()
+    ).all()
+
+    products = Product.query.order_by(
+        Product.title_ar.asc(),
+        Product.id.asc()
+    ).all()
+
+    return render_template(
+        "admin/product_reviews_list.html",
+        reviews=reviews,
+        products=products,
+        search=search,
+        rating=rating,
+        status=status,
+        image_status=image_status,
+        selected_product_id=product_id
+    )
+
+
+@admin_bp.route(
+    "/product-reviews/<int:review_id>/toggle-approval",
+    methods=["POST"]
+)
+@login_required
+def toggle_product_review_approval(review_id):
+    """
+    اعتماد التقييم أو إعادته إلى حالة الانتظار.
+    """
+
+    review = ProductReview.query.get_or_404(review_id)
+
+    review.is_approved = not review.is_approved
+
+    db.session.commit()
+
+    if review.is_approved:
+        flash("تم اعتماد التقييم بنجاح.", "success")
+    else:
+        flash("تم إخفاء التقييم وإعادته إلى الانتظار.", "success")
+
+    return redirect(
+        request.referrer or url_for("admin.product_reviews_list")
+    )
+
+
+@admin_bp.route(
+    "/product-reviews/<int:review_id>/toggle-rating",
+    methods=["POST"]
+)
+@login_required
+def toggle_product_review_rating(review_id):
+    """
+    إظهار أو إخفاء نجوم التقييم فقط.
+    """
+
+    review = ProductReview.query.get_or_404(review_id)
+
+    review.is_rating_visible = not review.is_rating_visible
+
+    db.session.commit()
+
+    if review.is_rating_visible:
+        flash("تم إظهار نجوم التقييم.", "success")
+    else:
+        flash("تم إخفاء نجوم التقييم.", "success")
+
+    return redirect(
+        request.referrer or url_for("admin.product_reviews_list")
+    )
+
+
+@admin_bp.route(
+    "/product-reviews/<int:review_id>/toggle-comment",
+    methods=["POST"]
+)
+@login_required
+def toggle_product_review_comment(review_id):
+    """
+    إظهار أو إخفاء نص التعليق فقط.
+    """
+
+    review = ProductReview.query.get_or_404(review_id)
+
+    review.is_comment_visible = not review.is_comment_visible
+
+    db.session.commit()
+
+    if review.is_comment_visible:
+        flash("تم إظهار التعليق.", "success")
+    else:
+        flash("تم إخفاء التعليق.", "success")
+
+    return redirect(
+        request.referrer or url_for("admin.product_reviews_list")
+    )
+
+
+@admin_bp.route(
+    "/product-reviews/<int:review_id>/toggle-image",
+    methods=["POST"]
+)
+@login_required
+def toggle_product_review_image(review_id):
+    """
+    إظهار أو إخفاء صورة التقييم فقط.
+    """
+
+    review = ProductReview.query.get_or_404(review_id)
+
+    review.is_image_visible = not review.is_image_visible
+
+    db.session.commit()
+
+    if review.is_image_visible:
+        flash("تم إظهار صورة التقييم.", "success")
+    else:
+        flash("تم إخفاء صورة التقييم.", "success")
+
+    return redirect(
+        request.referrer or url_for("admin.product_reviews_list")
+    )
+
+
+@admin_bp.route(
+    "/product-reviews/<int:review_id>/delete",
+    methods=["POST"]
+)
+@login_required
+def delete_product_review(review_id):
+    """
+    حذف التقييم وصورته المرفوعة نهائيًا.
+    """
+
+    review = ProductReview.query.get_or_404(review_id)
+
+    image_filename = review.image
+
+    db.session.delete(review)
+    db.session.commit()
+
+    # حذف الصورة من الخادم بعد نجاح حذف السجل
+    if image_filename:
+        image_path = os.path.join(
+            current_app.root_path,
+            "static",
+            "uploads",
+            "reviews",
+            image_filename
+        )
+
+        try:
+            if os.path.exists(image_path):
+                os.remove(image_path)
+
+        except OSError as error:
+            current_app.logger.warning(
+                "تعذر حذف صورة التقييم %s: %s",
+                image_filename,
+                error
+            )
+
+    flash("تم حذف التقييم نهائيًا.", "success")
+
+    return redirect(
+        request.referrer or url_for("admin.product_reviews_list")
+    )

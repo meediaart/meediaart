@@ -18,6 +18,7 @@
 {% set product_description = product.get_description(current_lang) or "" %}
 
 {% if current_lang == "en" %}
+
     {% set label_color = "Color" %}
     {% set label_size = "Size" %}
     {% set label_custom_text = "Custom text" %}
@@ -25,7 +26,27 @@
     {% set add_to_cart_text = "Add to cart" %}
     {% set whatsapp_text = "Order via WhatsApp" %}
     {% set whatsapp_message = "I want to order this product: " %}
+
+    {% set reviews_title = "Customer reviews" %}
+    {% set rating_summary_text = "out of 5" %}
+    {% set reviews_count_text = "reviews" %}
+    {% set no_ratings_text = "No ratings yet" %}
+    {% set add_review_title = "Add your review" %}
+    {% set review_notice = "Your review will appear after approval." %}
+    {% set name_label = "Name" %}
+    {% set email_label = "Email" %}
+    {% set email_optional_text = "Optional and not displayed publicly" %}
+    {% set rating_label = "Your rating" %}
+    {% set comment_label = "Comment" %}
+    {% set comment_placeholder = "Tell us about your experience with this product..." %}
+    {% set review_image_label = "Product image" %}
+    {% set review_image_help = "Optional. JPG, PNG or WEBP, maximum 5 MB." %}
+    {% set submit_review_text = "Submit review" %}
+    {% set no_reviews_text = "There are no approved reviews for this product yet." %}
+    {% set customer_image_text = "Customer image" %}
+
 {% elif current_lang == "ja" %}
+
     {% set label_color = "色" %}
     {% set label_size = "サイズ" %}
     {% set label_custom_text = "カスタムテキスト" %}
@@ -33,7 +54,27 @@
     {% set add_to_cart_text = "カートに追加" %}
     {% set whatsapp_text = "WhatsAppで注文" %}
     {% set whatsapp_message = "この商品を注文したいです: " %}
+
+    {% set reviews_title = "カスタマーレビュー" %}
+    {% set rating_summary_text = "5点満点" %}
+    {% set reviews_count_text = "件のレビュー" %}
+    {% set no_ratings_text = "まだ評価はありません" %}
+    {% set add_review_title = "レビューを投稿" %}
+    {% set review_notice = "レビューは承認後に表示されます。" %}
+    {% set name_label = "お名前" %}
+    {% set email_label = "メールアドレス" %}
+    {% set email_optional_text = "任意・公開されません" %}
+    {% set rating_label = "評価" %}
+    {% set comment_label = "コメント" %}
+    {% set comment_placeholder = "この商品についての感想をご記入ください..." %}
+    {% set review_image_label = "商品の写真" %}
+    {% set review_image_help = "任意。JPG、PNG、WEBP形式、最大5MB。" %}
+    {% set submit_review_text = "レビューを送信" %}
+    {% set no_reviews_text = "承認済みのレビューはまだありません。" %}
+    {% set customer_image_text = "お客様の写真" %}
+
 {% else %}
+
     {% set label_color = "اللون" %}
     {% set label_size = "المقاس" %}
     {% set label_custom_text = "النص المخصص" %}
@@ -41,122 +82,569 @@
     {% set add_to_cart_text = "إضافة إلى السلة" %}
     {% set whatsapp_text = "طلب واتساب" %}
     {% set whatsapp_message = "أريد طلب هذا المنتج: " %}
+
+    {% set reviews_title = "تقييمات العملاء" %}
+    {% set rating_summary_text = "من 5" %}
+    {% set reviews_count_text = "تقييم" %}
+    {% set no_ratings_text = "لا توجد تقييمات بعد" %}
+    {% set add_review_title = "أضف تقييمك" %}
+    {% set review_notice = "سيظهر تقييمك بعد مراجعته واعتماده من الإدارة." %}
+    {% set name_label = "الاسم" %}
+    {% set email_label = "البريد الإلكتروني" %}
+    {% set email_optional_text = "اختياري ولن يظهر للزوار" %}
+    {% set rating_label = "تقييمك" %}
+    {% set comment_label = "التعليق" %}
+    {% set comment_placeholder = "اكتب تجربتك مع هذا المنتج..." %}
+    {% set review_image_label = "صورة المنتج" %}
+    {% set review_image_help = "اختيارية. JPG أو PNG أو WEBP، وبحجم أقصى 5 ميجابايت." %}
+    {% set submit_review_text = "إرسال التقييم" %}
+    {% set no_reviews_text = "لا توجد تقييمات معتمدة لهذا المنتج حتى الآن." %}
+    {% set customer_image_text = "صورة العميل" %}
+
 {% endif %}
+
+<style>
+    /* =========================
+       ملخص التقييم
+       ========================= */
+
+    .product-rating-summary {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 14px 0 20px;
+    }
+
+    .product-rating-stars,
+    .review-card-stars {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        direction: ltr;
+    }
+
+    .product-rating-stars .star,
+    .review-card-stars .star {
+        color: #d7d7d7;
+        font-size: 22px;
+        line-height: 1;
+    }
+
+    .product-rating-stars .star.filled,
+    .review-card-stars .star.filled {
+        color: #f5a623;
+    }
+
+    .product-rating-number {
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+    .product-rating-count {
+        color: #6c727f;
+        font-size: 14px;
+    }
+
+    /* =========================
+       قسم التقييمات
+       ========================= */
+
+    .product-reviews-section {
+        padding: 30px 0 65px;
+    }
+
+    .product-reviews-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+        gap: 28px;
+        align-items: start;
+    }
+
+    .reviews-list-card,
+    .review-form-card {
+        background: #ffffff;
+        border: 1px solid #e7e9ee;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+    }
+
+    .reviews-section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .reviews-section-head h2,
+    .review-form-card h2 {
+        margin: 0;
+        font-size: 24px;
+    }
+
+    .reviews-summary-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* =========================
+       بطاقة التقييم
+       ========================= */
+
+    .review-card {
+        padding: 20px 0;
+        border-bottom: 1px solid #eceef2;
+    }
+
+    .review-card:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .review-card:first-child {
+        padding-top: 0;
+    }
+
+    .review-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .review-customer-name {
+        margin: 0 0 5px;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    .review-date {
+        color: #818793;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .review-comment {
+        margin: 14px 0 0;
+        line-height: 1.8;
+        white-space: pre-line;
+        overflow-wrap: anywhere;
+    }
+
+    .review-customer-image {
+        display: block;
+        width: 100%;
+        max-width: 340px;
+        max-height: 340px;
+        margin-top: 16px;
+        object-fit: cover;
+        border-radius: 14px;
+        border: 1px solid #e6e8ed;
+        cursor: pointer;
+    }
+
+    .reviews-empty {
+        padding: 32px 15px;
+        text-align: center;
+        color: #737985;
+        background: #fafafa;
+        border: 1px dashed #d4d8df;
+        border-radius: 14px;
+    }
+
+    /* =========================
+       نموذج التقييم
+       ========================= */
+
+    .review-form-card {
+        position: sticky;
+        top: 95px;
+    }
+
+    .review-form-note {
+        margin: 8px 0 20px;
+        color: #737985;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .review-form-group {
+        margin-bottom: 17px;
+    }
+
+    .review-form-group label {
+        display: block;
+        margin-bottom: 7px;
+        font-weight: 600;
+    }
+
+    .review-form-group input[type="text"],
+    .review-form-group input[type="email"],
+    .review-form-group input[type="file"],
+    .review-form-group textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 11px 13px;
+        border: 1px solid #d9dde4;
+        border-radius: 10px;
+        background: #ffffff;
+        font: inherit;
+    }
+
+    .review-form-group textarea {
+        min-height: 125px;
+        resize: vertical;
+    }
+
+    .review-form-group input:focus,
+    .review-form-group textarea:focus {
+        outline: none;
+        border-color: #8a909b;
+        box-shadow: 0 0 0 3px rgba(60, 66, 78, 0.08);
+    }
+
+    .review-field-help {
+        display: block;
+        margin-top: 6px;
+        color: #818793;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    /* =========================
+       اختيار النجوم
+       ========================= */
+
+    .review-star-input {
+        display: inline-flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 4px;
+        direction: ltr;
+    }
+
+    .review-star-input input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .review-star-input label {
+        margin: 0;
+        color: #d5d7dc;
+        font-size: 37px;
+        line-height: 1;
+        cursor: pointer;
+        transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    .review-star-input label:hover,
+    .review-star-input label:hover ~ label,
+    .review-star-input input:checked ~ label {
+        color: #f5a623;
+    }
+
+    .review-star-input label:hover {
+        transform: scale(1.08);
+    }
+
+    .review-submit-button {
+        width: 100%;
+        min-height: 46px;
+        border: 0;
+        border-radius: 10px;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+    }
+
+    /* =========================
+       معاينة الصورة
+       ========================= */
+
+    .review-image-preview-wrap {
+        display: none;
+        margin-top: 12px;
+    }
+
+    .review-image-preview {
+        display: block;
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid #dfe2e8;
+    }
+
+    @media (max-width: 900px) {
+        .product-reviews-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .review-form-card {
+            position: static;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .reviews-list-card,
+        .review-form-card {
+            padding: 18px;
+            border-radius: 14px;
+        }
+
+        .reviews-section-head h2,
+        .review-form-card h2 {
+            font-size: 21px;
+        }
+
+        .review-star-input label {
+            font-size: 34px;
+        }
+    }
+</style>
 
 <section class="product-detail-page">
     <div class="container">
         <div class="product-detail-card">
 
+            <!-- صور المنتج -->
             <div class="product-slider">
                 <div class="slider-track">
+
                     {% if product.image %}
-                    <img src="{{ url_for('static', filename='uploads/' + product.image) }}"
-                         class="slider-img active"
-                         alt="{{ product_title }}">
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                        class="slider-img active"
+                        alt="{{ product_title }}"
+                    >
                     {% endif %}
 
                     {% for img in product.images %}
-                    <img src="{{ url_for('static', filename='uploads/' + img.image) }}"
-                         class="slider-img {% if not product.image and loop.first %}active{% endif %}"
-                         alt="{{ product_title }}">
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + img.image) }}"
+                        class="slider-img {% if not product.image and loop.first %}active{% endif %}"
+                        alt="{{ product_title }}"
+                    >
                     {% endfor %}
+
                 </div>
 
-                <button class="slider-btn prev" onclick="prevSlide()">‹</button>
-                <button class="slider-btn next" onclick="nextSlide()">›</button>
+                {% set total = (1 if product.image else 0) + (product.images|length) %}
+
+                {% if total > 1 %}
+                    <button
+                        type="button"
+                        class="slider-btn prev"
+                        onclick="prevSlide()"
+                        aria-label="Previous image"
+                    >
+                        ‹
+                    </button>
+
+                    <button
+                        type="button"
+                        class="slider-btn next"
+                        onclick="nextSlide()"
+                        aria-label="Next image"
+                    >
+                        ›
+                    </button>
+                {% endif %}
 
                 <div class="slider-dots">
-                    {% set total = (1 if product.image else 0) + (product.images|length) %}
                     {% for i in range(total) %}
-                        <span class="dot {% if loop.first %}active{% endif %}"
-                              onclick="goToSlide({{ loop.index0 }})"></span>
+                        <span
+                            class="dot {% if loop.first %}active{% endif %}"
+                            onclick="goToSlide({{ loop.index0 }})"
+                        ></span>
                     {% endfor %}
                 </div>
             </div>
 
+            <!-- بيانات المنتج -->
             <div class="product-detail-info">
 
                 <h1>{{ product_title }}</h1>
+                {% if product.ratings_enabled %}
 
+                <!-- ملخص التقييم -->
+                <div class="product-rating-summary">
+
+                    {% if ratings_count > 0 %}
+
+                        <div
+                            class="product-rating-stars"
+                            aria-label="{{ average_rating }} {{ rating_summary_text }}"
+                        >
+                            {% for number in range(1, 6) %}
+                                <span class="star {% if number <= average_rating|round(0, 'common') %}filled{% endif %}">
+                                    ★
+                                </span>
+                            {% endfor %}
+                        </div>
+
+                        <span class="product-rating-number">
+                            {{ average_rating }}
+                            {{ rating_summary_text }}
+                        </span>
+
+                        <a href="#productReviews" class="product-rating-count">
+                            ({{ ratings_count }} {{ reviews_count_text }})
+                        </a>
+
+                    {% else %}
+
+                        <div class="product-rating-stars">
+                            {% for number in range(1, 6) %}
+                                <span class="star">★</span>
+                            {% endfor %}
+                        </div>
+
+                        <span class="product-rating-count">
+                            {{ no_ratings_text }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+                {% endif %}
+
+                <!-- السعر -->
                 {% if product.discount_percent and product.discount_percent > 0 %}
+
                     <div class="product-price">
+
                         <span style="text-decoration: line-through; color: #999; font-size: 18px;">
                             ¥{{ product.price|round(0) }}
                         </span>
 
                         {% set discounted_price = product.price - (product.price * product.discount_percent / 100) %}
 
-                        <span style="color: red; font-weight: bold; font-size: 22px; margin-left: 10px;">
+                        <span style="color: red; font-weight: bold; font-size: 22px; margin-inline-start: 10px;">
                             ¥{{ discounted_price|round(0) }}
                         </span>
 
-                        <span style="background:red; color:white; padding:3px 8px; border-radius:5px; font-size:13px; margin-left:10px;">
+                        <span style="background:red; color:white; padding:3px 8px; border-radius:5px; font-size:13px; margin-inline-start:10px;">
                             -{{ product.discount_percent }}%
                         </span>
+
                     </div>
+
                 {% else %}
+
                     <p class="product-price">
                         ¥{{ product.price|round(0) }}
                     </p>
+
                 {% endif %}
 
+                <!-- الوصف -->
                 {% if product_description %}
                 <div class="product-description">
                     {{ product_description }}
                 </div>
                 {% endif %}
 
-                <form method="POST"
-                      action="{{ url_for('shop.add_to_cart', product_id=product.id) }}"
-                      enctype="multipart/form-data">
+                <!-- نموذج السلة -->
+                <form
+                    method="POST"
+                    action="{{ url_for('shop.add_to_cart', product_id=product.id) }}"
+                    enctype="multipart/form-data"
+                >
 
                     {% if product.has_colors and product.available_colors %}
                     <div class="product-option">
+
                         <label>{{ label_color }}</label>
-                        <select name="selected_color" class="form-control">
+
+                        <select
+                            name="selected_color"
+                            class="form-control"
+                        >
                             {% for color in product.available_colors.split(',') %}
-                                <option value="{{ color.strip() }}">{{ color.strip() }}</option>
+                                <option value="{{ color.strip() }}">
+                                    {{ color.strip() }}
+                                </option>
                             {% endfor %}
                         </select>
+
                     </div>
                     {% endif %}
 
                     {% if product.has_sizes and product.available_sizes %}
                     <div class="product-option">
+
                         <label>{{ label_size }}</label>
-                        <select name="selected_size" class="form-control">
+
+                        <select
+                            name="selected_size"
+                            class="form-control"
+                        >
                             {% for size in product.available_sizes.split(',') %}
-                                <option value="{{ size.strip() }}">{{ size.strip() }}</option>
+                                <option value="{{ size.strip() }}">
+                                    {{ size.strip() }}
+                                </option>
                             {% endfor %}
                         </select>
+
                     </div>
                     {% endif %}
 
                     {% if product.allow_custom_text %}
                     <div class="product-option">
+
                         <label>{{ label_custom_text }}</label>
-                        <textarea name="custom_text" class="form-control" rows="4"></textarea>
+
+                        <textarea
+                            name="custom_text"
+                            class="form-control"
+                            rows="4"
+                        ></textarea>
+
                     </div>
                     {% endif %}
 
                     {% if product.allow_custom_image %}
                     <div class="product-option">
+
                         <label>{{ label_custom_image }}</label>
-                        <input type="file" name="custom_image" class="form-control">
+
+                        <input
+                            type="file"
+                            name="custom_image"
+                            class="form-control"
+                        >
+
                     </div>
                     {% endif %}
 
                     <div class="product-actions">
-                        <button type="submit" class="btn-primary">
+
+                        <button
+                            type="submit"
+                            class="btn-primary"
+                        >
                             {{ add_to_cart_text }}
                         </button>
 
-                        <a href="https://wa.me/817092220205?text={{ whatsapp_message }}{{ product_title }}"
-                           target="_blank"
-                           class="btn-outline">
+                        <a
+                            href="https://wa.me/817092220205?text={{ whatsapp_message|urlencode }}{{ product_title|urlencode }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn-outline"
+                        >
                             {{ whatsapp_text }}
                         </a>
+
                     </div>
+
                 </form>
 
             </div>
@@ -164,35 +652,399 @@
     </div>
 </section>
 
+<!-- التقييمات ونموذج الإضافة -->
+ {% if product.ratings_enabled or product.comments_enabled %}
+<section
+    class="product-reviews-section"
+    id="productReviews"
+>
+    <div class="container">
+
+        <div class="product-reviews-layout">
+
+            <!-- التقييمات المعتمدة -->
+            <div class="reviews-list-card">
+
+                <div class="reviews-section-head">
+
+                    <h2>{{ reviews_title }}</h2>
+
+                    {% if ratings_count > 0 %}
+                    <div class="reviews-summary-box">
+
+                        <div class="product-rating-stars">
+                            {% for number in range(1, 6) %}
+                                <span class="star {% if number <= average_rating|round(0, 'common') %}filled{% endif %}">
+                                    ★
+                                </span>
+                            {% endfor %}
+                        </div>
+
+                        <strong>
+                            {{ average_rating }}
+                            {{ rating_summary_text }}
+                        </strong>
+
+                        <span class="product-rating-count">
+                            ({{ ratings_count }} {{ reviews_count_text }})
+                        </span>
+
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                {% if reviews %}
+
+                    {% for review in reviews %}
+
+                        {% set has_visible_rating = product.ratings_enabled and review.is_rating_visible %}
+                        {% set has_visible_comment = product.comments_enabled and review.is_comment_visible and review.comment %}
+                        {% set has_visible_image = product.comments_enabled and review.is_image_visible and review.image %}
+
+                        {% if has_visible_rating or has_visible_comment or has_visible_image %}
+
+                        <article class="review-card">
+
+                            <div class="review-card-head">
+
+                                <div>
+                                    <p class="review-customer-name">
+                                        {{ review.customer_name }}
+                                    </p>
+
+                                    {% if has_visible_rating %}
+                                    <div
+                                        class="review-card-stars"
+                                        aria-label="{{ review.rating }} {{ rating_summary_text }}"
+                                    >
+                                        {% for number in range(1, 6) %}
+                                            <span class="star {% if number <= review.rating %}filled{% endif %}">
+                                                ★
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <time class="review-date">
+                                    {% if review.created_at %}
+                                        {{ review.created_at.strftime('%Y-%m-%d') }}
+                                    {% endif %}
+                                </time>
+
+                            </div>
+
+                            {% if has_visible_comment %}
+                                <p class="review-comment">
+                                    {{ review.comment }}
+                                </p>
+                            {% endif %}
+
+                            {% if has_visible_image %}
+                                <a
+                                    href="{{ url_for('static', filename='uploads/reviews/' + review.image) }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <img
+                                        src="{{ url_for('static', filename='uploads/reviews/' + review.image) }}"
+                                        class="review-customer-image"
+                                        alt="{{ customer_image_text }} - {{ product_title }}"
+                                        loading="lazy"
+                                    >
+                                </a>
+                            {% endif %}
+
+                        </article>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="reviews-empty">
+                        {{ no_reviews_text }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+            <!-- نموذج إضافة تقييم -->
+            <div class="review-form-card">
+
+                <h2>{{ add_review_title }}</h2>
+
+                <p class="review-form-note">
+                    {{ review_notice }}
+                </p>
+
+                <form
+                    method="POST"
+                    action="{{ url_for('shop.submit_product_review', product_id=product.id) }}"
+                    enctype="multipart/form-data"
+                    id="productReviewForm"
+                >
+
+                    <!-- الاسم -->
+                    <div class="review-form-group">
+
+                        <label for="reviewCustomerName">
+                            {{ name_label }} *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="reviewCustomerName"
+                            name="customer_name"
+                            maxlength="120"
+                            required
+                            autocomplete="name"
+                        >
+
+                    </div>
+
+                    <!-- البريد -->
+                    <div class="review-form-group">
+
+                        <label for="reviewCustomerEmail">
+                            {{ email_label }}
+                        </label>
+
+                        <input
+                            type="email"
+                            id="reviewCustomerEmail"
+                            name="customer_email"
+                            maxlength="255"
+                            autocomplete="email"
+                        >
+
+                        <small class="review-field-help">
+                            {{ email_optional_text }}
+                        </small>
+
+                    </div>
+
+                    <!-- النجوم -->
+                     {% if product.ratings_enabled %}
+                    <div class="review-form-group">
+
+                        <label>
+                            {{ rating_label }} *
+                        </label>
+
+                        <div
+                            class="review-star-input"
+                            role="radiogroup"
+                            aria-label="{{ rating_label }}"
+                        >
+
+                            <input
+                                type="radio"
+                                id="reviewStar5"
+                                name="rating"
+                                value="5"
+                                required
+                            >
+                            <label for="reviewStar5" title="5">★</label>
+
+                            <input
+                                type="radio"
+                                id="reviewStar4"
+                                name="rating"
+                                value="4"
+                            >
+                            <label for="reviewStar4" title="4">★</label>
+
+                            <input
+                                type="radio"
+                                id="reviewStar3"
+                                name="rating"
+                                value="3"
+                            >
+                            <label for="reviewStar3" title="3">★</label>
+
+                            <input
+                                type="radio"
+                                id="reviewStar2"
+                                name="rating"
+                                value="2"
+                            >
+                            <label for="reviewStar2" title="2">★</label>
+
+                            <input
+                                type="radio"
+                                id="reviewStar1"
+                                name="rating"
+                                value="1"
+                            >
+                            <label for="reviewStar1" title="1">★</label>
+
+                        </div>
+
+                    </div>
+                    {% endif %}
+
+                    <!-- التعليق -->
+                     {% if product.comments_enabled %}
+                    <div class="review-form-group">
+
+                        <label for="reviewComment">
+                            {{ comment_label }}
+                        </label>
+
+                        <textarea
+                            id="reviewComment"
+                            name="comment"
+                            maxlength="3000"
+                            placeholder="{{ comment_placeholder }}"
+                        ></textarea>
+
+                    </div>
+                    {% endif %}
+
+                    <!-- الصورة -->
+                     {% if product.comments_enabled %}
+                    <div class="review-form-group">
+
+                        <label for="reviewImage">
+                            {{ review_image_label }}
+                        </label>
+
+                        <input
+                            type="file"
+                            id="reviewImage"
+                            name="review_image"
+                            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                        >
+
+                        <small class="review-field-help">
+                            {{ review_image_help }}
+                        </small>
+
+                        <div
+                            class="review-image-preview-wrap"
+                            id="reviewImagePreviewWrap"
+                        >
+                            <img
+                                src=""
+                                alt=""
+                                class="review-image-preview"
+                                id="reviewImagePreview"
+                            >
+                        </div>
+
+                    </div>
+                    {% endif %}
+
+                    <button
+                        type="submit"
+                        class="btn-primary review-submit-button"
+                    >
+                        {{ submit_review_text }}
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- سلايدر صور المنتج -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    let slides = document.querySelectorAll(".slider-img");
-    let dots = document.querySelectorAll(".dot");
+
+    const slides = document.querySelectorAll(".slider-img");
+    const dots = document.querySelectorAll(".dot");
+
     let index = 0;
 
-    if (!slides.length) return;
+    if (!slides.length) {
+        return;
+    }
 
-    function showSlide(i) {
-        slides.forEach(s => s.classList.remove("active"));
-        dots.forEach(d => d.classList.remove("active"));
-        slides[i].classList.add("active");
-        if (dots[i]) dots[i].classList.add("active");
+    function showSlide(slideIndex) {
+
+        slides.forEach(function (slide) {
+            slide.classList.remove("active");
+        });
+
+        dots.forEach(function (dot) {
+            dot.classList.remove("active");
+        });
+
+        slides[slideIndex].classList.add("active");
+
+        if (dots[slideIndex]) {
+            dots[slideIndex].classList.add("active");
+        }
     }
 
     window.nextSlide = function () {
         index = (index + 1) % slides.length;
         showSlide(index);
-    }
+    };
 
     window.prevSlide = function () {
         index = (index - 1 + slides.length) % slides.length;
         showSlide(index);
+    };
+
+    window.goToSlide = function (slideIndex) {
+        index = slideIndex;
+        showSlide(index);
+    };
+});
+</script>
+
+<!-- معاينة صورة التقييم قبل الرفع -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const imageInput =
+        document.getElementById("reviewImage");
+
+    const previewWrap =
+        document.getElementById("reviewImagePreviewWrap");
+
+    const previewImage =
+        document.getElementById("reviewImagePreview");
+
+    if (!imageInput || !previewWrap || !previewImage) {
+        return;
     }
 
-    window.goToSlide = function (i) {
-        index = i;
-        showSlide(index);
-    }
+    imageInput.addEventListener("change", function () {
+
+        const selectedFile =
+            imageInput.files && imageInput.files[0];
+
+        if (!selectedFile) {
+            previewWrap.style.display = "none";
+            previewImage.src = "";
+            return;
+        }
+
+        if (!selectedFile.type.startsWith("image/")) {
+            previewWrap.style.display = "none";
+            previewImage.src = "";
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.addEventListener("load", function (event) {
+            previewImage.src = event.target.result;
+            previewWrap.style.display = "block";
+        });
+
+        reader.readAsDataURL(selectedFile);
+    });
 });
 </script>
 

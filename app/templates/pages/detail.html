@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == "en" %}
+    {{ page.title_en or page.title_ar }}
+{% elif current_lang == "ja" %}
+    {{ page.title_ja or page.title_ar }}
+{% else %}
+    {{ page.title_ar }}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<section class="page-section">
+    <div class="container">
+
+        <h1 class="section-title">
+            {% if current_lang == "en" %}
+                {{ page.title_en or page.title_ar }}
+            {% elif current_lang == "ja" %}
+                {{ page.title_ja or page.title_ar }}
+            {% else %}
+                {{ page.title_ar }}
+            {% endif %}
+        </h1>
+
+        <div class="page-content">
+
+    {% if current_lang == "en" %}
+        {{ (page.content_en or page.content_ar or page.content)|safe }}
+
+    {% elif current_lang == "ja" %}
+        {{ (page.content_ja or page.content_ar or page.content)|safe }}
+
+    {% else %}
+        {{ (page.content_ar or page.content)|safe }}
+
+    {% endif %}
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

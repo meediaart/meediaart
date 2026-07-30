@@ -1,0 +1,976 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}إدارة المنتجات{% endblock %}
+
+{% block content %}
+
+
+<div class="page-card">
+
+    <!-- رأس الصفحة -->
+    <div class="section-header">
+
+        <div>
+            <h2>قائمة المنتجات</h2>
+
+            <p class="admin-results-text">
+                عدد النتائج:
+                <strong id="productsResultsCount">
+                    {{ products|length }}
+                </strong>
+            </p>
+        </div>
+
+        <div class="admin-actions">
+
+            <a
+                href="{{ url_for('admin.export_products') }}"
+                class="admin-btn admin-btn-success"
+            >
+                تصدير CSV
+            </a>
+
+            <a
+                href="{{ url_for('admin.create_product') }}"
+                class="admin-btn admin-btn-primary"
+            >
+                + إضافة منتج
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- البحث والفلاتر -->
+    <div class="admin-filters">
+
+        <div class="admin-filter-group admin-filter-search">
+
+            <label for="productSearch">
+                البحث
+            </label>
+
+            <input
+                type="search"
+                id="productSearch"
+                class="admin-input"
+                placeholder="ابحث باسم المنتج أو التصنيف..."
+                autocomplete="off"
+            >
+
+        </div>
+
+        <div class="admin-filter-group">
+
+            <label for="categoryFilter">
+                التصنيف
+            </label>
+
+            <select
+                id="categoryFilter"
+                class="admin-select"
+            >
+                <option value="">
+                    جميع التصنيفات
+                </option>
+
+                {% for category in categories %}
+                    <option value="{{ (category.name or category.name_ar or '')|lower }}">
+                        {{ category.name or category.name_ar }}
+                    </option>
+                {% endfor %}
+            </select>
+
+        </div>
+
+        <div class="admin-filter-group">
+
+            <label for="statusFilter">
+                الحالة
+            </label>
+
+            <select
+                id="statusFilter"
+                class="admin-select"
+            >
+                <option value="">
+                    جميع الحالات
+                </option>
+
+                <option value="active">
+                    مفعل
+                </option>
+
+                <option value="inactive">
+                    مخفي
+                </option>
+            </select>
+
+        </div>
+
+        <div class="admin-filter-group">
+
+            <label for="homeFilter">
+                الظهور في الرئيسية
+            </label>
+
+            <select
+                id="homeFilter"
+                class="admin-select"
+            >
+                <option value="">
+                    الكل
+                </option>
+
+                <option value="yes">
+                    يظهر في الرئيسية
+                </option>
+
+                <option value="no">
+                    لا يظهر في الرئيسية
+                </option>
+            </select>
+
+        </div>
+
+        <div class="admin-filter-group admin-filter-button">
+
+            <button
+                type="button"
+                id="resetProductFilters"
+                class="admin-btn admin-btn-secondary"
+            >
+                إعادة تعيين
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- نموذج الإجراءات الجماعية -->
+    <form
+        method="POST"
+        action="{{ url_for('admin.bulk_products_action') }}"
+        id="productsBulkForm"
+    >
+
+        <!-- شريط الإجراءات الجماعية -->
+        <div
+    class="products-bulk-bar admin-hidden"
+    id="productsBulkBar"
+>
+
+            <div class="products-bulk-group">
+
+                <label for="bulkAction">
+                    الإجراء الجماعي
+                </label>
+
+                <select
+                    name="bulk_action"
+                    id="bulkAction"
+                    required
+                >
+                    <option value="">
+                        اختر الإجراء
+                    </option>
+
+                    <optgroup label="النشر">
+
+                        <option value="activate">
+                            نشر المنتجات
+                        </option>
+
+                        <option value="deactivate">
+                            إلغاء نشر المنتجات
+                        </option>
+
+                    </optgroup>
+
+                    <optgroup label="الصفحة الرئيسية">
+
+                        <option value="show_home">
+                            إظهار في الرئيسية
+                        </option>
+
+                        <option value="hide_home">
+                            إزالة من الرئيسية
+                        </option>
+
+                    </optgroup>
+
+                    <optgroup label="التقييمات">
+
+                        <option value="enable_ratings">
+                            تفعيل تقييم النجوم
+                        </option>
+
+                        <option value="disable_ratings">
+                            إيقاف تقييم النجوم
+                        </option>
+
+                        <option value="enable_comments">
+                            تفعيل التعليقات والصور
+                        </option>
+
+                        <option value="disable_comments">
+                            إيقاف التعليقات والصور
+                        </option>
+
+                    </optgroup>
+
+                    <optgroup label="تعديل جماعي">
+
+                        <option value="change_category">
+                            تغيير التصنيف
+                        </option>
+
+                        <option value="set_discount">
+                            تعيين نسبة خصم
+                        </option>
+
+                    </optgroup>
+
+                    <optgroup label="الحذف">
+
+                        <option value="delete">
+                            حذف المنتجات المحددة
+                        </option>
+
+                    </optgroup>
+
+                </select>
+
+            </div>
+
+            <!-- اختيار التصنيف الجديد -->
+            <div
+                class="products-bulk-group products-bulk-extra"
+                id="bulkCategoryGroup"
+            >
+
+                <label for="bulkCategoryId">
+                    التصنيف الجديد
+                </label>
+
+                <select
+                    name="bulk_category_id"
+                    id="bulkCategoryId"
+                >
+                    <option value="">
+                        اختر التصنيف
+                    </option>
+
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">
+                            {{ category.name or category.name_ar }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+            </div>
+
+            <!-- نسبة الخصم -->
+            <div
+                class="products-bulk-group products-bulk-extra"
+                id="bulkDiscountGroup"
+            >
+
+                <label for="bulkDiscountPercent">
+                    نسبة الخصم
+                </label>
+
+                <input
+                    type="number"
+                    name="bulk_discount_percent"
+                    id="bulkDiscountPercent"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="مثال: 10"
+                >
+
+            </div>
+
+            <!-- عدد المنتجات المحددة -->
+            <div
+                class="products-selected-count"
+                id="selectedProductsCount"
+            >
+                تم تحديد: 0
+            </div>
+
+            <button
+                type="submit"
+                id="applyBulkAction"
+                class="admin-btn admin-btn-primary"
+            >
+                تطبيق
+            </button>
+
+        </div>
+
+        <!-- جدول المنتجات -->
+        <div class="admin-table-wrapper">
+
+            <table class="admin-table products-admin-table">
+
+                <thead>
+                    <tr>
+
+                        <!-- تحديد الكل -->
+                        <th>
+                            <input
+                                type="checkbox"
+                                id="selectAllProducts"
+                                class="products-checkbox"
+                                aria-label="تحديد كل المنتجات الظاهرة"
+                            >
+                        </th>
+
+                        <th>الصورة</th>
+                        <th>اسم المنتج</th>
+                        <th>التصنيف</th>
+                        <th>السعر</th>
+                        <th>الحالة</th>
+                        <th>الرئيسية</th>
+                        <th>التقييم والتعليقات</th>
+                        <th>الإجراءات</th>
+
+                    </tr>
+                </thead>
+
+                <tbody id="productsTableBody">
+
+                    {% for product in products %}
+
+                        {% set product_category = product.category.name if product.category else '' %}
+                        {% set product_status = 'active' if product.is_active else 'inactive' %}
+                        {% set product_home = 'yes' if product.show_on_home else 'no' %}
+
+                        <tr
+                            class="product-row {% if product.show_on_home %}home-highlight{% endif %}"
+                            data-name="{{ product.title|lower }}"
+                            data-category="{{ product_category|lower }}"
+                            data-status="{{ product_status }}"
+                            data-home="{{ product_home }}"
+                        >
+
+                            <!-- تحديد المنتج -->
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    name="product_ids"
+                                    value="{{ product.id }}"
+                                    class="product-select-checkbox products-checkbox"
+                                    aria-label="تحديد {{ product.title }}"
+                                >
+                            </td>
+
+                            <!-- الصورة -->
+                            <td>
+                                {% if product.image %}
+                                    <img
+                                        src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                                        class="admin-table-img"
+                                        alt="{{ product.title }}"
+                                    >
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
+                            <!-- الاسم -->
+                            <td>
+                                <strong>
+                                    {{ product.title }}
+                                </strong>
+                            </td>
+
+                            <!-- التصنيف -->
+                            <td>
+                                {% if product.category %}
+                                    {{ product.category.name }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
+                            <!-- السعر -->
+                            <td>
+                                ¥{{ product.price|round(0) }}
+
+                                {% if product.discount_percent and product.discount_percent > 0 %}
+                                    <br>
+
+                                    <small>
+                                        خصم {{ product.discount_percent }}%
+                                    </small>
+                                {% endif %}
+                            </td>
+
+                            <!-- حالة المنتج -->
+                            <td>
+                                <div class="admin-actions">
+
+                                    {% if product.is_active %}
+
+                                        <span class="status-badge status-completed">
+                                            مفعل
+                                        </span>
+
+                                        <a
+                                            href="{{ url_for('admin.toggle_product_active', product_id=product.id) }}"
+                                            class="admin-btn admin-btn-secondary"
+                                        >
+                                            تعطيل
+                                        </a>
+
+                                    {% else %}
+
+                                        <span class="status-badge status-unpaid">
+                                            مخفي
+                                        </span>
+
+                                        <a
+                                            href="{{ url_for('admin.toggle_product_active', product_id=product.id) }}"
+                                            class="admin-btn admin-btn-primary"
+                                        >
+                                            تفعيل
+                                        </a>
+
+                                    {% endif %}
+
+                                </div>
+                            </td>
+
+                            <!-- الرئيسية -->
+                            <td>
+                                <div class="admin-actions">
+
+                                    {% if product.show_on_home %}
+
+                                        <span class="status-badge status-paid">
+                                            نعم
+                                        </span>
+
+                                        <a
+                                            href="{{ url_for('admin.toggle_product_home', product_id=product.id) }}"
+                                            class="admin-btn admin-btn-secondary"
+                                        >
+                                            إخفاء
+                                        </a>
+
+                                    {% else %}
+
+                                        <span class="status-badge status-unpaid">
+                                            لا
+                                        </span>
+
+                                        <a
+                                            href="{{ url_for('admin.toggle_product_home', product_id=product.id) }}"
+                                            class="admin-btn admin-btn-primary"
+                                        >
+                                            إظهار
+                                        </a>
+
+                                    {% endif %}
+
+                                </div>
+                            </td>
+
+                            <!-- التقييمات والتعليقات -->
+                            <td>
+                                <div class="product-settings-status">
+
+                                    <div class="product-setting-line">
+
+                                        <span>
+                                            النجوم
+                                        </span>
+
+                                        <span class="{% if product.ratings_enabled %}product-setting-on{% else %}product-setting-off{% endif %}">
+                                            {{ "مفعلة" if product.ratings_enabled else "متوقفة" }}
+                                        </span>
+
+                                    </div>
+
+                                    <div class="product-setting-line">
+
+                                        <span>
+                                            التعليقات
+                                        </span>
+
+                                        <span class="{% if product.comments_enabled %}product-setting-on{% else %}product-setting-off{% endif %}">
+                                            {{ "مفعلة" if product.comments_enabled else "متوقفة" }}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+                            </td>
+
+                            <!-- الإجراءات -->
+                            <td>
+                                <div class="admin-actions">
+
+                                    <a
+                                        href="{{ url_for('admin.edit_product', product_id=product.id) }}"
+                                        class="admin-btn admin-btn-secondary"
+                                    >
+                                        تعديل
+                                    </a>
+
+                                    <a
+    href="{{ url_for('admin.delete_product', product_id=product.id) }}"
+    class="admin-btn admin-btn-danger js-confirm-delete"
+    data-confirm-message="هل أنت متأكد من حذف هذا المنتج؟"
+>
+    حذف
+</a>
+
+                                </div>
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    <!-- لا توجد نتائج -->
+                    <tr
+    id="noProductsResults"
+    class="admin-hidden"
+>
+                        <td
+                            colspan="9"
+                            class="admin-empty-state"
+                        >
+                            لا توجد منتجات مطابقة للبحث أو الفلاتر.
+                        </td>
+                    </tr>
+
+                    {% if not products %}
+                    <tr>
+                        <td
+                            colspan="9"
+                            class="admin-empty-state"
+                        >
+                            لا توجد منتجات حاليًا.
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // =========================
+    // عناصر البحث والفلاتر
+    // =========================
+
+    const searchInput =
+        document.getElementById("productSearch");
+
+    const categoryFilter =
+        document.getElementById("categoryFilter");
+
+    const statusFilter =
+        document.getElementById("statusFilter");
+
+    const homeFilter =
+        document.getElementById("homeFilter");
+
+    const resetButton =
+        document.getElementById("resetProductFilters");
+
+    const productRows = Array.from(
+        document.querySelectorAll(".product-row")
+    );
+
+    const resultsCount =
+        document.getElementById("productsResultsCount");
+
+    const noResultsRow =
+        document.getElementById("noProductsResults");
+
+    // =========================
+    // عناصر الإجراءات الجماعية
+    // =========================
+
+    const bulkBar =
+        document.getElementById("productsBulkBar");
+
+    const selectAllCheckbox =
+        document.getElementById("selectAllProducts");
+
+    const productCheckboxes = Array.from(
+        document.querySelectorAll(".product-select-checkbox")
+    );
+
+    const selectedCount =
+        document.getElementById("selectedProductsCount");
+
+    const bulkForm =
+        document.getElementById("productsBulkForm");
+
+    const bulkAction =
+        document.getElementById("bulkAction");
+
+    const categoryGroup =
+        document.getElementById("bulkCategoryGroup");
+
+    const categoryInput =
+        document.getElementById("bulkCategoryId");
+
+    const discountGroup =
+        document.getElementById("bulkDiscountGroup");
+
+    const discountInput =
+        document.getElementById("bulkDiscountPercent");
+
+    /**
+     * تنظيف النص قبل البحث والمقارنة.
+     */
+    function normalizeText(value) {
+        return String(value || "")
+            .toLowerCase()
+            .trim();
+    }
+
+    /**
+     * الحصول على مربعات المنتجات الظاهرة فقط.
+     */
+    function getVisibleCheckboxes() {
+        return productRows
+            .filter(function (row) {
+                return row.style.display !== "none";
+            })
+            .map(function (row) {
+                return row.querySelector(
+                    ".product-select-checkbox"
+                );
+            })
+            .filter(Boolean);
+    }
+
+    /**
+     * تحديث حالة مربع تحديد الكل.
+     */
+    function updateSelectAllState() {
+
+        const visibleCheckboxes =
+            getVisibleCheckboxes();
+
+        const checkedVisible =
+            visibleCheckboxes.filter(function (checkbox) {
+                return checkbox.checked;
+            });
+
+        if (!visibleCheckboxes.length) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+            return;
+        }
+
+        selectAllCheckbox.checked =
+            checkedVisible.length === visibleCheckboxes.length;
+
+        selectAllCheckbox.indeterminate =
+            checkedVisible.length > 0 &&
+            checkedVisible.length < visibleCheckboxes.length;
+    }
+
+    /**
+     * تحديث عدد المنتجات المحددة وإظهار أو إخفاء الشريط.
+     */
+    function updateSelectedCount() {
+
+        const count = productCheckboxes.filter(
+            function (checkbox) {
+                return checkbox.checked;
+            }
+        ).length;
+
+        selectedCount.textContent =
+            "تم تحديد: " + count;
+
+        if (count > 0) {
+            bulkBar.style.display = "flex";
+        } else {
+            bulkBar.style.display = "none";
+        }
+
+        updateSelectAllState();
+    }
+
+    /**
+     * تنفيذ البحث والفلاتر.
+     */
+    function filterProducts() {
+
+        const searchValue =
+            normalizeText(searchInput.value);
+
+        const categoryValue =
+            normalizeText(categoryFilter.value);
+
+        const statusValue =
+            normalizeText(statusFilter.value);
+
+        const homeValue =
+            normalizeText(homeFilter.value);
+
+        let visibleCount = 0;
+
+        productRows.forEach(function (row) {
+
+            const productName =
+                normalizeText(row.dataset.name);
+
+            const productCategory =
+                normalizeText(row.dataset.category);
+
+            const productStatus =
+                normalizeText(row.dataset.status);
+
+            const productHome =
+                normalizeText(row.dataset.home);
+
+            const matchesSearch =
+                searchValue === "" ||
+                productName.includes(searchValue) ||
+                productCategory.includes(searchValue);
+
+            const matchesCategory =
+                categoryValue === "" ||
+                productCategory === categoryValue;
+
+            const matchesStatus =
+                statusValue === "" ||
+                productStatus === statusValue;
+
+            const matchesHome =
+                homeValue === "" ||
+                productHome === homeValue;
+
+            const shouldShow =
+                matchesSearch &&
+                matchesCategory &&
+                matchesStatus &&
+                matchesHome;
+
+            row.style.display =
+                shouldShow ? "" : "none";
+
+            if (shouldShow) {
+                visibleCount++;
+            }
+        });
+
+        resultsCount.textContent =
+            visibleCount;
+
+        noResultsRow.style.display =
+            productRows.length > 0 && visibleCount === 0
+                ? ""
+                : "none";
+
+        updateSelectAllState();
+    }
+
+    /**
+     * إعادة الفلاتر للوضع الافتراضي.
+     */
+    function resetFilters() {
+
+        searchInput.value = "";
+        categoryFilter.value = "";
+        statusFilter.value = "";
+        homeFilter.value = "";
+
+        filterProducts();
+        searchInput.focus();
+    }
+
+    /**
+     * إظهار الحقل الإضافي المناسب حسب الإجراء.
+     */
+    function updateBulkExtraFields() {
+
+        categoryGroup.style.display =
+            "none";
+
+        discountGroup.style.display =
+            "none";
+
+        categoryInput.required =
+            false;
+
+        discountInput.required =
+            false;
+
+        if (bulkAction.value === "change_category") {
+            categoryGroup.style.display =
+                "flex";
+
+            categoryInput.required =
+                true;
+        }
+
+        if (bulkAction.value === "set_discount") {
+            discountGroup.style.display =
+                "flex";
+
+            discountInput.required =
+                true;
+        }
+    }
+
+    // =========================
+    // أحداث البحث والفلاتر
+    // =========================
+
+    searchInput.addEventListener(
+        "input",
+        filterProducts
+    );
+
+    categoryFilter.addEventListener(
+        "change",
+        filterProducts
+    );
+
+    statusFilter.addEventListener(
+        "change",
+        filterProducts
+    );
+
+    homeFilter.addEventListener(
+        "change",
+        filterProducts
+    );
+
+    resetButton.addEventListener(
+        "click",
+        resetFilters
+    );
+
+    // =========================
+    // تحديد الكل
+    // =========================
+
+    selectAllCheckbox.addEventListener(
+        "change",
+        function () {
+
+            const visibleCheckboxes =
+                getVisibleCheckboxes();
+
+            visibleCheckboxes.forEach(
+                function (checkbox) {
+                    checkbox.checked =
+                        selectAllCheckbox.checked;
+                }
+            );
+
+            updateSelectedCount();
+        }
+    );
+
+    // =========================
+    // تحديد منتج منفرد
+    // =========================
+
+    productCheckboxes.forEach(
+        function (checkbox) {
+
+            checkbox.addEventListener(
+                "change",
+                updateSelectedCount
+            );
+        }
+    );
+
+    // =========================
+    // تغيير الإجراء الجماعي
+    // =========================
+
+    bulkAction.addEventListener(
+        "change",
+        updateBulkExtraFields
+    );
+
+    // =========================
+    // التحقق قبل إرسال النموذج
+    // =========================
+
+    bulkForm.addEventListener(
+        "submit",
+        function (event) {
+
+            const selectedProducts =
+                productCheckboxes.filter(
+                    function (checkbox) {
+                        return checkbox.checked;
+                    }
+                );
+
+            if (!selectedProducts.length) {
+                event.preventDefault();
+
+                alert(
+                    "يرجى تحديد منتج واحد على الأقل."
+                );
+
+                return;
+            }
+
+            if (!bulkAction.value) {
+                event.preventDefault();
+
+                alert(
+                    "يرجى اختيار الإجراء الجماعي."
+                );
+
+                return;
+            }
+
+            if (bulkAction.value === "delete") {
+
+                const confirmed = confirm(
+                    "هل أنت متأكد من حذف المنتجات المحددة نهائيًا؟"
+                );
+
+                if (!confirmed) {
+                    event.preventDefault();
+                }
+            }
+        }
+    );
+
+    // =========================
+    // تشغيل أولي
+    // =========================
+
+    updateBulkExtraFields();
+    filterProducts();
+    updateSelectedCount();
+});
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script
+    src="{{ url_for('static', filename='js/admin/products-list.js') }}?v=3"
+></script>
+{% endblock %}

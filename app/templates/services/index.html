@@ -4,117 +4,241 @@
 {{ tr.services }}
 {% endblock %}
 
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/parts/final-services.css', v='20260730-11') }}"
+>
+{% endblock %}
+
 {% block content %}
 
-<section class="services-page-section">
+<section class="ma-section services-page-section">
 
     <div class="container">
 
-        <h1 class="section-title">
-            {{ tr.services }}
-        </h1>
+        <!-- رأس الصفحة -->
+        <header class="services-page-header">
 
-        <p class="section-subtitle">
+            <h1 class="section-title">
+                {{ tr.services }}
+            </h1>
 
-            {% if current_lang == "en" %}
-                Professional integrated solutions in design, printing and digital marketing.
-            {% elif current_lang == "ja" %}
-                デザイン・印刷・デジタルマーケティングの総合ソリューションを提供します。
-            {% else %}
-                نقدم حلولًا متكاملة في التصميم والطباعة والتسويق الرقمي لبناء حضور بصري قوي لعلامتك التجارية.
-            {% endif %}
+            <p class="section-subtitle">
+                {% if current_lang == "en" %}
+                    Professional integrated solutions in design, printing and digital marketing.
+                {% elif current_lang == "ja" %}
+                    デザイン・印刷・デジタルマーケティングの総合ソリューションを提供します。
+                {% else %}
+                    نقدم حلولًا متكاملة في التصميم والطباعة والتسويق الرقمي لبناء حضور بصري قوي لعلامتك التجارية.
+                {% endif %}
+            </p>
 
-        </p>
+        </header>
 
-        <div class="services-page-grid">
+        {% set services_list = services if services is defined else home_services %}
 
-            {% if services %}
+        {% if services_list %}
 
-                {% for service in services %}
+            <div class="ma-card-grid services-grid">
 
-                <div class="service-page-card">
+                {% for service in services_list %}
 
-                    <div class="service-page-icon">
-                        {{ service.icon if service.icon else "🛠️" }}
-                    </div>
+                    {% set service_title =
+                        service.get_title(current_lang)
+                        if service.get_title is defined
+                        else service.title
+                    %}
 
-                    <h3>
-                        {{ service.get_title(current_lang) }}
-                    </h3>
+                    {% set service_slug =
+                        service.get_slug(current_lang)
+                        if service.get_slug is defined
+                        else service.slug
+                    %}
 
-                    {% if service.get_short_description(current_lang) %}
+                    {% set service_short =
+                        service.get_short_description(current_lang)
+                        if service.get_short_description is defined
+                        else service.short_description
+                    %}
 
-                        <p>
-                            {{ service.get_short_description(current_lang) }}
-                        </p>
+                    {% set service_description =
+                        service.get_description(current_lang)
+                        if service.get_description is defined
+                        else service.description
+                    %}
 
-                    {% elif service.get_description(current_lang) %}
+                    {% set service_url =
+                        url_for(
+                            'services.detail',
+                            slug=service_slug
+                        )
+                    %}
 
-                        <p>
-                            {{ service.get_description(current_lang)[:180] }}...
-                        </p>
+                    <article
+                        class="ma-card ma-card-interactive service-card"
+                    >
 
-                    {% else %}
+                        <!-- صورة الخدمة -->
+                        <a
+                            href="{{ service_url }}"
+                            class="ma-card-media service-card-media"
+                            aria-label="{{ service_title }}"
+                        >
 
-                        <p>
+                            {% if service.image %}
 
-                            {% if current_lang == "en" %}
-                                Service details will appear here.
-                            {% elif current_lang == "ja" %}
-                                サービス詳細はここに表示されます。
+                                <img
+                                    src="{{ url_for(
+                                        'static',
+                                        filename='uploads/' ~ service.image
+                                    ) }}"
+                                    alt="{{ service_title }}"
+                                    loading="lazy"
+                                    decoding="async"
+                                >
+
                             {% else %}
-                                تفاصيل الخدمة ستظهر هنا.
+
+                                <span class="service-image-placeholder">
+                                    <i class="fa-regular fa-image"></i>
+                                </span>
+
                             {% endif %}
 
-                        </p>
-
-                    {% endif %}
-
-                    <div class="service-page-actions">
-
-                        <a href="{{ url_for('services.detail', slug=service.get_slug(current_lang)) }}"
-                           class="btn-outline">
-
-                            {% if current_lang == "en" %}
-                                View Details
-                            {% elif current_lang == "ja" %}
-                                詳細を見る
-                            {% else %}
-                                عرض التفاصيل
-                            {% endif %}
+                            <span class="service-card-icon">
+                                <i class="fa-solid fa-pen-ruler"></i>
+                            </span>
 
                         </a>
 
-                        <a href="{{ url_for('contact.index') }}"
-                           class="btn-primary">
+                        <!-- محتوى البطاقة -->
+                        <div class="ma-card-body">
 
-                            {{ tr.request_service }}
+                            <div class="ma-card-header">
 
-                        </a>
+                                <h2 class="ma-card-title service-card-title">
 
-                    </div>
+                                    <a href="{{ service_url }}">
+                                        {{ service_title }}
+                                    </a>
 
-                </div>
+                                </h2>
+
+                            </div>
+
+                            <div
+                                class="service-rating"
+                                aria-label="{% if current_lang == 'en' %}Rated 5 out of 5{% elif current_lang == 'ja' %}5段階中5の評価{% else %}التقييم 5 من 5{% endif %}"
+                            >
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+
+                            {% if service_short %}
+
+                                <p class="ma-card-text ma-line-clamp-3">
+                                    {{ service_short }}
+                                </p>
+
+                            {% elif service_description %}
+
+                                <p class="ma-card-text ma-line-clamp-3">
+                                    {{ service_description }}
+                                </p>
+
+                            {% else %}
+
+                                <p class="ma-card-text ma-line-clamp-3">
+
+                                    {% if current_lang == "en" %}
+                                        Professional service details will appear here.
+                                    {% elif current_lang == "ja" %}
+                                        サービスの詳細はここに表示されます。
+                                    {% else %}
+                                        تفاصيل الخدمة الاحترافية ستظهر هنا.
+                                    {% endif %}
+
+                                </p>
+
+                            {% endif %}
+
+                            <!-- أزرار البطاقة -->
+                            <div class="ma-card-footer service-card-actions">
+
+                                <a
+                                    href="{{ service_url }}"
+                                    class="ma-btn ma-btn-secondary service-details-btn"
+                                >
+                                    <span>
+                                        {% if current_lang == "en" %}
+                                            View Details
+                                        {% elif current_lang == "ja" %}
+                                            詳細を見る
+                                        {% else %}
+                                            عرض التفاصيل
+                                        {% endif %}
+                                    </span>
+
+                                    <i
+                                        class="fa-solid
+                                        {% if current_lang == 'ar' %}
+                                            fa-arrow-left
+                                        {% else %}
+                                            fa-arrow-right
+                                        {% endif %}"
+                                    ></i>
+                                </a>
+
+                                <a
+                                    href="{{ url_for('contact.index') }}"
+                                    class="ma-btn ma-btn-primary service-order-btn"
+                                >
+                                    <i class="fa-regular fa-paper-plane"></i>
+
+                                    <span>
+                                        {% if current_lang == "en" %}
+                                            Request Service
+                                        {% elif current_lang == "ja" %}
+                                            サービスを依頼
+                                        {% else %}
+                                            اطلب الخدمة
+                                        {% endif %}
+                                    </span>
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </article>
 
                 {% endfor %}
 
-            {% else %}
+            </div>
+
+        {% else %}
+
+            <div class="services-empty-message">
+
+                <i class="fa-solid fa-layer-group"></i>
 
                 <p>
-
                     {% if current_lang == "en" %}
-                        No services available currently.
+                        No services are currently available.
                     {% elif current_lang == "ja" %}
-                        現在利用可能なサービスはありません。
+                        現在、表示できるサービスはありません。
                     {% else %}
-                        لا توجد خدمات متاحة حالياً.
+                        لا توجد خدمات ظاهرة حاليًا.
                     {% endif %}
-
                 </p>
 
-            {% endif %}
+            </div>
 
-        </div>
+        {% endif %}
 
     </div>
 

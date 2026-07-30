@@ -1,0 +1,188 @@
+/* ==========================================================
+   MEDIAART PROJECT CARD
+   ========================================================== */
+
+/* شبكة صفحة الأعمال */
+.portfolio-section {
+    padding: 80px 0;
+    background: var(--ma-surface);
+}
+
+.portfolio-section .section-title {
+    margin: 0 0 14px;
+    text-align: center;
+}
+
+.portfolio-section .section-description {
+    max-width: 720px;
+    margin: 0 auto 42px;
+    text-align: center;
+    color: var(--ma-text-secondary);
+    line-height: 1.8;
+}
+
+.portfolio-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-items: stretch;
+    gap: 26px !important;
+}
+
+/* البطاقة */
+.project-card {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+}
+
+/* صورة المشروع */
+.project-card .ma-card-media {
+    width: 100%;
+    height: 240px;
+    flex-shrink: 0;
+    background: var(--ma-surface-soft);
+}
+
+.project-card .ma-card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* الصورة البديلة */
+.project-card .ma-card-placeholder {
+    width: 100%;
+    height: 100%;
+    background:
+        linear-gradient(
+            135deg,
+            var(--ma-surface-soft),
+            var(--ma-border)
+        );
+}
+
+/* محتوى البطاقة */
+.project-card .ma-card-body {
+    padding: 22px 22px 8px;
+}
+
+.project-card .ma-card-title {
+    margin: 0 0 10px;
+    font-size: 1.2rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.project-card .ma-card-text {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+
+    color: var(--ma-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.8;
+}
+
+/* الجزء السفلي والأزرار */
+.project-card .ma-card-footer {
+    display: flex;
+    align-items: center;
+    margin-top: auto;
+    padding: 14px 22px 22px;
+}
+
+.project-card .ma-card-footer .ma-btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+}
+
+/* حالة عدم وجود مشاريع */
+.portfolio-grid .empty-state {
+    grid-column: 1 / -1;
+    padding: 50px 24px;
+    text-align: center;
+    color: var(--ma-text-secondary);
+    background: var(--ma-surface-soft);
+    border: 1px solid var(--ma-border);
+    border-radius: var(--ma-radius-lg);
+}
+
+/* الأجهزة المتوسطة */
+@media (max-width: 1050px) {
+    .portfolio-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .project-card .ma-card-media {
+        height: 220px;
+    }
+}
+
+/* الجوال */
+@media (max-width: 680px) {
+    .portfolio-section {
+        padding: 55px 0;
+    }
+
+    .portfolio-section .section-description {
+        margin-bottom: 30px;
+    }
+
+    .portfolio-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 18px !important;
+    }
+
+    .project-card .ma-card-media {
+        height: 215px;
+    }
+
+    .project-card .ma-card-body {
+        padding: 18px 18px 6px;
+    }
+
+    .project-card .ma-card-footer {
+        padding: 14px 18px 18px;
+    }
+}
+
+/* إصلاح تعارضات CSS القديمة */
+.portfolio-section .portfolio-grid > .project-card {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.portfolio-section .project-card > .ma-card-media,
+.portfolio-section .project-card > .ma-card-body,
+.portfolio-section .project-card > .ma-card-footer {
+    position: relative !important;
+    display: flex;
+    grid-column: auto !important;
+    grid-row: auto !important;
+    width: 100% !important;
+}
+
+.portfolio-section .project-card > .ma-card-media {
+    display: block !important;
+    height: 240px !important;
+}
+
+.portfolio-section .project-card > .ma-card-body {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+}
+
+.portfolio-section .project-card > .ma-card-footer {
+    display: flex !important;
+}

@@ -1,0 +1,671 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}
+إدارة تقييمات المنتجات
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .reviews-admin-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+    }
+
+    .reviews-admin-head h2 {
+        margin: 0 0 7px;
+    }
+
+    .reviews-admin-head p {
+        margin: 0;
+        color: #6d7380;
+    }
+
+    .reviews-filters {
+        display: grid;
+        grid-template-columns:
+            minmax(220px, 2fr)
+            repeat(4, minmax(150px, 1fr))
+            auto;
+        gap: 12px;
+        align-items: end;
+        margin-bottom: 22px;
+    }
+
+    .reviews-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .reviews-filter-group label {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .reviews-filter-group input,
+    .reviews-filter-group select {
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 11px;
+        border: 1px solid #d9dde4;
+        border-radius: 8px;
+        background: #fff;
+        font: inherit;
+        box-sizing: border-box;
+    }
+
+    .reviews-filter-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .reviews-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .reviews-table {
+        min-width: 1350px;
+    }
+
+    .review-admin-image {
+        width: 65px;
+        height: 65px;
+        object-fit: cover;
+        border-radius: 9px;
+        border: 1px solid #dfe2e8;
+        display: block;
+    }
+
+    .review-admin-stars {
+        display: inline-flex;
+        direction: ltr;
+        gap: 1px;
+        white-space: nowrap;
+    }
+
+    .review-admin-star {
+        color: #d5d7dc;
+        font-size: 18px;
+    }
+
+    .review-admin-star.active {
+        color: #f5a623;
+    }
+
+    .review-admin-comment {
+        max-width: 270px;
+        white-space: normal;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+
+    .review-admin-email {
+        display: block;
+        margin-top: 4px;
+        color: #767d88;
+        font-size: 12px;
+    }
+
+    .review-visibility-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 115px;
+    }
+
+    .review-visibility-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 7px;
+        font-size: 13px;
+    }
+
+    .review-admin-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        min-width: 135px;
+    }
+
+    .review-admin-actions form {
+        margin: 0;
+    }
+
+    .review-admin-actions button {
+        width: 100%;
+    }
+
+    .review-status-badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .review-status-approved {
+        color: #17653b;
+        background: #dff6e9;
+    }
+
+    .review-status-pending {
+        color: #8a5a00;
+        background: #fff0c9;
+    }
+
+    .review-visible-yes {
+        color: #17653b;
+    }
+
+    .review-visible-no {
+        color: #a32d2d;
+    }
+
+    .reviews-empty-state {
+        text-align: center;
+        padding: 35px 20px !important;
+        color: #747b87;
+    }
+
+    @media (max-width: 1150px) {
+        .reviews-filters {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 760px) {
+        .reviews-filters {
+            grid-template-columns: 1fr;
+        }
+
+        .reviews-filter-actions {
+            width: 100%;
+        }
+
+        .reviews-filter-actions .admin-btn {
+            flex: 1;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="reviews-admin-head">
+
+    <div>
+        <h2>تقييمات وتعليقات المنتجات</h2>
+
+        <p>
+            مراجعة تقييمات العملاء والتحكم في ظهور النجوم والتعليقات والصور.
+        </p>
+    </div>
+
+    <div>
+        عدد النتائج:
+        <strong>{{ reviews|length }}</strong>
+    </div>
+
+</div>
+
+<form
+    method="GET"
+    action="{{ url_for('admin.product_reviews_list') }}"
+    class="reviews-filters"
+>
+
+    <!-- البحث -->
+    <div class="reviews-filter-group">
+        <label for="reviewSearch">
+            البحث
+        </label>
+
+        <input
+            type="search"
+            id="reviewSearch"
+            name="search"
+            value="{{ search }}"
+            placeholder="اسم العميل أو البريد أو التعليق..."
+        >
+    </div>
+
+    <!-- المنتج -->
+    <div class="reviews-filter-group">
+        <label for="reviewProductFilter">
+            المنتج
+        </label>
+
+        <select
+            id="reviewProductFilter"
+            name="product_id"
+        >
+            <option value="">
+                جميع المنتجات
+            </option>
+
+            {% for product in products %}
+
+                <option
+                    value="{{ product.id }}"
+                    {% if selected_product_id|string == product.id|string %}
+                        selected
+                    {% endif %}
+                >
+                    {{ product.title_ar or product.title }}
+                </option>
+
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- النجوم -->
+    <div class="reviews-filter-group">
+        <label for="reviewRatingFilter">
+            عدد النجوم
+        </label>
+
+        <select
+            id="reviewRatingFilter"
+            name="rating"
+        >
+            <option value="">
+                جميع التقييمات
+            </option>
+
+            {% for number in range(1, 6) %}
+                <option
+                    value="{{ number }}"
+                    {% if rating|string == number|string %}
+                        selected
+                    {% endif %}
+                >
+                    {{ number }} نجوم
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- حالة الاعتماد -->
+    <div class="reviews-filter-group">
+        <label for="reviewStatusFilter">
+            حالة الاعتماد
+        </label>
+
+        <select
+            id="reviewStatusFilter"
+            name="status"
+        >
+            <option value="">
+                جميع الحالات
+            </option>
+
+            <option
+                value="approved"
+                {% if status == "approved" %}
+                    selected
+                {% endif %}
+            >
+                معتمد
+            </option>
+
+            <option
+                value="pending"
+                {% if status == "pending" %}
+                    selected
+                {% endif %}
+            >
+                بانتظار الاعتماد
+            </option>
+        </select>
+    </div>
+
+    <!-- وجود الصورة -->
+    <div class="reviews-filter-group">
+        <label for="reviewImageFilter">
+            الصورة
+        </label>
+
+        <select
+            id="reviewImageFilter"
+            name="image"
+        >
+            <option value="">
+                الكل
+            </option>
+
+            <option
+                value="with_image"
+                {% if image_status == "with_image" %}
+                    selected
+                {% endif %}
+            >
+                يحتوي على صورة
+            </option>
+
+            <option
+                value="without_image"
+                {% if image_status == "without_image" %}
+                    selected
+                {% endif %}
+            >
+                بدون صورة
+            </option>
+        </select>
+    </div>
+
+    <!-- الأزرار -->
+    <div class="reviews-filter-actions">
+
+        <button
+            type="submit"
+            class="admin-btn admin-btn-primary"
+        >
+            تطبيق
+        </button>
+
+        <a
+            href="{{ url_for('admin.product_reviews_list') }}"
+            class="admin-btn admin-btn-secondary"
+        >
+            إعادة تعيين
+        </a>
+
+    </div>
+
+</form>
+
+<div class="reviews-table-wrap">
+
+    <table class="admin-table reviews-table">
+
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>المنتج</th>
+                <th>العميل</th>
+                <th>التقييم</th>
+                <th>التعليق</th>
+                <th>الصورة</th>
+                <th>اللغة</th>
+                <th>الاعتماد</th>
+                <th>الظهور</th>
+                <th>التاريخ</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for review in reviews %}
+
+            <tr>
+
+                <!-- الرقم -->
+                <td>
+                    {{ review.id }}
+                </td>
+
+                <!-- المنتج -->
+                <td>
+                    {% if review.product %}
+                        <strong>
+                            {{ review.product.title_ar or review.product.title }}
+                        </strong>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <!-- العميل -->
+                <td>
+                    <strong>
+                        {{ review.customer_name }}
+                    </strong>
+
+                    {% if review.customer_email %}
+                        <span class="review-admin-email">
+                            {{ review.customer_email }}
+                        </span>
+                    {% endif %}
+                </td>
+
+                <!-- النجوم -->
+                <td>
+                    <div class="review-admin-stars">
+
+                        {% for number in range(1, 6) %}
+
+                            <span
+                                class="review-admin-star {% if number <= review.rating %}active{% endif %}"
+                            >
+                                ★
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <div>
+                        {{ review.rating }} / 5
+                    </div>
+                </td>
+
+                <!-- التعليق -->
+                <td>
+                    <div class="review-admin-comment">
+                        {{ review.comment or "-" }}
+                    </div>
+                </td>
+
+                <!-- الصورة -->
+                <td>
+                    {% if review.image %}
+
+                        <a
+                            href="{{ url_for('static', filename='uploads/reviews/' + review.image) }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <img
+                                src="{{ url_for('static', filename='uploads/reviews/' + review.image) }}"
+                                class="review-admin-image"
+                                alt="صورة التقييم"
+                                loading="lazy"
+                            >
+                        </a>
+
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <!-- اللغة -->
+                <td>
+                    {% if review.language == "en" %}
+                        English
+                    {% elif review.language == "ja" %}
+                        日本語
+                    {% else %}
+                        العربية
+                    {% endif %}
+                </td>
+
+                <!-- الاعتماد -->
+                <td>
+                    {% if review.is_approved %}
+
+                        <span class="review-status-badge review-status-approved">
+                            معتمد
+                        </span>
+
+                    {% else %}
+
+                        <span class="review-status-badge review-status-pending">
+                            بانتظار الاعتماد
+                        </span>
+
+                    {% endif %}
+                </td>
+
+                <!-- حالات الظهور -->
+                <td>
+                    <div class="review-visibility-list">
+
+                        <div class="review-visibility-item">
+                            <span>النجوم</span>
+
+                            <strong class="{% if review.is_rating_visible %}review-visible-yes{% else %}review-visible-no{% endif %}">
+                                {{ "ظاهرة" if review.is_rating_visible else "مخفية" }}
+                            </strong>
+                        </div>
+
+                        <div class="review-visibility-item">
+                            <span>التعليق</span>
+
+                            <strong class="{% if review.is_comment_visible %}review-visible-yes{% else %}review-visible-no{% endif %}">
+                                {{ "ظاهر" if review.is_comment_visible else "مخفي" }}
+                            </strong>
+                        </div>
+
+                        <div class="review-visibility-item">
+                            <span>الصورة</span>
+
+                            <strong class="{% if review.is_image_visible %}review-visible-yes{% else %}review-visible-no{% endif %}">
+                                {{ "ظاهرة" if review.is_image_visible else "مخفية" }}
+                            </strong>
+                        </div>
+
+                    </div>
+                </td>
+
+                <!-- التاريخ -->
+                <td>
+                    {% if review.created_at %}
+                        {{ review.created_at.strftime("%Y-%m-%d") }}
+                        <br>
+                        {{ review.created_at.strftime("%H:%M") }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <!-- الإجراءات -->
+                <td>
+                    <div class="review-admin-actions">
+
+                        <!-- الاعتماد -->
+                        <form
+                            method="POST"
+                            action="{{ url_for('admin.toggle_product_review_approval', review_id=review.id) }}"
+                        >
+                            <button
+                                type="submit"
+                                class="admin-btn {% if review.is_approved %}admin-btn-secondary{% else %}admin-btn-primary{% endif %}"
+                            >
+                                {% if review.is_approved %}
+                                    إلغاء الاعتماد
+                                {% else %}
+                                    اعتماد
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        <!-- النجوم -->
+                        <form
+                            method="POST"
+                            action="{{ url_for('admin.toggle_product_review_rating', review_id=review.id) }}"
+                        >
+                            <button
+                                type="submit"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                {% if review.is_rating_visible %}
+                                    إخفاء النجوم
+                                {% else %}
+                                    إظهار النجوم
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        <!-- التعليق -->
+                        <form
+                            method="POST"
+                            action="{{ url_for('admin.toggle_product_review_comment', review_id=review.id) }}"
+                        >
+                            <button
+                                type="submit"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                {% if review.is_comment_visible %}
+                                    إخفاء التعليق
+                                {% else %}
+                                    إظهار التعليق
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        <!-- الصورة -->
+                        {% if review.image %}
+                        <form
+                            method="POST"
+                            action="{{ url_for('admin.toggle_product_review_image', review_id=review.id) }}"
+                        >
+                            <button
+                                type="submit"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                {% if review.is_image_visible %}
+                                    إخفاء الصورة
+                                {% else %}
+                                    إظهار الصورة
+                                {% endif %}
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        <!-- الحذف -->
+                        <form
+                            method="POST"
+                            action="{{ url_for('admin.delete_product_review', review_id=review.id) }}"
+                            onsubmit="return confirm('هل أنت متأكد من حذف هذا التقييم نهائيًا؟');"
+                        >
+                            <button
+                                type="submit"
+                                class="admin-btn admin-btn-danger"
+                            >
+                                حذف
+                            </button>
+                        </form>
+
+                    </div>
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+            {% if not reviews %}
+            <tr>
+                <td
+                    colspan="11"
+                    class="reviews-empty-state"
+                >
+                    لا توجد تقييمات مطابقة للبحث أو الفلاتر.
+                </td>
+            </tr>
+            {% endif %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

@@ -3,6 +3,8 @@ from config import Config
 
 from app.extensions import db, login_manager, mail, babel
 from app.routes.newsletter import newsletter_bp
+from app.routes.pages import pages_bp
+
 
 def create_app():
 
@@ -13,7 +15,9 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
+
     def get_locale():
+
         lang = session.get("lang", "ar")
 
         if lang in ["ar", "en", "ja"]:
@@ -21,15 +25,21 @@ def create_app():
 
         return "ar"
 
-    babel.init_app(app, locale_selector=get_locale)
+    babel.init_app(
+        app,
+        locale_selector=get_locale
+    )
 
     @app.context_processor
     def inject_settings():
+
         from app.models import SiteSetting
 
         setting = SiteSetting.query.first()
 
-        return dict(setting=setting)
+        return {
+            "setting": setting
+        }
 
     with app.app_context():
 
@@ -37,6 +47,7 @@ def create_app():
             Service,
             Post,
             Product,
+            ProductReview,
             Category,
             Project,
             User,
@@ -73,16 +84,22 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(newsletter_bp)
     app.register_blueprint(customer_auth_bp)
+    app.register_blueprint(pages_bp)
 
     @app.context_processor
     def inject_menu_items():
 
         from app.models.menu_item import MenuItem
 
-        items = MenuItem.query.filter_by(is_active=True).order_by(
-            MenuItem.display_order.asc(),
-            MenuItem.id.asc()
-        ).all()
+        items = (
+            MenuItem.query
+            .filter_by(is_active=True)
+            .order_by(
+                MenuItem.display_order.asc(),
+                MenuItem.id.asc()
+            )
+            .all()
+        )
 
         def resolve_menu_url(item):
 
@@ -107,10 +124,24 @@ def create_app():
             elif item.content_type == "contact":
                 return url_for("contact.index")
 
-            elif item.content_type == "page" and item.endpoint:
-                return url_for("main.dynamic_page", slug=item.endpoint)
+            elif item.content_type == "page":
 
-            elif item.content_type == "external" and item.custom_url:
+                if item.page:
+                    return url_for(
+                        "pages.page_detail",
+                        slug=item.page.slug
+                    )
+
+                elif item.endpoint:
+                    return url_for(
+                        "pages.page_detail",
+                        slug=item.endpoint
+                    )
+
+            elif (
+                item.content_type == "external"
+                and item.custom_url
+            ):
                 return item.custom_url
 
             elif item.endpoint:
@@ -124,6 +155,42 @@ def create_app():
         return {
             "main_menu_items": items,
             "resolve_menu_url": resolve_menu_url
+        }
+
+    @app.context_processor
+    def inject_pages():
+
+        from app.models.page import Page
+
+        menu_pages = (
+            Page.query
+            .filter_by(
+                is_active=True,
+                show_in_menu=True
+            )
+            .order_by(
+                Page.display_order.asc(),
+                Page.id.asc()
+            )
+            .all()
+        )
+
+        footer_pages = (
+            Page.query
+            .filter_by(
+                is_active=True,
+                show_in_footer=True
+            )
+            .order_by(
+                Page.display_order.asc(),
+                Page.id.asc()
+            )
+            .all()
+        )
+
+        return {
+            "menu_pages": menu_pages,
+            "footer_pages": footer_pages
         }
 
     @login_manager.user_loader
@@ -150,7 +217,11 @@ def create_app():
                 "site_default": "موقعي",
                 "request_service": "اطلب خدمة",
                 "quick_links": "روابط سريعة",
-                "footer_text": "حلول متكاملة في التصميم، الطباعة، والتسويق الرقمي لبناء حضور قوي لعلامتك التجارية.",
+                "footer_text": (
+                    "حلول متكاملة في التصميم، والطباعة، "
+                    "والتسويق الرقمي لبناء حضور قوي "
+                    "لعلامتك التجارية."
+                ),
                 "email": "البريد",
                 "phone": "الهاتف",
                 "address": "العنوان",
@@ -173,7 +244,11 @@ def create_app():
                 "site_default": "My Website",
                 "request_service": "Request Service",
                 "quick_links": "Quick Links",
-                "footer_text": "Integrated solutions in design, printing, and digital marketing to build a strong presence for your brand.",
+                "footer_text": (
+                    "Integrated solutions in design, printing, "
+                    "and digital marketing to build a strong "
+                    "presence for your brand."
+                ),
                 "email": "Email",
                 "phone": "Phone",
                 "address": "Address",
@@ -196,7 +271,11 @@ def create_app():
                 "site_default": "マイサイト",
                 "request_service": "サービスを依頼",
                 "quick_links": "クイックリンク",
-                "footer_text": "デザイン、印刷、デジタルマーケティングを通じて、ブランドの存在感を高める総合ソリューションを提供します。",
+                "footer_text": (
+                    "デザイン、印刷、デジタルマーケティングを通じて、"
+                    "ブランドの存在感を高める総合ソリューションを"
+                    "提供します。"
+                ),
                 "email": "メール",
                 "phone": "電話",
                 "address": "住所",
@@ -209,13 +288,21 @@ def create_app():
 
         return {
             "current_lang": current_lang,
-            "tr": translations.get(current_lang, translations["ar"])
+            "tr": translations.get(
+                current_lang,
+                translations["ar"]
+            )
         }
+
     @app.route("/set-language/<lang>")
     def set_language(lang):
 
         if lang in ["ar", "en", "ja"]:
             session["lang"] = lang
 
-        return redirect(request.referrer or url_for("main.home"))
+        return redirect(
+            request.referrer
+            or url_for("main.home")
+        )
+
     return app

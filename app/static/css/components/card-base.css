@@ -1,0 +1,133 @@
+/* ==========================================================
+   MEDIAART CARD BASE
+   ========================================================== */
+
+.ma-card {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+
+    overflow: hidden;
+
+    background: var(--ma-surface);
+
+    border: 1px solid var(--ma-border);
+
+    border-radius: var(--ma-radius-lg);
+
+    box-shadow: var(--ma-shadow-sm);
+
+    transition:
+        transform var(--ma-transition),
+        box-shadow var(--ma-transition),
+        border-color var(--ma-transition);
+}
+
+.ma-card:hover {
+    transform: translateY(-6px);
+
+    border-color: var(--ma-accent);
+
+    box-shadow: var(--ma-shadow-lg);
+}
+
+/* ================================= */
+
+.ma-card-media {
+    position: relative;
+
+    display: block;
+
+    overflow: hidden;
+}
+
+.ma-card-media img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition: transform .45s ease;
+}
+
+.ma-card:hover .ma-card-media img {
+    transform: scale(1.06);
+}
+
+/* ================================= */
+
+.ma-card-body {
+    display: flex;
+    flex-direction: column;
+
+    flex: 1;
+
+    padding: 20px;
+}
+
+/* ================================= */
+
+.ma-card-title {
+    margin: 0 0 10px;
+
+    font-size: 1.25rem;
+
+    font-weight: 700;
+
+    color: var(--ma-text);
+}
+
+.ma-card-title a {
+    color: inherit;
+
+    text-decoration: none;
+}
+
+.ma-card-title a:hover {
+    color: var(--ma-accent);
+}
+
+/* ================================= */
+
+.ma-card-text {
+    flex: 1;
+
+    color: var(--ma-text-secondary);
+
+    line-height: 1.8;
+}
+
+/* ================================= */
+
+.ma-card-footer {
+    display: flex;
+
+    gap: 12px;
+
+    margin-top: 20px;
+}
+
+/* ================================= */
+
+.ma-line-clamp-2 {
+    display: -webkit-box;
+
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+}
+
+.ma-line-clamp-3 {
+    display: -webkit-box;
+
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+}

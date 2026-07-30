@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        {{ setting.site_name if setting and setting.site_name else tr.site_default }}
+        {% endblock %}
+    </title>
+
+    <meta name="description" content="{% block meta_description %}موقع احترافي للخدمات والتقنية{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}تقنية, تصميم, تطوير, خدمات{% endblock %}">
+
+    <meta property="og:title" content="{{ self.title()|striptags }}">
+    <meta property="og:description" content="{{ self.meta_description()|striptags }}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/parts/final-shop.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+<div id="page-loader">
+    <div class="loader-spinner"></div>
+</div>
+
+<div class="account-dropdown">
+
+    <button class="account-btn">
+        👤
+        {% if current_user.is_authenticated %}
+            {{ current_user.username }}
+        {% else %}
+            {% if current_lang == "en" %}
+                Account
+            {% elif current_lang == "ja" %}
+                アカウント
+            {% else %}
+                حسابي
+            {% endif %}
+        {% endif %}
+    </button>
+
+    <div class="account-menu">
+
+        {% if current_user.is_authenticated %}
+
+            <a href="{{ url_for('customer_auth.account') }}">
+                👤
+                {% if current_lang == "en" %}
+                    My Account
+                {% elif current_lang == "ja" %}
+                    マイアカウント
+                {% else %}
+                    حسابي
+                {% endif %}
+            </a>
+
+            <a href="{{ url_for('shop.favorites') }}">
+                ❤️
+                {% if current_lang == "en" %}
+                    Favorites
+                {% elif current_lang == "ja" %}
+                    お気に入り
+                {% else %}
+                    المفضلة
+                {% endif %}
+            </a>
+
+            <a href="{{ url_for('customer_auth.orders') }}">
+                📦
+                {% if current_lang == "en" %}
+                    My Orders
+                {% elif current_lang == "ja" %}
+                    注文履歴
+                {% else %}
+                    طلباتي
+                {% endif %}
+            </a>
+
+            <a href="{{ url_for('customer_auth.logout') }}">
+                🚪
+                {% if current_lang == "en" %}
+                    Logout
+                {% elif current_lang == "ja" %}
+                    ログアウト
+                {% else %}
+                    تسجيل الخروج
+                {% endif %}
+            </a>
+
+        {% else %}
+
+            <a href="{{ url_for('customer_auth.login') }}">
+                🔐
+                {% if current_lang == "en" %}
+                    Login
+                {% elif current_lang == "ja" %}
+                    ログイン
+                {% else %}
+                    تسجيل الدخول
+                {% endif %}
+            </a>
+
+            <a href="{{ url_for('customer_auth.register') }}">
+                ✨
+                {% if current_lang == "en" %}
+                    Register
+                {% elif current_lang == "ja" %}
+                    新規登録
+                {% else %}
+                    إنشاء حساب
+                {% endif %}
+            </a>
+
+        {% endif %}
+
+    </div>
+</div>
+
+<a href="https://wa.me/817092220205"
+   target="_blank"
+   class="floating-whatsapp-btn">
+    💬
+</a>
+{% set is_shop_page = request.blueprint == "shop" %}
+
+{% set is_shop_page = request.blueprint == "shop" %}
+
+<header
+    id="siteHeader"
+    class="site-header {% if is_shop_page %}site-header-shop{% endif %}"
+>
+
+    {% if is_shop_page %}
+
+        <!-- ==================================================
+             هيدر المتجر
+             هذا هو الهيدر الأساسي نفسه وليس هيدرًا إضافيًا
+        ================================================== -->
+
+        <div class="shop-main-header-row">
+
+            <!-- السلة والمفضلة والبحث -->
+            <div class="shop-header-primary-actions">
+
+                <a
+                    href="{{ url_for('shop.cart') }}"
+                    class="shop-header-icon-btn"
+                    aria-label="{% if current_lang == 'en' %}Cart{% elif current_lang == 'ja' %}カート{% else %}السلة{% endif %}"
+                >
+                    <i class="fa-solid fa-cart-shopping"></i>
+
+                    <span
+                        class="shop-header-cart-count"
+                        data-cart-count
+                    >
+                        {{ session.get('cart', [])|length }}
+                    </span>
+                </a>
+
+                <a
+                    href="{{ url_for('shop.favorites') }}"
+                    class="shop-header-icon-btn"
+                    aria-label="{% if current_lang == 'en' %}Favorites{% elif current_lang == 'ja' %}お気に入り{% else %}المفضلة{% endif %}"
+                >
+                    <i class="fa-regular fa-heart"></i>
+                </a>
+
+                <!-- ==================================================
+     بحث الكمبيوتر
+
+     يظهر كقائمة صغيرة أسفل أيقونة البحث.
+     لا يحرك الشعار ولا يغير ارتفاع الهيدر.
+================================================== -->
+
+<div class="shop-header-search-wrapper">
+
+    <button
+        type="button"
+        class="shop-header-icon-btn"
+        data-shop-search-button
+        aria-label="{% if current_lang == 'en' %}Search{% elif current_lang == 'ja' %}検索{% else %}البحث{% endif %}"
+        aria-expanded="false"
+    >
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+
+    <div
+        class="shop-desktop-search-dropdown"
+        data-shop-desktop-search
+        hidden
+    >
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input
+            type="search"
+            data-shop-search-input
+            placeholder="{% if current_lang == 'en' %}Search products...{% elif current_lang == 'ja' %}商品を検索...{% else %}ابحث عن منتج...{% endif %}"
+            autocomplete="off"
+        >
+
+        <button
+            type="button"
+            class="shop-search-clear"
+            data-shop-search-clear
+            aria-label="{% if current_lang == 'en' %}Clear{% elif current_lang == 'ja' %}クリア{% else %}مسح البحث{% endif %}"
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+</div>
+
+            </div>
+
+
+<!-- ==================================================
+     منتصف هيدر المتجر
+
+     الكمبيوتر:
+     يظهر الشعار دائمًا.
+
+     الجوال:
+     عند الضغط على البحث يختفي الشعار
+     ويظهر مربع البحث مكانه.
+================================================== -->
+
+<div class="shop-header-center">
+
+    <a
+        href="{{ url_for('main.home') }}"
+        class="shop-header-brand"
+        data-shop-header-brand
+    >
+        {% if setting and setting.logo %}
+            <img
+                src="{{ url_for('static', filename='uploads/' + setting.logo) }}"
+                alt="{{ setting.site_name if setting and setting.site_name else 'MEDIA ART' }}"
+            >
+        {% endif %}
+
+        <span>
+            {{ setting.site_name if setting and setting.site_name else "MEDIA ART" }}
+        </span>
+    </a>
+
+    <!-- بحث الجوال فقط -->
+    <div
+        class="shop-mobile-inline-search"
+        data-shop-mobile-search
+        hidden
+    >
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input
+            type="search"
+            data-shop-search-input
+            placeholder="{% if current_lang == 'en' %}Search...{% elif current_lang == 'ja' %}検索...{% else %}بحث...{% endif %}"
+            autocomplete="off"
+        >
+
+        <button
+            type="button"
+            class="shop-search-clear"
+            data-shop-search-clear
+            aria-label="{% if current_lang == 'en' %}Close{% elif current_lang == 'ja' %}閉じる{% else %}إغلاق{% endif %}"
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+</div>
+
+
+            <!-- المشاركة واللغة والقائمة -->
+            <div class="shop-header-secondary-actions">
+
+                <!-- المشاركة -->
+                <div class="shop-header-dropdown-wrapper">
+
+                    <button
+                        type="button"
+                        class="shop-header-icon-btn"
+                        data-shop-dropdown-button="share"
+                        aria-label="{% if current_lang == 'en' %}Share{% elif current_lang == 'ja' %}共有{% else %}مشاركة{% endif %}"
+                        aria-expanded="false"
+                    >
+                        <i class="fa-solid fa-share-nodes"></i>
+                    </button>
+
+                    <div
+                        class="shop-header-dropdown shop-header-share-menu"
+                        data-shop-dropdown="share"
+                        hidden
+                    >
+                        <a
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-header-share="whatsapp"
+                        >
+                            <i class="fa-brands fa-whatsapp"></i>
+                            WhatsApp
+                        </a>
+
+                        <a
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-header-share="telegram"
+                        >
+                            <i class="fa-brands fa-telegram"></i>
+                            Telegram
+                        </a>
+
+                        <a
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-header-share="facebook"
+                        >
+                            <i class="fa-brands fa-facebook"></i>
+                            Facebook
+                        </a>
+
+                        <a
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-header-share="x"
+                        >
+                            <i class="fa-brands fa-x-twitter"></i>
+                            X
+                        </a>
+
+                        <button
+                            type="button"
+                            data-header-share="device"
+                        >
+                            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+
+                            {% if current_lang == "en" %}
+                                More
+                            {% elif current_lang == "ja" %}
+                                その他
+                            {% else %}
+                                تطبيقات أخرى
+                            {% endif %}
+                        </button>
+
+                        <button
+                            type="button"
+                            data-header-share="copy"
+                        >
+                            <i class="fa-regular fa-copy"></i>
+
+                            {% if current_lang == "en" %}
+                                Copy link
+                            {% elif current_lang == "ja" %}
+                                リンクをコピー
+                            {% else %}
+                                نسخ الرابط
+                            {% endif %}
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <!-- اللغة -->
+                <div class="shop-header-dropdown-wrapper">
+
+                    <button
+                        type="button"
+                        class="shop-header-icon-btn"
+                        data-shop-dropdown-button="language"
+                        aria-label="{% if current_lang == 'en' %}Language{% elif current_lang == 'ja' %}言語{% else %}اللغة{% endif %}"
+                        aria-expanded="false"
+                    >
+                        <i class="fa-solid fa-globe"></i>
+                    </button>
+
+                    <div
+                        class="shop-header-dropdown shop-header-language-menu"
+                        data-shop-dropdown="language"
+                        hidden
+                    >
+                        <a href="{{ url_for('set_language', lang='ar') }}">
+                            العربية
+                        </a>
+
+                        <a href="{{ url_for('set_language', lang='en') }}">
+                            English
+                        </a>
+
+                        <a href="{{ url_for('set_language', lang='ja') }}">
+                            日本語
+                        </a>
+                    </div>
+
+                </div>
+
+
+                <!-- القائمة الرئيسية والحساب -->
+                <div class="shop-header-dropdown-wrapper">
+
+                    <button
+                        type="button"
+                        class="shop-header-icon-btn"
+                        data-shop-dropdown-button="menu"
+                        aria-label="{% if current_lang == 'en' %}Menu{% elif current_lang == 'ja' %}メニュー{% else %}القائمة{% endif %}"
+                        aria-expanded="false"
+                    >
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <div
+                        class="shop-header-dropdown shop-header-main-menu"
+                        data-shop-dropdown="menu"
+                        hidden
+                    >
+                        <!-- صفحات الموقع -->
+                        {% for item in main_menu_items %}
+                            <a href="{{ resolve_menu_url(item) }}">
+                                {{ item.get_title(current_lang) }}
+                            </a>
+                        {% endfor %}
+
+                        <div class="shop-header-menu-separator"></div>
+
+                        <!-- حساب المستخدم -->
+                        {% if current_user.is_authenticated %}
+
+                            <a href="{{ url_for('customer_auth.account') }}">
+                                <i class="fa-regular fa-user"></i>
+
+                                {% if current_lang == "en" %}
+                                    My Account
+                                {% elif current_lang == "ja" %}
+                                    マイアカウント
+                                {% else %}
+                                    حسابي
+                                {% endif %}
+                            </a>
+
+                            <a href="{{ url_for('customer_auth.orders') }}">
+                                <i class="fa-solid fa-box"></i>
+
+                                {% if current_lang == "en" %}
+                                    My Orders
+                                {% elif current_lang == "ja" %}
+                                    注文履歴
+                                {% else %}
+                                    طلباتي
+                                {% endif %}
+                            </a>
+
+                            <a href="{{ url_for('customer_auth.logout') }}">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+
+                                {% if current_lang == "en" %}
+                                    Logout
+                                {% elif current_lang == "ja" %}
+                                    ログアウト
+                                {% else %}
+                                    تسجيل الخروج
+                                {% endif %}
+                            </a>
+
+                        {% else %}
+
+                            <a href="{{ url_for('customer_auth.login') }}">
+                                <i class="fa-solid fa-right-to-bracket"></i>
+
+                                {% if current_lang == "en" %}
+                                    Login
+                                {% elif current_lang == "ja" %}
+                                    ログイン
+                                {% else %}
+                                    تسجيل الدخول
+                                {% endif %}
+                            </a>
+
+                            <a href="{{ url_for('customer_auth.register') }}">
+                                <i class="fa-regular fa-user"></i>
+
+                                {% if current_lang == "en" %}
+                                    Register
+                                {% elif current_lang == "ja" %}
+                                    新規登録
+                                {% else %}
+                                    إنشاء حساب
+                                {% endif %}
+                            </a>
+
+                        {% endif %}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    {% else %}
+
+        <!-- ==================================================
+             الهيدر العادي لبقية الموقع
+             أبقينا تصميمك الحالي كما هو
+        ================================================== -->
+
+        <div class="container header-inner">
+
+            <a href="{{ url_for('main.home') }}" class="site-logo">
+
+                {% if setting and setting.logo %}
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + setting.logo) }}"
+                        alt="logo"
+                        class="site-logo-img"
+                    >
+                {% else %}
+                    <span class="logo-mark">M</span>
+                {% endif %}
+
+                <span class="logo-text">
+                    {{ setting.site_name if setting and setting.site_name else "MEDIA ART" }}
+                </span>
+            </a>
+
+            <nav class="main-nav" id="mainNav">
+
+                {% for item in main_menu_items %}
+                    <a href="{{ resolve_menu_url(item) }}">
+                        {{ item.get_title(current_lang) }}
+                    </a>
+                {% endfor %}
+
+            </nav>
+
+            <div class="header-actions">
+
+                <div class="language-dropdown">
+
+                    <button class="language-btn">
+                        🌐
+                        {% if current_lang == "en" %}
+                            English
+                        {% elif current_lang == "ja" %}
+                            日本語
+                        {% else %}
+                            العربية
+                        {% endif %}
+                    </button>
+
+                    <div class="language-menu">
+                        <a href="{{ url_for('set_language', lang='ar') }}">العربية</a>
+                        <a href="{{ url_for('set_language', lang='en') }}">English</a>
+                        <a href="{{ url_for('set_language', lang='ja') }}">日本語</a>
+                    </div>
+
+                </div>
+
+                <a href="{{ url_for('shop.cart') }}" class="cart-link">
+                    🛒
+                    <span data-cart-count>
+                        {{ session.get('cart', [])|length }}
+                    </span>
+                </a>
+
+                <a href="{{ url_for('contact.index') }}" class="header-cta">
+                    {{ tr.request_service }}
+                </a>
+
+                <button class="menu-toggle" id="menuBtn">
+                    ☰
+                </button>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="container flash-area">
+            {% for category, message in messages %}
+                <div class="flash-box">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<main class="site-main">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-grid">
+        <div class="footer-col">
+            <h3>MEDIA ART</h3>
+            <p>{{ tr.footer_text }}</p>
+            
+        </div>
+
+        <div class="footer-col">
+            <h4>{{ tr.quick_links }}</h4>
+            <ul class="footer-links">
+                <li><a href="{{ url_for('main.home') }}">{{ tr.home }}</a></li>
+                <li><a href="{{ url_for('about.index') }}">{{ tr.about }}</a></li>
+                <li><a href="{{ url_for('services.index') }}">{{ tr.services }}</a></li>
+                <li><a href="{{ url_for('shop.index') }}">{{ tr.shop }}</a></li>
+                <li><a href="{{ url_for('portfolio.index') }}">{{ tr.portfolio }}</a></li>
+                <li><a href="{{ url_for('blog.index') }}">{{ tr.blog }}</a></li>
+                <li><a href="{{ url_for('contact.index') }}">{{ tr.contact }}</a></li>
+            </ul>
+        </div>
+
+        
+
+        <div class="footer-col">
+            <h4>{{ tr.contact }}</h4>
+            <p>{{ tr.email }}: info@mediaart.com</p>
+            <p>{{ tr.phone }}: +817092220205</p>
+            <p>{{ tr.address }}: {{ tr.japan }}</p>
+
+            <div class="footer-col">
+    <h4>
+        {% if current_lang == "en" %}
+            Newsletter
+        {% elif current_lang == "ja" %}
+            ニュースレター
+        {% else %}
+            النشرة البريدية
+        {% endif %}
+    </h4>
+
+    <p>
+        {% if current_lang == "en" %}
+            Subscribe to receive our latest updates and offers.
+        {% elif current_lang == "ja" %}
+            最新情報やお知らせを受け取るために登録してください。
+        {% else %}
+            اشترك ليصلك جديد المقالات والعروض والتحديثات.
+        {% endif %}
+    </p>
+
+    <form id="newsletterForm"
+      method="POST"
+      action="{{ url_for('newsletter.subscribe') }}"
+      class="newsletter-form">
+      <div id="newsletterMessage"></div>
+      <input type="text"
+       name="name"
+       placeholder="{% if current_lang == 'en' %}Your name{% elif current_lang == 'ja' %}お名前{% else %}اسمك{% endif %}">
+        <input type="email"
+               name="email"
+               required
+               placeholder="{% if current_lang == 'en' %}Your email{% elif current_lang == 'ja' %}メールアドレス{% else %}بريدك الإلكتروني{% endif %}">
+               <label class="newsletter-consent">
+
+        <input type="checkbox"
+           name="consent"
+           required>
+
+    <span>
+        {% if current_lang == "en" %}
+            I agree to receive emails, offers, and updates.
+        {% elif current_lang == "ja" %}
+            メールによるお知らせや更新情報の受信に同意します。
+        {% else %}
+            أوافق على استقبال الرسائل والعروض والتحديثات عبر البريد الإلكتروني.
+        {% endif %}
+    </span>
+
+</label>
+
+        <button type="submit">
+            {% if current_lang == "en" %}
+                Subscribe
+            {% elif current_lang == "ja" %}
+                登録する
+            {% else %}
+                اشتراك
+            {% endif %}
+        </button>
+    </form>
+</div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="container">
+            <p>© 2026 MEDIA ART - {{ tr.rights }}</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menuBtn = document.getElementById("menuBtn");
+    const mainNav = document.getElementById("mainNav");
+
+    if (menuBtn && mainNav) {
+        menuBtn.addEventListener("click", function () {
+            mainNav.classList.toggle("active");
+            mainNav.classList.toggle("show");
+        });
+    }
+});
+</script>
+
+<script>
+function sharePage(title, text, url) {
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: text,
+            url: url
+        });
+    } else {
+        navigator.clipboard.writeText(url);
+        alert("تم نسخ الرابط 👍");
+    }
+}
+</script>
+
+<script>
+window.addEventListener("load", function () {
+    const loader = document.getElementById("page-loader");
+    if (loader) {
+        loader.classList.add("hide");
+    }
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const newsletterForm = document.getElementById("newsletterForm");
+
+    if (!newsletterForm) return;
+
+    newsletterForm.addEventListener("submit", async function (e) {
+
+        e.preventDefault();
+
+        const formData = new FormData(newsletterForm);
+
+        const response = await fetch(newsletterForm.action, {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        const messageBox = document.getElementById("newsletterMessage");
+
+        if (!messageBox) return;
+
+        messageBox.innerHTML = data.message;
+
+        if (data.already_exists) {
+            messageBox.style.color = "#f5b942";
+        } else {
+            messageBox.style.color = "#4ade80";
+            newsletterForm.reset();
+        }
+
+    });
+
+});
+</script>
+
+{% if is_shop_page %}
+<script src="{{ url_for('static', filename='js/pages/shop-header.js') }}"></script>
+{% endif %}
+{% block extra_js %}{% endblock %}
+</body>
+</html>

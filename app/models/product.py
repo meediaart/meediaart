@@ -61,13 +61,34 @@ class Product(db.Model):
     allow_custom_text = db.Column(db.Boolean, default=False)
     allow_custom_image = db.Column(db.Boolean, default=False)
     
+        # ===== التحكم في تقييمات المنتج =====
+
+    # إظهار النجوم والسماح بالتقييم الرقمي
+    ratings_enabled = db.Column(
+        db.Boolean,
+        default=True,
+        nullable=False
+    )
+
+    # السماح بالتعليقات والصور وعرضها
+    comments_enabled = db.Column(
+        db.Boolean,
+        default=True,
+        nullable=False
+    )
+    
     images = db.relationship(
         "ProductImage",
         backref="product",
         cascade="all, delete-orphan",
         order_by="ProductImage.id"
     )
-
+    reviews = db.relationship(
+        "ProductReview",
+        backref="product",
+        cascade="all, delete-orphan",
+        lazy="dynamic"
+    )
     def get_title(self, lang="ar"):
         return getattr(self, f"title_{lang}", None) or self.title_ar or self.title
 
@@ -84,7 +105,41 @@ class Product(db.Model):
         return getattr(self, f"meta_title_{lang}", None) or self.meta_title_ar or self.get_title(lang)
 
     def get_meta_description(self, lang="ar"):
-        return getattr(self, f"meta_description_{lang}", None) or self.meta_description_ar or self.get_description(lang)
+        return (
+            getattr(self, f"meta_description_{lang}", None)
+            or self.meta_description_ar
+            or self.get_description(lang)
+        )
 
+    def get_visible_reviews(self):
+        """
+        يعيد التقييمات المعتمدة التي تسمح الإدارة بإظهار النجوم.
+        """
+        return self.reviews.filter_by(
+            is_approved=True,
+            is_rating_visible=True
+        )
+
+    def get_ratings_count(self):
+        """
+        عدد التقييمات الظاهرة.
+        """
+        return self.get_visible_reviews().count()
+
+    def get_average_rating(self):
+        """
+        متوسط التقييم.
+        """
+        visible_reviews = self.get_visible_reviews().all()
+
+        if not visible_reviews:
+            return 0
+
+        total = sum(
+            review.rating
+            for review in visible_reviews
+        )
+
+        return round(total / len(visible_reviews), 1)
     def __repr__(self):
         return f"<Product {self.title_ar or self.title}>"

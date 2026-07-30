@@ -1,20 +1,33 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    session,
+    flash,
+    current_app,
+    jsonify
+)
 from sqlalchemy import or_
 from flask_mail import Message
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
 
 import os
+import uuid
 import stripe
 
 from app.extensions import db, mail
 from app.models.product import Product
+from app.models.product_review import ProductReview
 from app.models.category import Category
 from app.models.order import Order
 from app.models.order_item import OrderItem
 from flask import render_template
 from datetime import datetime
 from app.models.favorite import Favorite
+
 
 
 
@@ -35,6 +48,27 @@ def test_email():
     except Exception as e:
         return f"❌ خطأ: {e}"
 
+shop_bp = Blueprint("shop", __name__, url_prefix="/shop")
+
+
+ALLOWED_REVIEW_IMAGE_EXTENSIONS = {
+    "jpg",
+    "jpeg",
+    "png",
+    "webp"
+}
+
+
+def allowed_review_image(filename):
+    """
+    تتحقق من أن الصورة تحمل امتدادًا مسموحًا.
+    """
+
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower()
+        in ALLOWED_REVIEW_IMAGE_EXTENSIONS
+    )
 
 def send_tracking_email(order):
 
@@ -279,6 +313,7 @@ def category_products(slug):
     
 @shop_bp.route("/product/<slug>")
 def product(slug):
+
     product = Product.query.filter(
         or_(
             Product.slug == slug,
@@ -291,10 +326,39 @@ def product(slug):
 
     current_lang = session.get("lang", "ar")
 
+    # التقييمات المعتمدة فقط
+    approved_reviews = ProductReview.query.filter_by(
+        product_id=product.id,
+        is_approved=True
+    ).order_by(
+        ProductReview.created_at.desc()
+    ).all()
+
+    # التقييمات التي تسمح الإدارة بإظهار نجومها
+    visible_ratings = [
+        review.rating
+        for review in approved_reviews
+        if review.is_rating_visible
+    ]
+
+    # حساب متوسط التقييم
+    if visible_ratings:
+        average_rating = round(
+            sum(visible_ratings) / len(visible_ratings),
+            1
+        )
+    else:
+        average_rating = 0
+
+    ratings_count = len(visible_ratings)
+
     return render_template(
         "shop/product.html",
         product=product,
-        current_lang=current_lang
+        current_lang=current_lang,
+        reviews=approved_reviews,
+        average_rating=average_rating,
+        ratings_count=ratings_count
     )
 
 @shop_bp.route("/cart")
@@ -330,32 +394,59 @@ def cart():
 
 @shop_bp.route("/cart/add/<int:product_id>", methods=["POST"])
 def add_to_cart(product_id):
+    """
+    إضافة المنتج إلى السلة.
+
+    السلوك:
+    - الطلب العادي يعيد التوجيه إلى السلة أو الدفع.
+    - طلب AJAX يعيد JSON دون تحديث الصفحة.
+    """
+
     product = Product.query.get_or_404(product_id)
 
+    # جلب السلة الحالية
     cart = session.get("cart", [])
 
+    # حماية في حال كانت قيمة السلة القديمة ليست قائمة
     if not isinstance(cart, list):
         cart = []
 
     action_type = request.form.get("action_type", "cart")
 
+    selected_color = request.form.get("selected_color")
+    selected_size = request.form.get("selected_size")
+    custom_text = request.form.get("custom_text")
+
     item = {
         "product_id": product.id,
         "quantity": 1,
-        "color": request.form.get("selected_color"),
-        "size": request.form.get("selected_size"),
-        "custom_text": request.form.get("custom_text"),
+        "color": selected_color,
+        "size": selected_size,
+        "custom_text": custom_text,
         "custom_image": None
     }
 
+    # رفع الصورة المخصصة إن وجدت
     file = request.files.get("custom_image")
 
     if file and file.filename:
         filename = secure_filename(file.filename)
-        upload_folder = os.path.join(current_app.root_path, "static", "uploads")
-        file.save(os.path.join(upload_folder, filename))
+
+        upload_folder = os.path.join(
+            current_app.root_path,
+            "static",
+            "uploads"
+        )
+
+        os.makedirs(upload_folder, exist_ok=True)
+
+        file.save(
+            os.path.join(upload_folder, filename)
+        )
+
         item["custom_image"] = filename
 
+    # البحث عن نفس المنتج بنفس الخيارات داخل السلة
     found = False
 
     for cart_item in cart:
@@ -366,23 +457,334 @@ def add_to_cart(product_id):
             and cart_item.get("custom_text") == item["custom_text"]
             and cart_item.get("custom_image") == item["custom_image"]
         ):
-            cart_item["quantity"] = int(cart_item.get("quantity", 1)) + 1
+            cart_item["quantity"] = (
+                int(cart_item.get("quantity", 1)) + 1
+            )
+
             found = True
             break
 
+    # إذا لم يكن موجودًا نضيفه كعنصر جديد
     if not found:
         cart.append(item)
 
     session["cart"] = cart
     session.modified = True
 
+    # حساب إجمالي عدد القطع داخل السلة
+    cart_count = 0
+
+    for cart_item in cart:
+        try:
+            cart_count += int(
+                cart_item.get("quantity", 1)
+            )
+        except (TypeError, ValueError):
+            cart_count += 1
+
+    # معرفة هل الطلب جاء من JavaScript
+    is_ajax_request = (
+        request.headers.get("X-Requested-With")
+        == "XMLHttpRequest"
+    )
+
+    # الإضافة من بطاقة المنتج بدون تحديث الصفحة
+    if is_ajax_request:
+        return jsonify({
+            "success": True,
+            "message": "تمت إضافة المنتج إلى السلة",
+            "cart_count": cart_count,
+            "product_id": product.id
+        })
+
+    # الطلب العادي من صفحة تفاصيل المنتج
     flash("تمت إضافة المنتج إلى السلة", "success")
 
-    # ⭐ هنا الفرق
     if action_type == "buy_now":
         return redirect(url_for("shop.checkout"))
 
     return redirect(url_for("shop.cart"))
+
+@shop_bp.route(
+    "/product/<int:product_id>/review",
+    methods=["POST"]
+)
+def submit_product_review(product_id):
+
+    product = Product.query.filter_by(
+        id=product_id,
+        is_active=True
+    ).first_or_404()
+
+    current_lang = session.get("lang", "ar")
+
+    customer_name = request.form.get(
+        "customer_name",
+        ""
+    ).strip()
+
+    customer_email = request.form.get(
+        "customer_email",
+        ""
+    ).strip()
+
+    comment = request.form.get(
+        "comment",
+        ""
+    ).strip()
+
+    rating_value = request.form.get(
+        "rating",
+        ""
+    ).strip()
+
+    # التحقق من الاسم
+    if not customer_name:
+
+        if current_lang == "en":
+            flash("Please enter your name.", "error")
+
+        elif current_lang == "ja":
+            flash("お名前を入力してください。", "error")
+
+        else:
+            flash("يرجى إدخال الاسم.", "error")
+
+        return redirect(
+            url_for(
+                "shop.product",
+                slug=product.get_slug(current_lang)
+            )
+        )
+
+    # التحقق من عدد النجوم
+    try:
+        rating = int(rating_value)
+
+    except (TypeError, ValueError):
+        rating = 0
+
+    if rating < 1 or rating > 5:
+
+        if current_lang == "en":
+            flash(
+                "Please select a rating from 1 to 5 stars.",
+                "error"
+            )
+
+        elif current_lang == "ja":
+            flash(
+                "1〜5つ星の評価を選択してください。",
+                "error"
+            )
+
+        else:
+            flash(
+                "يرجى اختيار تقييم من نجمة إلى خمس نجوم.",
+                "error"
+            )
+
+        return redirect(
+            url_for(
+                "shop.product",
+                slug=product.get_slug(current_lang)
+            )
+        )
+
+    # التحقق من طول البيانات
+    if len(customer_name) > 120:
+        flash("الاسم طويل جدًا.", "error")
+
+        return redirect(
+            url_for(
+                "shop.product",
+                slug=product.get_slug(current_lang)
+            )
+        )
+
+    if len(customer_email) > 255:
+        flash("البريد الإلكتروني طويل جدًا.", "error")
+
+        return redirect(
+            url_for(
+                "shop.product",
+                slug=product.get_slug(current_lang)
+            )
+        )
+
+    if len(comment) > 3000:
+        flash("التعليق طويل جدًا.", "error")
+
+        return redirect(
+            url_for(
+                "shop.product",
+                slug=product.get_slug(current_lang)
+            )
+        )
+
+    review_image_filename = None
+    review_image = request.files.get("review_image")
+
+    # حفظ الصورة إن وجدت
+    if review_image and review_image.filename:
+
+        if not allowed_review_image(review_image.filename):
+
+            if current_lang == "en":
+                flash(
+                    "Allowed image types: JPG, PNG and WEBP.",
+                    "error"
+                )
+
+            elif current_lang == "ja":
+                flash(
+                    "使用できる画像形式はJPG、PNG、WEBPです。",
+                    "error"
+                )
+
+            else:
+                flash(
+                    "أنواع الصور المسموحة: JPG وPNG وWEBP.",
+                    "error"
+                )
+
+            return redirect(
+                url_for(
+                    "shop.product",
+                    slug=product.get_slug(current_lang)
+                )
+            )
+
+        original_filename = secure_filename(
+            review_image.filename
+        )
+
+        extension = original_filename.rsplit(
+            ".",
+            1
+        )[1].lower()
+
+        # اسم فريد يمنع استبدال صورة بصورة أخرى
+        review_image_filename = (
+            f"review_{product.id}_{uuid.uuid4().hex}.{extension}"
+        )
+
+        review_upload_folder = os.path.join(
+            current_app.root_path,
+            "static",
+            "uploads",
+            "reviews"
+        )
+
+        os.makedirs(
+            review_upload_folder,
+            exist_ok=True
+        )
+
+        review_image.save(
+            os.path.join(
+                review_upload_folder,
+                review_image_filename
+            )
+        )
+
+    review = ProductReview(
+        product_id=product.id,
+        customer_name=customer_name,
+        customer_email=customer_email or None,
+        rating=rating,
+        comment=comment or None,
+        image=review_image_filename,
+        language=current_lang,
+        is_approved=False,
+        is_rating_visible=True,
+        is_comment_visible=True,
+        is_image_visible=True,
+        ip_address=request.headers.get(
+            "X-Forwarded-For",
+            request.remote_addr
+        ),
+        user_agent=request.headers.get(
+            "User-Agent",
+            ""
+        )[:500]
+    )
+
+    try:
+        db.session.add(review)
+        db.session.commit()
+
+    except Exception as error:
+        db.session.rollback()
+
+        # حذف الصورة إذا فشل حفظ التقييم في قاعدة البيانات
+        if review_image_filename:
+
+            image_path = os.path.join(
+                current_app.root_path,
+                "static",
+                "uploads",
+                "reviews",
+                review_image_filename
+            )
+
+            if os.path.exists(image_path):
+                os.remove(image_path)
+
+        current_app.logger.exception(
+            "Product review save error: %s",
+            error
+        )
+
+        if current_lang == "en":
+            flash(
+                "The review could not be submitted. Please try again.",
+                "error"
+            )
+
+        elif current_lang == "ja":
+            flash(
+                "レビューを送信できませんでした。もう一度お試しください。",
+                "error"
+            )
+
+        else:
+            flash(
+                "تعذر إرسال التقييم، يرجى المحاولة مرة أخرى.",
+                "error"
+            )
+
+        return redirect(
+            url_for(
+                "shop.product",
+                slug=product.get_slug(current_lang)
+            )
+        )
+
+    if current_lang == "en":
+        flash(
+            "Thank you. Your review will appear after approval.",
+            "success"
+        )
+
+    elif current_lang == "ja":
+        flash(
+            "ありがとうございます。承認後にレビューが表示されます。",
+            "success"
+        )
+
+    else:
+        flash(
+            "شكرًا لك، سيظهر تقييمك بعد مراجعته واعتماده.",
+            "success"
+        )
+
+    return redirect(
+        url_for(
+            "shop.product",
+            slug=product.get_slug(current_lang)
+        )
+    )
 @shop_bp.route("/cart/remove/<int:product_id>", methods=["POST"])
 def remove_from_cart(product_id):
     cart = session.get("cart", [])

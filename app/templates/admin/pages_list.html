@@ -1,44 +1,197 @@
-{% extends "admin/layout.html" %}
+{% extends "admin/base.html" %}
+
+{% block title %}إدارة الصفحات{% endblock %}
+{% block page_title %}إدارة الصفحات{% endblock %}
 
 {% block content %}
 <div class="page-card">
-    <h1>إدارة الصفحات</h1>
 
-    <a href="{{ url_for('admin.create_page') }}">➕ إضافة صفحة</a>
+    <!-- رأس الصفحة -->
+    <div class="section-header">
+        <div>
+            <h2>قائمة الصفحات</h2>
 
-    <table class="admin-table">
-    <thead>
-        <tr>
-            <th>العنوان</th>
-            <th>الرابط</th>
-            <th>الحالة</th>
-            <th>الرئيسية</th>
-            <th>الإجراءات</th>
-        </tr>
-    </thead>
-<a href="{{ url_for('admin.create_service') }}" class="btn btn-primary">
-    + إضافة خدمة
-</a>
-    <tbody>
-        {% for service in services %}
-        <tr>
-            <td>{{ service.title }}</td>
-            <td>{{ service.slug }}</td>
-            <td>{{ "مفعل" if service.is_active else "مخفي" }}</td>
-            <td>{{ "نعم" if service.show_on_home else "لا" }}</td>
+            <p class="admin-results-text">
+                عدد النتائج:
+                <strong id="pagesResultsCount">{{ pages|length }}</strong>
+            </p>
+        </div>
 
-            <td>
-                <a href="{{ url_for('admin.edit_service', service_id=service.id) }}" class="btn btn-edit">تعديل</a>
+        <a
+            href="{{ url_for('admin.create_page') }}"
+            class="btn btn-primary"
+        >
+            + إضافة صفحة
+        </a>
+    </div>
 
-                <a href="{{ url_for('admin.delete_service', service_id=service.id) }}"
-                   class="btn btn-delete"
-                   onclick="return confirm('هل أنت متأكد؟')">
-                   حذف
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <!-- البحث والفلاتر -->
+    <div class="admin-filters">
+
+        <!-- البحث -->
+        <div class="admin-filter-group admin-filter-search">
+            <label for="pageSearch">البحث</label>
+
+            <input
+                type="search"
+                id="pageSearch"
+                class="admin-input"
+                placeholder="ابحث بعنوان الصفحة أو الرابط..."
+                autocomplete="off"
+            >
+        </div>
+
+        <!-- فلتر الحالة -->
+        <div class="admin-filter-group">
+            <label for="pageStatusFilter">الحالة</label>
+
+            <select id="pageStatusFilter" class="admin-select">
+                <option value="">جميع الحالات</option>
+                <option value="active">مفعلة</option>
+                <option value="inactive">مخفية</option>
+            </select>
+        </div>
+
+        <!-- فلتر الصفحة الرئيسية -->
+        <div class="admin-filter-group">
+            <label for="pageHomeFilter">الظهور في الرئيسية</label>
+
+            <select id="pageHomeFilter" class="admin-select">
+                <option value="">الكل</option>
+                <option value="yes">تظهر في الرئيسية</option>
+                <option value="no">لا تظهر في الرئيسية</option>
+            </select>
+        </div>
+
+        <!-- إعادة التعيين -->
+        <div class="admin-filter-group admin-filter-button">
+            <button
+                type="button"
+                id="resetPageFilters"
+                class="btn btn-edit"
+            >
+                إعادة تعيين
+            </button>
+        </div>
+
+    </div>
+
+    <!-- جدول الصفحات -->
+    <div class="admin-table-wrapper">
+
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>العنوان</th>
+                    <th>الرابط</th>
+                    <th>الحالة</th>
+                    <th>الرئيسية</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+
+            <tbody id="pagesTableBody">
+
+                {% for page in pages %}
+
+                {% set page_status = 'active' if page.is_active else 'inactive' %}
+                {% set page_home = 'yes' if page.show_on_home else 'no' %}
+
+                <tr
+                    class="page-row"
+                    data-title="{{ page.title|lower }}"
+                    data-slug="{{ page.slug|lower }}"
+                    data-status="{{ page_status }}"
+                    data-home="{{ page_home }}"
+                >
+
+                    <!-- عنوان الصفحة -->
+                    <td>
+                        <strong>{{ page.title }}</strong>
+                    </td>
+
+                    <!-- الرابط -->
+                    <td>
+                        {{ page.slug }}
+                    </td>
+
+                    <!-- الحالة -->
+                    <td>
+                        {% if page.is_active %}
+                            <span class="status-badge status-completed">
+                                مفعلة
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-unpaid">
+                                مخفية
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- الظهور في الرئيسية -->
+                    <td>
+                        {% if page.show_on_home %}
+                            <span class="status-badge status-paid">
+                                نعم
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-unpaid">
+                                لا
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- الإجراءات -->
+                    <td>
+                        <div class="admin-actions">
+
+                            <a
+                                href="{{ url_for('admin.edit_page', page_id=page.id) }}"
+                                class="btn btn-edit"
+                            >
+                                تعديل
+                            </a>
+
+                            <a
+                                href="{{ url_for('admin.delete_page', page_id=page.id) }}"
+                                class="btn btn-delete js-confirm-delete"
+                                data-confirm-message="هل أنت متأكد من حذف هذه الصفحة؟"
+                            >
+                                حذف
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                <!-- لا توجد نتائج مطابقة -->
+                <tr id="noPagesResults" class="admin-hidden"></tr>
+                    <td colspan="5" class="admin-empty-state">
+                        لا توجد صفحات مطابقة للبحث أو الفلاتر.
+                    </td>
+                </tr>
+
+                <!-- لا توجد صفحات أصلًا -->
+                {% if not pages %}
+                <tr>
+                    <td colspan="5" class="admin-empty-state">
+                        لا توجد صفحات حاليًا.
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
 </div>
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin/pages-list.js') }}"></script>
+{% endblock %}
 {% endblock %}

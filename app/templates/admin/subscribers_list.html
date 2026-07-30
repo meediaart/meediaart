@@ -11,8 +11,13 @@
     <div>
         <h2>القائمة البريدية</h2>
         <p>
-            جميع المشتركين الذين قاموا بالتسجيل عبر الموقع.
-        </p>
+    جميع المشتركين الذين قاموا بالتسجيل عبر الموقع.
+</p>
+
+<p class="admin-results-text">
+    عدد النتائج:
+    <strong id="subscribersResultsCount">{{ subscribers|length }}</strong>
+</p>
     </div>
 
 </div>
@@ -56,6 +61,15 @@
     </a>
 
 </form>
+<div style="margin:20px 0;">
+    <input
+        type="search"
+        id="subscriberSearch"
+        class="admin-input"
+        placeholder="ابحث بالاسم أو البريد الإلكتروني أو IP..."
+        autocomplete="off"
+    >
+</div>
 
     {% if subscribers %}
 

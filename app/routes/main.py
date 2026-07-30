@@ -149,3 +149,8 @@ def product_detail(slug):
     product = Product.query.filter_by(slug_ar=slug).first_or_404()
     return render_template("shop/product.html", product=product)
 
+
+
+@main_bp.route("/ui")
+def ui():
+    return render_template("ui.html")

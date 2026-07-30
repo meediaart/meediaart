@@ -5,12 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم - MEDIA ART</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=6">
 </head>
 <body>
 
 <div class="admin-layout">
 
-    <button class="admin-mobile-toggle" id="adminMobileToggle" type="button">☰</button>
+    <button
+    class="admin-mobile-toggle"
+    id="adminMobileToggle"
+    type="button"
+    aria-label="فتح القائمة الجانبية"
+    aria-controls="adminMobileSidebar"
+    aria-expanded="false"
+>
+    ☰
+</button>
 
     <aside class="admin-sidebar" id="adminMobileSidebar">
         <div class="admin-sidebar-brand">
@@ -85,18 +95,11 @@
 
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const btn = document.getElementById("adminMobileToggle");
-    const sidebar = document.getElementById("adminMobileSidebar");
+<script
+    src="{{ url_for('static', filename='js/admin/admin.js') }}?v=1"
+></script>
 
-    if (btn && sidebar) {
-        btn.addEventListener("click", function () {
-            sidebar.classList.toggle("active");
-        });
-    }
-});
-</script>
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>

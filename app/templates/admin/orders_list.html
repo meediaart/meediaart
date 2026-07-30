@@ -9,86 +9,392 @@
         <p>إدارة طلبات العملاء ومتابعة حالتها.</p>
     </div>
 </div>
+<div class="orders-stats">
+
+    <div class="order-stat-card order-stat-total">
+        <div class="order-stat-icon">📦</div>
+
+        <div class="order-stat-content">
+            <span>إجمالي الطلبات</span>
+            <strong id="statsTotal">{{ orders|length }}</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-created">
+        <div class="order-stat-icon">🆕</div>
+
+        <div class="order-stat-content">
+            <span>تم إنشاء الطلب</span>
+            <strong id="statsCreated">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-processing">
+        <div class="order-stat-icon">⚙️</div>
+
+        <div class="order-stat-content">
+            <span>قيد التجهيز</span>
+            <strong id="statsProcessing">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-shipped">
+        <div class="order-stat-icon">🚚</div>
+
+        <div class="order-stat-content">
+            <span>تم الشحن</span>
+            <strong id="statsShipped">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-delivered">
+        <div class="order-stat-icon">✅</div>
+
+        <div class="order-stat-content">
+            <span>تم التسليم</span>
+            <strong id="statsDelivered">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-cancelled">
+        <div class="order-stat-icon">❌</div>
+
+        <div class="order-stat-content">
+            <span>الطلبات الملغية</span>
+            <strong id="statsCancelled">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-paid">
+        <div class="order-stat-icon">💰</div>
+
+        <div class="order-stat-content">
+            <span>مدفوع</span>
+            <strong id="statsPaid">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-unpaid">
+        <div class="order-stat-icon">⌛</div>
+
+        <div class="order-stat-content">
+            <span>غير مدفوع</span>
+            <strong id="statsUnpaid">0</strong>
+        </div>
+    </div>
+
+</div>
+<div class="orders-toolbar">
+    <div class="orders-results-summary">
+    <span>📊 النتائج الظاهرة:</span>
+    <strong id="visibleOrdersCount">{{ orders|length }}</strong>
+
+    <div class="orders-selected-summary">
+    <span>☑️ الطلبات المحددة:</span>
+    <strong id="selectedOrdersCount">0</strong>
+
+    <form
+    id="bulkOrdersForm"
+    method="POST"
+    action="{{ url_for('admin.bulk_update_orders') }}"
+    class="orders-bulk-actions"
+>
+    <select id="bulkAction" name="bulk_action">
+        <option value="">⚙️ اختر إجراءً جماعيًا</option>
+
+        <optgroup label="حالة الطلب">
+            <option value="status:created">🆕 تم إنشاء الطلب</option>
+            <option value="status:processing">⚙️ قيد التجهيز</option>
+            <option value="status:shipped">🚚 تم الشحن</option>
+            <option value="status:delivered">✅ تم التسليم</option>
+            <option value="status:cancelled">❌ ملغي</option>
+        </optgroup>
+
+        <optgroup label="حالة الدفع">
+            <option value="payment:unpaid">⌛ غير مدفوع</option>
+            <option value="payment:paid">💰 مدفوع</option>
+            <option value="payment:failed">⚠️ فشل الدفع</option>
+        </optgroup>
+    </select>
+
+    <div id="selectedOrderInputs"></div>
+
+    <button
+        type="submit"
+        id="applyBulkAction"
+        class="admin-btn admin-btn-primary"
+    >
+        ✅ تطبيق
+    </button>
+</form>
+</div>
+</div>
+
+    <div class="orders-toolbar-search">
+
+        <input
+            type="text"
+            id="orderSearch"
+            placeholder="🔍 ابحث برقم الطلب أو اسم العميل أو الهاتف..."
+        >
+
+    </div>
+
+    <div class="orders-toolbar-filters">
+
+        <select id="filterStatus">
+            <option value="">📌 جميع حالات الطلب</option>
+            <option value="created">تم إنشاء الطلب</option>
+            <option value="processing">قيد التجهيز</option>
+            <option value="shipped">تم الشحن</option>
+            <option value="delivered">تم التسليم</option>
+            <option value="cancelled">ملغي</option>
+        </select>
+
+        <select id="filterPayment">
+
+            <option value="">💳 جميع حالات الدفع</option>
+
+            <option value="paid">مدفوع</option>
+
+            <option value="unpaid">غير مدفوع</option>
+
+            <option value="failed">فشل الدفع</option>
+
+        </select>
+
+        <select id="filterMethod">
+
+            <option value="">🚚 جميع طرق الدفع</option>
+
+            <option value="stripe">Stripe</option>
+
+            <option value="cod">الدفع عند التسليم</option>
+
+            <option value="whatsapp">واتساب</option>
+
+        </select>
+
+        <input
+            type="date"
+            id="dateFrom"
+        >
+
+        <input
+            type="date"
+            id="dateTo"
+        >
+
+        <button
+            type="button"
+            id="resetFilters"
+            class="admin-btn-secondary"
+        >
+            🔄 إعادة تعيين
+        </button>
+
+    </div>
+
+</div>
 
 {% if orders %}
 <div class="admin-table-wrap">
     <table class="admin-table">
         <thead>
-            <tr>
-                <th>#</th>
-                <th>العميل</th>
-                <th>الهاتف</th>
-                <th>الإجمالي</th>
-                <th>حالة الطلب</th>
-                <th>حالة الدفع</th>
-                <th>طريقة الدفع</th>
-                <th>التاريخ</th>
-                <th>الإجراءات</th>
-            </tr>
-        </thead>
+<tr>
+    <th width="50">
+    <input
+        type="checkbox"
+        id="selectAllOrders"
+        title="تحديد الكل">
+</th>
+
+<th data-sort="id" class="sortable">
+    # ↕
+</th>
+    <th data-sort="customer" class="sortable">👤 العميل ↕</th>
+    <th>📞 الهاتف</th>
+    <th data-sort="price" class="sortable">💴 الإجمالي ↕</th>
+    <th>📦 حالة الطلب</th>
+    <th>💳 حالة الدفع</th>
+    <th>💰 طريقة الدفع</th>
+    <th data-sort="date" class="sortable">📅 التاريخ ↕</th>
+    <th>⚙️ الإجراءات</th>
+</tr>
+</thead>
 
         <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>#{{ order.id }}</td>
+{% for order in orders %}
 
-                <td>{{ order.customer_name }}</td>
+<tr
+    data-order-id="{{ order.id }}"
+    data-customer="{{ (order.customer_name or '')|lower }}"
+    data-phone="{{ (order.customer_phone or '')|lower }}"
+    data-status="{{ order.status }}"
+    data-payment="{{ order.payment_status }}"
+    data-method="{{ order.payment_method }}"
+    data-date="{{ order.created_at.strftime('%Y-%m-%d') if order.created_at else '' }}"
+    data-price="{{ order.total_price }}"
+>
 
-                <td>{{ order.customer_phone or "-" }}</td>
+    <form method="POST"
+          action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
 
-                <td>¥{{ order.total_price }}</td>
+        <td>
 
-                <td>
-                    <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
-                        <select name="status" class="form-control">
-                            <option value="pending" {% if order.status == "pending" %}selected{% endif %}>جديد</option>
-                            <option value="processing" {% if order.status == "processing" %}selected{% endif %}>قيد التنفيذ</option>
-                            <option value="completed" {% if order.status == "completed" %}selected{% endif %}>مكتمل</option>
-                            <option value="cancelled" {% if order.status == "cancelled" %}selected{% endif %}>ملغي</option>
-                        </select>
-                </td>
+    <input
+        type="checkbox"
+        class="orderCheckbox"
+        value="{{ order.id }}">
 
-                <td>
-                        <select name="payment_status" class="form-control">
-                            <option value="unpaid" {% if order.payment_status == "unpaid" %}selected{% endif %}>غير مدفوع</option>
-                            <option value="paid" {% if order.payment_status == "paid" %}selected{% endif %}>مدفوع</option>
-                            <option value="failed" {% if order.payment_status == "failed" %}selected{% endif %}>فشل الدفع</option>
-                        </select>
-                </td>
+</td>
 
-                <td>
-                    {% if order.payment_method == "whatsapp" %}
-                        واتساب
-                    {% elif order.payment_method == "stripe" %}
-                        Stripe
-                    {% elif order.payment_method == "cod" %}
-                        الدفع عند التسليم
-                    {% elif order.payment_method == "pending" %}
-                        لم يحدد بعد
-                    {% else %}
-                        {{ order.payment_method or "-" }}
-                    {% endif %}
-                </td>
+<td>#{{ order.id }}</td>
 
-                <td>{{ order.created_at.strftime("%Y-%m-%d %H:%M") if order.created_at else "-" }}</td>
+        <td>{{ order.customer_name }}</td>
 
-                <td>
-                        <div class="admin-actions">
-                            <button type="submit" class="admin-btn admin-btn-primary">حفظ</button>
+        <td>{{ order.customer_phone or "-" }}</td>
 
-                            <a href="{{ url_for('admin.order_details', order_id=order.id) }}"
-                               class="admin-btn admin-btn-secondary">
-                                عرض التفاصيل
-                            </a>
-                        </div>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+        <td>¥{{ order.total_price }}</td>
+
+        <td>
+            <select
+                name="status"
+                class="form-select order-status-select"
+                data-status="{{ order.status }}"
+            >
+
+                <option value="created"
+                    {% if order.status in ['created','pending'] %}selected{% endif %}>
+                    تم إنشاء الطلب
+                </option>
+
+                <option value="processing"
+                    {% if order.status in ['processing','in_progress'] %}selected{% endif %}>
+                    قيد التجهيز
+                </option>
+
+                <option value="shipped"
+                    {% if order.status == 'shipped' %}selected{% endif %}>
+                    تم الشحن
+                </option>
+
+                <option value="delivered"
+                    {% if order.status in ['delivered','completed'] %}selected{% endif %}>
+                    تم التسليم
+                </option>
+
+                <option value="cancelled"
+                    {% if order.status == 'cancelled' %}selected{% endif %}>
+                    ملغي
+                </option>
+
+            </select>
+        </td>
+
+        <td>
+
+            <select
+                name="payment_status"
+                class="form-control payment-status-select"
+                data-payment="{{ order.payment_status }}"
+            >
+
+                <option value="unpaid"
+                    {% if order.payment_status=="unpaid" %}selected{% endif %}>
+                    غير مدفوع
+                </option>
+
+                <option value="paid"
+                    {% if order.payment_status=="paid" %}selected{% endif %}>
+                    مدفوع
+                </option>
+
+                <option value="failed"
+                    {% if order.payment_status=="failed" %}selected{% endif %}>
+                    فشل الدفع
+                </option>
+
+            </select>
+
+        </td>
+
+        <td>
+
+            {% if order.payment_method == "whatsapp" %}
+                واتساب
+
+            {% elif order.payment_method == "stripe" %}
+                Stripe
+
+            {% elif order.payment_method == "cod" %}
+                الدفع عند التسليم
+
+            {% elif order.payment_method == "pending" %}
+                لم يحدد بعد
+
+            {% else %}
+                {{ order.payment_method or "-" }}
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {% if order.created_at %}
+                {{ order.created_at.strftime("%Y-%m-%d %H:%M") }}
+            {% else %}
+                -
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            <div class="admin-actions">
+
+                <button
+                    type="submit"
+                    class="admin-btn admin-btn-primary">
+
+                    💾 حفظ
+
+                </button>
+
+                <a
+                    href="{{ url_for('admin.order_details', order_id=order.id) }}"
+                    class="admin-btn admin-btn-secondary">
+
+                    👁 عرض التفاصيل
+
+                </a>
+
+            </div>
+
+        </td>
+
+    </form>
+
+</tr>
+
+{% endfor %}
+<tr id="noOrdersResult" hidden></tr>
+    <td colspan="9" class="orders-no-results">
+        🔍 لا توجد طلبات مطابقة للبحث أو الفلاتر المحددة.
+    </td>
+</tr>
+</tbody>
     </table>
 </div>
 {% else %}
 <p>لا توجد طلبات حالياً.</p>
 {% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script
+    src="{{ url_for('static', filename='js/admin/orders-list.js') }}?v=1"
+></script>
 {% endblock %}

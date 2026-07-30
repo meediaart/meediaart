@@ -3,17 +3,45 @@
 {% block title %}تسجيل الدخول{% endblock %}
 
 {% block content %}
-<section class="shop-section">
+<section class="shop-section customer-auth-page">
     <div class="container">
-        <h1 class="section-title">تسجيل الدخول</h1>
+        <div class="customer-auth-card">
+            <h1 class="section-title">تسجيل الدخول</h1>
 
-        <form method="POST" class="admin-update-form" style="max-width:500px;margin:auto;">
-            <input type="email" name="email" class="form-control" placeholder="البريد الإلكتروني" required>
-            <br>
-            <input type="password" name="password" class="form-control" placeholder="كلمة المرور" required>
-            <br>
-            <button type="submit" class="btn-primary">دخول</button>
-        </form>
+            <form method="POST" class="customer-auth-form">
+                <div class="customer-form-group">
+                    <label for="customerLoginEmail">البريد الإلكتروني</label>
+
+                    <input
+                        type="email"
+                        id="customerLoginEmail"
+                        name="email"
+                        class="form-control"
+                        placeholder="البريد الإلكتروني"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="customer-form-group">
+                    <label for="customerLoginPassword">كلمة المرور</label>
+
+                    <input
+                        type="password"
+                        id="customerLoginPassword"
+                        name="password"
+                        class="form-control"
+                        placeholder="كلمة المرور"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn-primary customer-auth-submit">
+                    دخول
+                </button>
+            </form>
+        </div>
     </div>
 </section>
 {% endblock %}

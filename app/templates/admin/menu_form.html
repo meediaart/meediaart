@@ -86,31 +86,43 @@
 
         <hr>
 
-        <!-- الإعدادات العامة -->
+        <!-- نوع المحتوى -->
         <div class="admin-form-group">
             {{ form.content_type.label }}
-            {{ form.content_type(class="form-control") }}
+            {{ form.content_type(class="form-control", id="content_type") }}
 
             <small>
-                اختر نوع القسم. إذا كان رابطًا خارجيًا اختر "رابط خارجي".
+                اختر نوع القسم.
             </small>
         </div>
 
-        <div class="admin-form-group">
+        <!-- الصفحة -->
+        <div class="admin-form-group" id="page-select-group">
+            {{ form.page_id.label }}
+            {{ form.page_id(class="form-control") }}
+
+            <small>
+                اختر الصفحة التي تريد ربط عنصر القائمة بها.
+            </small>
+        </div>
+
+        <!-- Endpoint -->
+        <div class="admin-form-group" id="endpoint-group">
             {{ form.endpoint.label }}
             {{ form.endpoint(class="form-control") }}
 
             <small>
-                اختياري فقط إذا أردت ربطًا يدويًا خاصًا.
+                يستخدم فقط للأقسام البرمجية مثل الخدمات والمتجر والمدونة.
             </small>
         </div>
 
-        <div class="admin-form-group">
+        <!-- الرابط الخارجي -->
+        <div class="admin-form-group" id="custom-url-group">
             {{ form.custom_url.label }}
             {{ form.custom_url(class="form-control") }}
 
             <small>
-                يستخدم غالبًا مع الرابط الخارجي أو أي رابط مخصص.
+                يستخدم للرابط الخارجي فقط.
             </small>
         </div>
 
@@ -139,6 +151,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    // ===== تبويبات اللغات =====
     const buttons = document.querySelectorAll(".lang-tab-btn");
     const panes = document.querySelectorAll(".lang-tab-pane");
 
@@ -152,13 +165,44 @@ document.addEventListener("DOMContentLoaded", function () {
             panes.forEach(p => p.classList.remove("active"));
 
             this.classList.add("active");
+            document.getElementById(target).classList.add("active");
 
-            document
-                .getElementById(target)
-                .classList.add("active");
         });
 
     });
+
+    // ===== التحكم بالحقول =====
+    const contentType = document.getElementById("content_type");
+    const pageGroup = document.getElementById("page-select-group");
+    const endpointGroup = document.getElementById("endpoint-group");
+    const customUrlGroup = document.getElementById("custom-url-group");
+
+    function updateFields() {
+
+        pageGroup.style.display = "none";
+        endpointGroup.style.display = "none";
+        customUrlGroup.style.display = "none";
+
+        switch (contentType.value) {
+
+            case "page":
+                pageGroup.style.display = "block";
+                break;
+
+            case "external":
+                customUrlGroup.style.display = "block";
+                break;
+
+            default:
+                endpointGroup.style.display = "block";
+                break;
+        }
+
+    }
+
+    updateFields();
+
+    contentType.addEventListener("change", updateFields);
 
 });
 </script>

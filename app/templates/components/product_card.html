@@ -1,142 +1,298 @@
 {% set product_title = product.get_title(current_lang) %}
 {% set product_description = product.get_description(current_lang) %}
 {% set product_slug = product.get_slug(current_lang) %}
+{% set product_needs_options =
+    (
+        product.has_colors
+        and product.available_colors
+    )
+    or
+    (
+        product.has_sizes
+        and product.available_sizes
+    )
+    or product.allow_custom_text
+    or product.allow_custom_image
+%}
 
-<div class="product-card">
+{# نحسب متوسط وعدد التقييمات مرة واحدة لكل بطاقة #}
+{% set product_average_rating = product.get_average_rating() %}
+{% set product_ratings_count = product.get_ratings_count() %}
+{% set rounded_product_rating = product_average_rating|round(0, 'common') %}
+
+<div
+    class="product-card product-card-clickable"
+    data-product-url="{{ url_for('shop.product', slug=product_slug) }}"
+>
 
     <div class="product-image-wrapper">
 
         <div class="product-card-actions-top">
 
-            <form class="favorite-form"
-                  method="POST"
-                  action="{{ url_for('shop.toggle_favorite', product_id=product.id) }}">
+            <!-- زر المفضلة -->
+            <form
+                class="favorite-form"
+                method="POST"
+                action="{{ url_for('shop.toggle_favorite', product_id=product.id) }}"
+            >
 
-                <button type="submit"
-                        class="card-icon-btn {% if favorite_ids is defined and product.id in favorite_ids %}active{% endif %}">
+                <button
+                    type="submit"
+                    class="card-icon-btn {% if favorite_ids is defined and product.id in favorite_ids %}active{% endif %}"
+                    aria-label="Favorite"
+                >
                     {% if favorite_ids is defined and product.id in favorite_ids %}
                         <i class="fa-solid fa-heart"></i>
                     {% else %}
                         <i class="fa-regular fa-heart"></i>
                     {% endif %}
                 </button>
+
             </form>
 
-            <button type="button"
-                    class="card-icon-btn"
-                    data-title="{{ product_title }}"
-                    data-url="{{ url_for('shop.product', slug=product_slug, _external=True) }}"
-                    onclick="shareProduct(this)">
-                <i class="fa-solid fa-share-nodes"></i>
-            </button>
+            <!-- زر المشاركة -->
+            <button
+            type="button"
+            class="card-icon-btn js-share-product"
+            data-title="{{ product_title }}"
+            data-url="{{ url_for('shop.product', slug=product_slug, _external=True) }}"
+            data-share-text="{% if current_lang == 'en' %}Check out this product 🔥{% elif current_lang == 'ja' %}この商品を見てください 🔥{% else %}شاهد هذا المنتج 🔥{% endif %}"
+            aria-label="{% if current_lang == 'en' %}Share{% elif current_lang == 'ja' %}共有{% else %}مشاركة{% endif %}"
+        >
+            <i class="fa-solid fa-share-nodes"></i>
+        </button>
 
         </div>
 
+        <!-- صورة المنتج -->
         <a href="{{ url_for('shop.product', slug=product_slug) }}">
+
             <div class="product-image product-hover-image">
+
                 {% if product.image %}
-                    <img class="product-img-main"
-                         src="{{ url_for('static', filename='uploads/' + product.image) }}"
-                         alt="{{ product_title }}">
+
+                    <img
+                        class="product-img-main"
+                        src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                        alt="{{ product_title }}"
+                        loading="lazy"
+                    >
+
                 {% elif product.images and product.images|length > 0 %}
-                    <img class="product-img-main"
-                         src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
-                         alt="{{ product_title }}">
+
+                    <img
+                        class="product-img-main"
+                        src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+                        alt="{{ product_title }}"
+                        loading="lazy"
+                    >
+
                 {% endif %}
 
                 {% if product.images and product.images|length > 0 %}
-                    <img class="product-img-hover"
-                         src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
-                         alt="{{ product_title }}">
+
+                    <img
+                        class="product-img-hover"
+                        src="{{ url_for('static', filename='uploads/' + product.images[0].image) }}"
+                        alt="{{ product_title }}"
+                        loading="lazy"
+                    >
+
                 {% endif %}
+
             </div>
+
         </a>
 
     </div>
 
     <div class="product-content">
 
-        <a href="{{ url_for('shop.product', slug=product_slug) }}" class="product-title-link">
+        <!-- عنوان المنتج -->
+        <a
+            href="{{ url_for('shop.product', slug=product_slug) }}"
+            class="product-title-link"
+        >
             <h3>{{ product_title }}</h3>
         </a>
+{% if product.ratings_enabled %}
+        <!-- تقييم المنتج داخل البطاقة -->
+        <a
+            href="{{ url_for('shop.product', slug=product_slug) }}#productReviews"
+            class="product-card-rating"
+            aria-label="{{ product_average_rating }} / 5"
+            style="
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 7px;
+                margin: 8px 0 10px;
+                text-decoration: none;
+            "
+        >
 
-        <p>{{ product_description[:80] if product_description else "" }}</p>
+            <span
+                class="product-card-rating-stars"
+                style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 1px;
+                    direction: ltr;
+                    line-height: 1;
+                "
+            >
 
-        <a href="{{ url_for('shop.product', slug=product_slug) }}" class="product-details-link">
-            {% if current_lang == "en" %}
-                View details
-            {% elif current_lang == "ja" %}
-                詳細を見る
+                {% for number in range(1, 6) %}
+
+                    <span
+                        style="
+                            color:
+                            {% if product_ratings_count > 0 and number <= rounded_product_rating %}
+                                #f5a623
+                            {% else %}
+                                #d5d7dc
+                            {% endif %};
+                            font-size: 18px;
+                        "
+                    >
+                        ★
+                    </span>
+
+                {% endfor %}
+
+            </span>
+
+            {% if product_ratings_count > 0 %}
+
+                <strong
+                    style="
+                        color: #343941;
+                        font-size: 14px;
+                    "
+                >
+                    {{ product_average_rating }}
+                </strong>
+
+                <span
+                    style="
+                        color: #747b87;
+                        font-size: 13px;
+                    "
+                >
+                    {% if current_lang == "en" %}
+                        ({{ product_ratings_count }} reviews)
+                    {% elif current_lang == "ja" %}
+                        ({{ product_ratings_count }}件)
+                    {% else %}
+                        ({{ product_ratings_count }} تقييم)
+                    {% endif %}
+                </span>
+
             {% else %}
-                عرض التفاصيل
+
+                <span
+                    style="
+                        color: #858b95;
+                        font-size: 13px;
+                    "
+                >
+                    {% if current_lang == "en" %}
+                        No reviews yet
+                    {% elif current_lang == "ja" %}
+                        まだレビューはありません
+                    {% else %}
+                        لا توجد تقييمات بعد
+                    {% endif %}
+                </span>
+
             {% endif %}
+
         </a>
+        {% endif %}
+
+        <!-- وصف المنتج -->
+        <p>
+            {{ product_description[:80] if product_description else "" }}
+        </p>
+
+        {% set product_needs_options =
+    (
+        product.has_colors
+        and product.available_colors
+    )
+    or
+    (
+        product.has_sizes
+        and product.available_sizes
+    )
+    or product.allow_custom_text
+    or product.allow_custom_image
+%}
+
+<!-- السعر وزر السلة المختصر -->
+<div class="product-card-bottom">
+
+    <div class="product-card-price-wrapper">
 
         <div class="price-box">
+
             {% if product.discount_percent and product.discount_percent > 0 %}
+
                 {% set discounted_price = product.price - (product.price * product.discount_percent / 100) %}
 
-                <span class="old-price">¥{{ product.price|round(0) }}</span>
-                <span class="price discounted-price">¥{{ discounted_price|round(0) }}</span>
+                <span class="old-price">
+                    ¥{{ product.price|round(0) }}
+                </span>
+
+                <span class="price discounted-price">
+                    ¥{{ discounted_price|round(0) }}
+                </span>
+
             {% else %}
-                <span class="price">¥{{ product.price|round(0) }}</span>
+
+                <span class="price">
+                    ¥{{ product.price|round(0) }}
+                </span>
+
             {% endif %}
+
         </div>
 
-        <form method="POST" action="{{ url_for('shop.add_to_cart', product_id=product.id) }}">
-
-            <div class="card-select-options">
-                {% if product.has_colors and product.available_colors %}
-                    <div class="card-select-group">
-                        <select name="selected_color">
-                            {% for color in product.available_colors.split(',') %}
-                                <option value="{{ color.strip() }}">{{ color.strip() }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                {% endif %}
-
-                {% if product.has_sizes and product.available_sizes %}
-                    <div class="card-select-group">
-                        <select name="selected_size">
-                            {% for size in product.available_sizes.split(',') %}
-                                <option value="{{ size.strip() }}">{{ size.strip() }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="product-actions">
-                <button type="submit"
-                        name="action_type"
-                        value="cart"
-                        class="btn-outline">
-                    {% if current_lang == "en" %}
-                        Add to cart
-                    {% elif current_lang == "ja" %}
-                        カートに追加
-                    {% else %}
-                        أضف للسلة
-                    {% endif %}
-                </button>
-
-                <button type="submit"
-                        name="action_type"
-                        value="buy_now"
-                        class="btn-primary">
-                    {% if current_lang == "en" %}
-                        Buy now
-                    {% elif current_lang == "ja" %}
-                        今すぐ購入
-                    {% else %}
-                        اشتري الآن
-                    {% endif %}
-                </button>
-            </div>
-
-        </form>
-
     </div>
+
+    <button
+        type="button"
+        class="product-card-cart-btn js-product-card-cart"
+        data-product-id="{{ product.id }}"
+        data-product-url="{{ url_for('shop.product', slug=product_slug) }}"
+        data-cart-url="{{ url_for('shop.add_to_cart', product_id=product.id) }}"
+        data-needs-options="{{ 'true' if product_needs_options else 'false' }}"
+        aria-label="{% if current_lang == 'en' %}Add to cart{% elif current_lang == 'ja' %}カートに追加{% else %}أضف للسلة{% endif %}"
+        title="
+            {% if product_needs_options %}
+                {% if current_lang == 'en' %}
+                    Choose options
+                {% elif current_lang == 'ja' %}
+                    オプションを選択
+                {% else %}
+                    اختر اللون أو المقاس
+                {% endif %}
+            {% else %}
+                {% if current_lang == 'en' %}
+                    Add to cart
+                {% elif current_lang == 'ja' %}
+                    カートに追加
+                {% else %}
+                    أضف للسلة
+                {% endif %}
+            {% endif %}
+        "
+    >
+        <i class="fa-solid fa-cart-shopping"></i>
+    </button>
+
 </div>
 
+    </div>
+
+</div>

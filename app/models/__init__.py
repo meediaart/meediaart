@@ -11,10 +11,10 @@ from app.models.home_section import HomeSection
 from app.models.settings import SiteSetting
 from app.models.team_member import TeamMember
 from app.models.order_item import OrderItem
-from app.models.order_item import OrderItem
 from app.models.partner import Partner
 from app.models.product_image import ProductImage
 from app.models.service_image import ServiceImage
 from app.models.project_image import ProjectImage
 from app.models.contact_message import ContactMessage
 from app.models.favorite import Favorite
+from app.models.product_review import ProductReview

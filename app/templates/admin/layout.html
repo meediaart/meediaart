@@ -1,72 +1,12 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}لوحة التحكم{% endblock %}</title>
+{% extends "admin/base.html" %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=3">
-</head>
+{#
+    هذا الملف أصبح قالب توافق للصفحات القديمة.
+    الصفحات التي تستخدم block page_title
+    سيتم تحويل عنوانها إلى block admin_page_title
+    الموجود في admin/base.html.
+#}
 
-<body>
-
-<div class="admin-layout">
-
-    <button class="admin-menu-toggle" id="adminMenuBtn" type="button">
-        ☰
-    </button>
-
-    <div class="admin-sidebar" id="adminSidebar">
-        <h2>MEDIA ART</h2>
-
-        <a href="{{ url_for('admin.dashboard') }}">الرئيسية</a>
-        <a href="{{ url_for('admin.pages_list') }}">الصفحات</a>
-        <a href="{{ url_for('admin.services_list') }}">الخدمات</a>
-        <a href="{{ url_for('admin.projects_list') }}">أعمالنا</a>
-        <a href="{{ url_for('admin.posts_list') }}">المدونة</a>
-        <a href="{{ url_for('admin.categories_list') }}">التصنيفات</a>
-        <a href="{{ url_for('admin.products_list') }}">المنتجات</a>
-        <a href="{{ url_for('admin.orders_list') }}">الطلبات</a>
-        <a href="{{ url_for('admin.partners') }}">شركاء النجاح</a>
-        <a href="{{ url_for('main.home') }}" target="_blank">عرض الموقع</a>
-    </div>
-
-    <main class="admin-main">
-
-        <div class="admin-topbar">
-            <h1>{% block page_title %}لوحة التحكم{% endblock %}</h1>
-        </div>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-wrapper">
-                    {% for category, message in messages %}
-                        <div class="flash-message">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="page-card">
-            {% block content %}{% endblock %}
-        </div>
-
-    </main>
-
-</div>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const menuBtn = document.getElementById("adminMenuBtn");
-    const sidebar = document.getElementById("adminSidebar");
-
-    if (menuBtn && sidebar) {
-        menuBtn.addEventListener("click", function () {
-            sidebar.classList.toggle("active");
-        });
-    }
-});
-</script>
-
-</body>
-</html>
+{% block admin_page_title %}
+    {% block page_title %}لوحة التحكم{% endblock %}
+{% endblock %}

@@ -1,0 +1,987 @@
+{% extends "admin/base.html" %}
+
+{% block admin_page_title %}إدارة الطلبات{% endblock %}
+
+{% block content %}
+<div class="admin-page-head">
+    <div>
+        <h2>الطلبات</h2>
+        <p>إدارة طلبات العملاء ومتابعة حالتها.</p>
+    </div>
+</div>
+<div class="orders-stats">
+
+    <div class="order-stat-card order-stat-total">
+        <div class="order-stat-icon">📦</div>
+
+        <div class="order-stat-content">
+            <span>إجمالي الطلبات</span>
+            <strong id="statsTotal">{{ orders|length }}</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-created">
+        <div class="order-stat-icon">🆕</div>
+
+        <div class="order-stat-content">
+            <span>تم إنشاء الطلب</span>
+            <strong id="statsCreated">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-processing">
+        <div class="order-stat-icon">⚙️</div>
+
+        <div class="order-stat-content">
+            <span>قيد التجهيز</span>
+            <strong id="statsProcessing">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-shipped">
+        <div class="order-stat-icon">🚚</div>
+
+        <div class="order-stat-content">
+            <span>تم الشحن</span>
+            <strong id="statsShipped">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-delivered">
+        <div class="order-stat-icon">✅</div>
+
+        <div class="order-stat-content">
+            <span>تم التسليم</span>
+            <strong id="statsDelivered">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-cancelled">
+        <div class="order-stat-icon">❌</div>
+
+        <div class="order-stat-content">
+            <span>الطلبات الملغية</span>
+            <strong id="statsCancelled">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-paid">
+        <div class="order-stat-icon">💰</div>
+
+        <div class="order-stat-content">
+            <span>مدفوع</span>
+            <strong id="statsPaid">0</strong>
+        </div>
+    </div>
+
+    <div class="order-stat-card order-stat-unpaid">
+        <div class="order-stat-icon">⌛</div>
+
+        <div class="order-stat-content">
+            <span>غير مدفوع</span>
+            <strong id="statsUnpaid">0</strong>
+        </div>
+    </div>
+
+</div>
+<div class="orders-toolbar">
+    <div class="orders-results-summary">
+    <span>📊 النتائج الظاهرة:</span>
+    <strong id="visibleOrdersCount">{{ orders|length }}</strong>
+
+    <div class="orders-selected-summary">
+    <span>☑️ الطلبات المحددة:</span>
+    <strong id="selectedOrdersCount">0</strong>
+
+    <form
+    id="bulkOrdersForm"
+    method="POST"
+    action="{{ url_for('admin.bulk_update_orders') }}"
+    class="orders-bulk-actions"
+>
+    <select id="bulkAction" name="bulk_action">
+        <option value="">⚙️ اختر إجراءً جماعيًا</option>
+
+        <optgroup label="حالة الطلب">
+            <option value="status:created">🆕 تم إنشاء الطلب</option>
+            <option value="status:processing">⚙️ قيد التجهيز</option>
+            <option value="status:shipped">🚚 تم الشحن</option>
+            <option value="status:delivered">✅ تم التسليم</option>
+            <option value="status:cancelled">❌ ملغي</option>
+        </optgroup>
+
+        <optgroup label="حالة الدفع">
+            <option value="payment:unpaid">⌛ غير مدفوع</option>
+            <option value="payment:paid">💰 مدفوع</option>
+            <option value="payment:failed">⚠️ فشل الدفع</option>
+        </optgroup>
+    </select>
+
+    <div id="selectedOrderInputs"></div>
+
+    <button
+        type="submit"
+        id="applyBulkAction"
+        class="admin-btn admin-btn-primary"
+    >
+        ✅ تطبيق
+    </button>
+</form>
+</div>
+</div>
+
+    <div class="orders-toolbar-search">
+
+        <input
+            type="text"
+            id="orderSearch"
+            placeholder="🔍 ابحث برقم الطلب أو اسم العميل أو الهاتف..."
+        >
+
+    </div>
+
+    <div class="orders-toolbar-filters">
+
+        <select id="filterStatus">
+            <option value="">📌 جميع حالات الطلب</option>
+            <option value="created">تم إنشاء الطلب</option>
+            <option value="processing">قيد التجهيز</option>
+            <option value="shipped">تم الشحن</option>
+            <option value="delivered">تم التسليم</option>
+            <option value="cancelled">ملغي</option>
+        </select>
+
+        <select id="filterPayment">
+
+            <option value="">💳 جميع حالات الدفع</option>
+
+            <option value="paid">مدفوع</option>
+
+            <option value="unpaid">غير مدفوع</option>
+
+            <option value="failed">فشل الدفع</option>
+
+        </select>
+
+        <select id="filterMethod">
+
+            <option value="">🚚 جميع طرق الدفع</option>
+
+            <option value="stripe">Stripe</option>
+
+            <option value="cod">الدفع عند التسليم</option>
+
+            <option value="whatsapp">واتساب</option>
+
+        </select>
+
+        <input
+            type="date"
+            id="dateFrom"
+        >
+
+        <input
+            type="date"
+            id="dateTo"
+        >
+
+        <button
+            type="button"
+            id="resetFilters"
+            class="admin-btn-secondary"
+        >
+            🔄 إعادة تعيين
+        </button>
+
+    </div>
+
+</div>
+
+{% if orders %}
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+<tr>
+    <th width="50">
+    <input
+        type="checkbox"
+        id="selectAllOrders"
+        title="تحديد الكل">
+</th>
+
+<th data-sort="id" class="sortable">
+    # ↕
+</th>
+    <th data-sort="customer" class="sortable">👤 العميل ↕</th>
+    <th>📞 الهاتف</th>
+    <th data-sort="price" class="sortable">💴 الإجمالي ↕</th>
+    <th>📦 حالة الطلب</th>
+    <th>💳 حالة الدفع</th>
+    <th>💰 طريقة الدفع</th>
+    <th data-sort="date" class="sortable">📅 التاريخ ↕</th>
+    <th>⚙️ الإجراءات</th>
+</tr>
+</thead>
+
+        <tbody>
+{% for order in orders %}
+
+<tr
+    data-order-id="{{ order.id }}"
+    data-customer="{{ (order.customer_name or '')|lower }}"
+    data-phone="{{ (order.customer_phone or '')|lower }}"
+    data-status="{{ order.status }}"
+    data-payment="{{ order.payment_status }}"
+    data-method="{{ order.payment_method }}"
+    data-date="{{ order.created_at.strftime('%Y-%m-%d') if order.created_at else '' }}"
+    data-price="{{ order.total_price }}"
+>
+
+    <form method="POST"
+          action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
+
+        <td>
+
+    <input
+        type="checkbox"
+        class="orderCheckbox"
+        value="{{ order.id }}">
+
+</td>
+
+<td>#{{ order.id }}</td>
+
+        <td>{{ order.customer_name }}</td>
+
+        <td>{{ order.customer_phone or "-" }}</td>
+
+        <td>¥{{ order.total_price }}</td>
+
+        <td>
+            <select
+                name="status"
+                class="form-select order-status-select"
+                data-status="{{ order.status }}"
+            >
+
+                <option value="created"
+                    {% if order.status in ['created','pending'] %}selected{% endif %}>
+                    تم إنشاء الطلب
+                </option>
+
+                <option value="processing"
+                    {% if order.status in ['processing','in_progress'] %}selected{% endif %}>
+                    قيد التجهيز
+                </option>
+
+                <option value="shipped"
+                    {% if order.status == 'shipped' %}selected{% endif %}>
+                    تم الشحن
+                </option>
+
+                <option value="delivered"
+                    {% if order.status in ['delivered','completed'] %}selected{% endif %}>
+                    تم التسليم
+                </option>
+
+                <option value="cancelled"
+                    {% if order.status == 'cancelled' %}selected{% endif %}>
+                    ملغي
+                </option>
+
+            </select>
+        </td>
+
+        <td>
+
+            <select
+                name="payment_status"
+                class="form-control payment-status-select"
+                data-payment="{{ order.payment_status }}"
+            >
+
+                <option value="unpaid"
+                    {% if order.payment_status=="unpaid" %}selected{% endif %}>
+                    غير مدفوع
+                </option>
+
+                <option value="paid"
+                    {% if order.payment_status=="paid" %}selected{% endif %}>
+                    مدفوع
+                </option>
+
+                <option value="failed"
+                    {% if order.payment_status=="failed" %}selected{% endif %}>
+                    فشل الدفع
+                </option>
+
+            </select>
+
+        </td>
+
+        <td>
+
+            {% if order.payment_method == "whatsapp" %}
+                واتساب
+
+            {% elif order.payment_method == "stripe" %}
+                Stripe
+
+            {% elif order.payment_method == "cod" %}
+                الدفع عند التسليم
+
+            {% elif order.payment_method == "pending" %}
+                لم يحدد بعد
+
+            {% else %}
+                {{ order.payment_method or "-" }}
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {% if order.created_at %}
+                {{ order.created_at.strftime("%Y-%m-%d %H:%M") }}
+            {% else %}
+                -
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            <div class="admin-actions">
+
+                <button
+                    type="submit"
+                    class="admin-btn admin-btn-primary">
+
+                    💾 حفظ
+
+                </button>
+
+                <a
+                    href="{{ url_for('admin.order_details', order_id=order.id) }}"
+                    class="admin-btn admin-btn-secondary">
+
+                    👁 عرض التفاصيل
+
+                </a>
+
+            </div>
+
+        </td>
+
+    </form>
+
+</tr>
+
+{% endfor %}
+<tr id="noOrdersResult" hidden></tr>
+    <td colspan="9" class="orders-no-results">
+        🔍 لا توجد طلبات مطابقة للبحث أو الفلاتر المحددة.
+    </td>
+</tr>
+</tbody>
+    </table>
+</div>
+{% else %}
+<p>لا توجد طلبات حالياً.</p>
+{% endif %}
+<script>
+  // ==========================================
+// عناصر البحث والفلاتر
+// ==========================================
+
+const orderSearch = document.getElementById("orderSearch");
+const filterStatus = document.getElementById("filterStatus");
+const filterPayment = document.getElementById("filterPayment");
+const filterMethod = document.getElementById("filterMethod");
+const dateFrom = document.getElementById("dateFrom");
+const dateTo = document.getElementById("dateTo");
+const resetFilters = document.getElementById("resetFilters");
+
+// ==========================================
+// محرك الفلترة
+// ==========================================
+
+function filterOrders() {
+
+    const keyword = orderSearch.value.trim().toLowerCase();
+
+    const status = filterStatus.value;
+
+    const payment = filterPayment.value;
+
+    const method = filterMethod.value;
+
+    const from = dateFrom.value;
+
+    const to = dateTo.value;
+
+    const rows = document.querySelectorAll(
+    ".admin-table tbody tr:not(#noOrdersResult)"
+);
+
+const visibleOrdersCount =
+    document.getElementById("visibleOrdersCount");
+
+const noOrdersResult =
+    document.getElementById("noOrdersResult");
+
+let visibleCount = 0;
+const statistics = {
+    total: 0,
+    created: 0,
+    processing: 0,
+    shipped: 0,
+    delivered: 0,
+    cancelled: 0,
+    paid: 0,
+    unpaid: 0
+};
+
+    rows.forEach(function(row){
+
+        const customer = row.dataset.customer;
+
+        const phone = row.dataset.phone;
+
+        const orderId = row.dataset.orderId;
+
+        const rowStatus = row.dataset.status;
+
+        const rowPayment = row.dataset.payment;
+
+        const rowMethod = row.dataset.method;
+
+        const rowDate = row.dataset.date;
+
+        let visible = true;
+
+        // -------------------------
+        // البحث
+        // -------------------------
+
+        if(keyword !== ""){
+
+            const found =
+                customer.includes(keyword) ||
+                phone.includes(keyword) ||
+                orderId.includes(keyword);
+
+            if(!found){
+
+                visible = false;
+
+            }
+
+        }
+
+        // -------------------------
+        // حالة الطلب
+        // -------------------------
+
+        if(status !== "" && rowStatus !== status){
+
+            visible = false;
+
+        }
+
+        // -------------------------
+        // حالة الدفع
+        // -------------------------
+
+        if(payment !== "" && rowPayment !== payment){
+
+            visible = false;
+
+        }
+
+        // -------------------------
+        // طريقة الدفع
+        // -------------------------
+
+        if(method !== "" && rowMethod !== method){
+
+            visible = false;
+
+        }
+
+        // -------------------------
+        // من تاريخ
+        // -------------------------
+
+        if(from !== "" && rowDate < from){
+
+            visible = false;
+
+        }
+
+        // -------------------------
+        // إلى تاريخ
+        // -------------------------
+
+        if(to !== "" && rowDate > to){
+
+            visible = false;
+
+        }
+
+        row.style.display = visible ? "" : "none";
+
+      if (visible) {
+    visibleCount++;
+    statistics.total++;
+
+    /*
+        نحول أسماء الحالات القديمة إلى الأسماء الجديدة
+        حتى تُحسب الطلبات القديمة بصورة صحيحة.
+    */
+    let normalizedStatus = rowStatus;
+
+    if (normalizedStatus === "pending") {
+        normalizedStatus = "created";
+    }
+
+    if (normalizedStatus === "in_progress") {
+        normalizedStatus = "processing";
+    }
+
+    if (normalizedStatus === "completed") {
+        normalizedStatus = "delivered";
+    }
+
+    if (
+        Object.prototype.hasOwnProperty.call(
+            statistics,
+            normalizedStatus
+        )
+    ) {
+        statistics[normalizedStatus]++;
+    }
+
+    if (rowPayment === "paid") {
+        statistics.paid++;
+    }
+
+    if (rowPayment === "unpaid") {
+        statistics.unpaid++;
+    }
+}
+
+    });
+
+visibleOrdersCount.textContent = visibleCount;
+
+if (noOrdersResult) {
+    noOrdersResult.style.display =
+        visibleCount === 0 ? "" : "none";
+}
+
+document.getElementById("statsTotal").textContent =
+    statistics.total;
+
+document.getElementById("statsCreated").textContent =
+    statistics.created;
+
+document.getElementById("statsProcessing").textContent =
+    statistics.processing;
+
+document.getElementById("statsShipped").textContent =
+    statistics.shipped;
+
+document.getElementById("statsDelivered").textContent =
+    statistics.delivered;
+
+document.getElementById("statsCancelled").textContent =
+    statistics.cancelled;
+
+document.getElementById("statsPaid").textContent =
+    statistics.paid;
+
+document.getElementById("statsUnpaid").textContent =
+    statistics.unpaid;
+    
+}
+
+// ==========================================
+// ربط الأحداث
+// ==========================================
+
+orderSearch.addEventListener("keyup", filterOrders);
+
+filterStatus.addEventListener("change", filterOrders);
+
+filterPayment.addEventListener("change", filterOrders);
+
+filterMethod.addEventListener("change", filterOrders);
+
+dateFrom.addEventListener("change", filterOrders);
+
+dateTo.addEventListener("change", filterOrders);
+
+// ==========================================
+// إعادة تعيين
+// ==========================================
+
+resetFilters.addEventListener("click", function(){
+
+    orderSearch.value = "";
+
+    filterStatus.value = "";
+
+    filterPayment.value = "";
+
+    filterMethod.value = "";
+
+    dateFrom.value = "";
+
+    dateTo.value = "";
+
+    filterOrders();
+
+});
+// تشغيل الفلترة والحسابات عند فتح الصفحة أول مرة
+filterOrders();
+// ==========================================
+// ترتيب أعمدة جدول الطلبات
+// ==========================================
+
+let currentSortColumn = "";
+let currentSortDirection = "asc";
+
+const sortableHeaders = document.querySelectorAll(
+    ".admin-table thead .sortable"
+);
+
+sortableHeaders.forEach(function (header) {
+    header.addEventListener("click", function () {
+        const column = this.dataset.sort;
+
+        if (currentSortColumn === column) {
+            currentSortDirection =
+                currentSortDirection === "asc" ? "desc" : "asc";
+        } else {
+            currentSortColumn = column;
+            currentSortDirection = "asc";
+        }
+
+        sortOrderRows(column, currentSortDirection);
+        updateSortIndicators(this, currentSortDirection);
+    });
+});
+
+
+function sortOrderRows(column, direction) {
+    const tableBody = document.querySelector(".admin-table tbody");
+
+    const noOrdersResult =
+        document.getElementById("noOrdersResult");
+
+    const rows = Array.from(
+        tableBody.querySelectorAll("tr:not(#noOrdersResult)")
+    );
+
+    rows.sort(function (firstRow, secondRow) {
+        let firstValue = "";
+        let secondValue = "";
+
+        if (column === "id") {
+            firstValue = Number(firstRow.dataset.orderId || 0);
+            secondValue = Number(secondRow.dataset.orderId || 0);
+        }
+
+        if (column === "customer") {
+            firstValue =
+                (firstRow.dataset.customer || "").toLowerCase();
+
+            secondValue =
+                (secondRow.dataset.customer || "").toLowerCase();
+        }
+
+        if (column === "price") {
+            firstValue = Number(firstRow.dataset.price || 0);
+            secondValue = Number(secondRow.dataset.price || 0);
+        }
+
+        if (column === "date") {
+            firstValue = firstRow.dataset.date || "";
+            secondValue = secondRow.dataset.date || "";
+        }
+
+        let comparison = 0;
+
+        if (
+            typeof firstValue === "number" &&
+            typeof secondValue === "number"
+        ) {
+            comparison = firstValue - secondValue;
+        } else {
+            comparison = String(firstValue).localeCompare(
+                String(secondValue),
+                "ar",
+                {
+                    numeric: true,
+                    sensitivity: "base"
+                }
+            );
+        }
+
+        return direction === "asc"
+            ? comparison
+            : comparison * -1;
+    });
+
+    rows.forEach(function (row) {
+        tableBody.appendChild(row);
+    });
+
+    if (noOrdersResult) {
+        tableBody.appendChild(noOrdersResult);
+    }
+}
+
+
+function updateSortIndicators(activeHeader, direction) {
+    sortableHeaders.forEach(function (header) {
+        const cleanTitle =
+            header.textContent
+                .replace(" ↑", "")
+                .replace(" ↓", "")
+                .replace(" ↕", "")
+                .trim();
+
+        header.textContent = cleanTitle + " ↕";
+        header.classList.remove(
+            "sort-ascending",
+            "sort-descending"
+        );
+    });
+
+    const activeTitle =
+        activeHeader.textContent
+            .replace(" ↑", "")
+            .replace(" ↓", "")
+            .replace(" ↕", "")
+            .trim();
+
+    activeHeader.textContent =
+        activeTitle + (direction === "asc" ? " ↑" : " ↓");
+
+    activeHeader.classList.add(
+        direction === "asc"
+            ? "sort-ascending"
+            : "sort-descending"
+    );
+}
+// ==========================================
+// التحديد الجماعي للطلبات
+// ==========================================
+
+const selectAllOrders =
+    document.getElementById("selectAllOrders");
+
+const orderCheckboxes =
+    document.querySelectorAll(".orderCheckbox");
+
+
+// إنشاء عداد الطلبات المحددة
+const selectedOrdersCounter =
+    document.getElementById("selectedOrdersCount");
+
+
+// تحديث عدد الطلبات المحددة
+function updateSelectedOrdersCount() {
+
+    const selectedCount =
+        document.querySelectorAll(
+            ".orderCheckbox:checked"
+        ).length;
+
+    if (selectedOrdersCounter) {
+        selectedOrdersCounter.textContent =
+            selectedCount;
+    }
+
+    /*
+        إذا كانت جميع الطلبات محددة،
+        نجعل مربع تحديد الكل محددًا.
+    */
+    if (selectAllOrders) {
+
+        const totalCheckboxes =
+            orderCheckboxes.length;
+
+        selectAllOrders.checked =
+            totalCheckboxes > 0 &&
+            selectedCount === totalCheckboxes;
+
+        /*
+            الحالة الوسطية تظهر عندما يكون
+            بعض الطلبات محددًا وليس كلها.
+        */
+        selectAllOrders.indeterminate =
+            selectedCount > 0 &&
+            selectedCount < totalCheckboxes;
+    }
+}
+
+
+// تحديد أو إلغاء تحديد جميع الطلبات
+if (selectAllOrders) {
+
+    selectAllOrders.addEventListener(
+        "change",
+        function () {
+
+            orderCheckboxes.forEach(
+                function (checkbox) {
+
+                    /*
+                        نحدد الصفوف الظاهرة فقط،
+                        حتى لا يحدد طلبات مخفية
+                        بسبب الفلاتر.
+                    */
+                    const row =
+                        checkbox.closest("tr");
+
+                    if (
+                        row &&
+                        row.style.display !== "none"
+                    ) {
+                        checkbox.checked =
+                            selectAllOrders.checked;
+                    }
+                }
+            );
+
+            updateSelectedOrdersCount();
+        }
+    );
+}
+
+
+// مراقبة كل مربع طلب
+orderCheckboxes.forEach(
+    function (checkbox) {
+
+        checkbox.addEventListener(
+            "change",
+            updateSelectedOrdersCount
+        );
+    }
+);
+
+
+// تشغيل العداد عند فتح الصفحة
+updateSelectedOrdersCount();
+
+// ==========================================
+// تنفيذ الإجراءات الجماعية
+// ==========================================
+
+const bulkOrdersForm =
+    document.getElementById("bulkOrdersForm");
+
+const bulkAction =
+    document.getElementById("bulkAction");
+
+const selectedOrderInputs =
+    document.getElementById("selectedOrderInputs");
+
+
+if (bulkOrdersForm) {
+
+    bulkOrdersForm.addEventListener(
+        "submit",
+        function (event) {
+
+            /*
+                نجمع الطلبات التي وضع المستخدم
+                علامة تحديد عليها.
+            */
+            const selectedCheckboxes =
+                document.querySelectorAll(
+                    ".orderCheckbox:checked"
+                );
+
+            /*
+                منع الإرسال إذا لم يتم تحديد طلبات.
+            */
+            if (selectedCheckboxes.length === 0) {
+                event.preventDefault();
+
+                alert(
+                    "يرجى تحديد طلب واحد على الأقل."
+                );
+
+                return;
+            }
+
+            /*
+                منع الإرسال إذا لم يتم اختيار إجراء.
+            */
+            if (!bulkAction.value) {
+                event.preventDefault();
+
+                alert(
+                    "يرجى اختيار الإجراء الجماعي."
+                );
+
+                return;
+            }
+
+            /*
+                تنظيف الأرقام القديمة قبل إضافة
+                الأرقام المحددة حاليًا.
+            */
+            selectedOrderInputs.innerHTML = "";
+
+            /*
+                إنشاء input مخفي لكل طلب محدد.
+                جميع الحقول تحمل الاسم نفسه لكي
+                يستقبلها Flask كقائمة.
+            */
+            selectedCheckboxes.forEach(
+                function (checkbox) {
+
+                    const hiddenInput =
+                        document.createElement("input");
+
+                    hiddenInput.type = "hidden";
+                    hiddenInput.name = "order_ids";
+                    hiddenInput.value = checkbox.value;
+
+                    selectedOrderInputs.appendChild(
+                        hiddenInput
+                    );
+                }
+            );
+
+            /*
+                تأكيد تنفيذ العملية الجماعية.
+            */
+            const confirmed = confirm(
+                "هل أنت متأكد من تطبيق هذا الإجراء على " +
+                selectedCheckboxes.length +
+                " طلب؟"
+            );
+
+            if (!confirmed) {
+                event.preventDefault();
+            }
+        }
+    );
+}
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script
+    src="{{ url_for('static', filename='js/admin/orders-list.js') }}?v=1"
+></script>
+{% endblock %}

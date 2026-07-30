@@ -1,63 +1,269 @@
 {% extends "base.html" %}
 
-{% block title %}{{ project.meta_title or project.title }}{% endblock %}
+{% block title %}
+{% if project %}
+    {{ project.get_meta_title(current_lang) }}
+{% else %}
+    {% if current_lang == "en" %}
+        Project not found
+    {% elif current_lang == "ja" %}
+        プロジェクトが見つかりません
+    {% else %}
+        المشروع غير موجود
+    {% endif %}
+{% endif %}
+{% endblock %}
 
 {% block meta_description %}
-{{ project.meta_description or project.short_description or "" }}
+{% if project %}
+    {{ project.get_meta_description(current_lang) or "" }}
+{% endif %}
 {% endblock %}
 
 {% block meta_keywords %}
-{{ project.keywords or "" }}
+{% if project %}
+    {{ project.get_keywords(current_lang) or "" }}
+{% endif %}
 {% endblock %}
 
 {% block content %}
 
+{% if project %}
+
 <section class="portfolio-detail-hero">
     <div class="container">
-        <h1>{{ project.title }}</h1>
+
+        <a
+            href="{{ url_for('portfolio.index') }}"
+            class="portfolio-detail-back-link"
+        >
+            {% if current_lang == "en" %}
+                Back to portfolio
+            {% elif current_lang == "ja" %}
+                実績一覧に戻る
+            {% else %}
+                العودة إلى أعمالنا
+            {% endif %}
+        </a>
+
+        <h1 class="portfolio-detail-title">
+            {{ project.get_title(current_lang) }}
+        </h1>
 
         {% if project.project_type %}
-            <p>{{ project.project_type }}</p>
+            <p class="portfolio-detail-type">
+                {{ project.project_type }}
+            </p>
         {% endif %}
+
     </div>
 </section>
 
 <section class="portfolio-detail-section">
+
     <div class="container portfolio-detail-grid">
 
-        <div class="portfolio-detail-image">
-            {% if project.image %}
-                <img src="{{ url_for('static', filename='uploads/' + project.image) }}" alt="{{ project.title }}">
-            {% else %}
-                <div class="portfolio-placeholder"></div>
-            {% endif %}
-        </div>
+        <div class="portfolio-detail-main">
 
-        <div class="portfolio-detail-content">
+            <div class="ma-card portfolio-detail-media-card">
 
-            <div class="portfolio-info-box">
-                {% if project.client_name %}
-                    <p><strong>العميل:</strong> {{ project.client_name }}</p>
-                {% endif %}
+                <div class="portfolio-detail-image">
 
-                {% if project.project_type %}
-                    <p><strong>نوع المشروع:</strong> {{ project.project_type }}</p>
-                {% endif %}
+                    {% if project.image %}
+                        <img
+                            src="{{ url_for('static', filename='uploads/' ~ project.image) }}"
+                            alt="{{ project.get_title(current_lang) }}"
+                        >
+                    {% else %}
+                        <div class="portfolio-placeholder"></div>
+                    {% endif %}
+
+                </div>
+
             </div>
 
-            <div class="portfolio-description">
-                {{ project.description | safe }}
+            {% if project.images %}
+                <div class="portfolio-gallery">
+
+                    {% for image in project.images %}
+                        <div class="ma-card portfolio-gallery-item">
+
+                            <img
+                                src="{{ url_for('static', filename='uploads/' ~ image.image) }}"
+                                alt="{{ project.get_title(current_lang) }}"
+                                loading="lazy"
+                            >
+
+                        </div>
+                    {% endfor %}
+
+                </div>
+            {% endif %}
+
+        </div>
+
+        <aside class="portfolio-detail-sidebar">
+
+            {% if project.client_name or project.project_type %}
+                <div class="ma-card portfolio-info-card">
+
+                    <div class="ma-card-body">
+
+                        <h2 class="portfolio-info-title">
+                            {% if current_lang == "en" %}
+                                Project information
+                            {% elif current_lang == "ja" %}
+                                プロジェクト情報
+                            {% else %}
+                                معلومات المشروع
+                            {% endif %}
+                        </h2>
+
+                        <div class="portfolio-info-list">
+
+                            {% if project.client_name %}
+                                <div class="portfolio-info-item">
+
+                                    <span class="portfolio-info-label">
+                                        {% if current_lang == "en" %}
+                                            Client
+                                        {% elif current_lang == "ja" %}
+                                            クライアント
+                                        {% else %}
+                                            العميل
+                                        {% endif %}
+                                    </span>
+
+                                    <strong>
+                                        {{ project.client_name }}
+                                    </strong>
+
+                                </div>
+                            {% endif %}
+
+                            {% if project.project_type %}
+                                <div class="portfolio-info-item">
+
+                                    <span class="portfolio-info-label">
+                                        {% if current_lang == "en" %}
+                                            Project type
+                                        {% elif current_lang == "ja" %}
+                                            プロジェクト種類
+                                        {% else %}
+                                            نوع المشروع
+                                        {% endif %}
+                                    </span>
+
+                                    <strong>
+                                        {{ project.project_type }}
+                                    </strong>
+
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+            {% endif %}
+
+            <div class="ma-card portfolio-description-card">
+
+                <div class="ma-card-body">
+
+                    <h2 class="portfolio-description-title">
+                        {% if current_lang == "en" %}
+                            About the project
+                        {% elif current_lang == "ja" %}
+                            プロジェクトについて
+                        {% else %}
+                            عن المشروع
+                        {% endif %}
+                    </h2>
+
+                    <div class="portfolio-description">
+                        {{ project.get_description(current_lang) | safe }}
+                    </div>
+
+                </div>
+
             </div>
 
             <div class="portfolio-actions">
-                <a href="{{ url_for('contact.index') }}" class="btn-primary">
-                    اطلب تصميم مشابه
+
+                <a
+                    href="{{ url_for('contact.index') }}"
+                    class="ma-btn ma-btn-primary"
+                >
+                    {% if current_lang == "en" %}
+                        Request a similar project
+                    {% elif current_lang == "ja" %}
+                        同様のプロジェクトを依頼する
+                    {% else %}
+                        اطلب تصميمًا مشابهًا
+                    {% endif %}
                 </a>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</section>
+
+{% else %}
+
+<section class="portfolio-not-found">
+
+    <div class="container">
+
+        <div class="ma-card portfolio-not-found-card">
+
+            <div class="ma-card-body">
+
+                <h1>
+                    {% if current_lang == "en" %}
+                        Project not found
+                    {% elif current_lang == "ja" %}
+                        プロジェクトが見つかりません
+                    {% else %}
+                        المشروع غير موجود
+                    {% endif %}
+                </h1>
+
+                <p>
+                    {% if current_lang == "en" %}
+                        The requested project may have been removed or is no longer available.
+                    {% elif current_lang == "ja" %}
+                        指定されたプロジェクトは削除されたか、現在利用できません。
+                    {% else %}
+                        ربما تم حذف المشروع المطلوب أو أنه لم يعد متاحًا.
+                    {% endif %}
+                </p>
+
+                <a
+                    href="{{ url_for('portfolio.index') }}"
+                    class="ma-btn ma-btn-primary"
+                >
+                    {% if current_lang == "en" %}
+                        View portfolio
+                    {% elif current_lang == "ja" %}
+                        実績を見る
+                    {% else %}
+                        عرض أعمالنا
+                    {% endif %}
+                </a>
+
             </div>
 
         </div>
 
     </div>
+
 </section>
+
+{% endif %}
 
 {% endblock %}

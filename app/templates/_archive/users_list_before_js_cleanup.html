@@ -1,0 +1,276 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}إدارة المستخدمين{% endblock %}
+{% block page_title %}إدارة المستخدمين{% endblock %}
+
+{% block content %}
+<div class="page-card">
+
+    <!-- رأس الصفحة -->
+    <div class="section-header">
+        <div>
+            <h2>قائمة المستخدمين</h2>
+
+            <p class="admin-results-text">
+                عدد النتائج:
+                <strong id="usersResultsCount">{{ users|length }}</strong>
+            </p>
+        </div>
+
+        <a href="{{ url_for('admin.create_user') }}"
+           class="btn btn-primary">
+            + إضافة مستخدم
+        </a>
+    </div>
+
+    <!-- البحث والفلاتر -->
+    <div class="admin-filters">
+
+        <!-- البحث -->
+        <div class="admin-filter-group admin-filter-search">
+            <label for="userSearch">البحث</label>
+
+            <input
+                type="search"
+                id="userSearch"
+                class="admin-input"
+                placeholder="ابحث بالاسم أو البريد الإلكتروني..."
+                autocomplete="off"
+            >
+        </div>
+
+        <!-- فلتر الدور -->
+        <div class="admin-filter-group">
+            <label for="roleFilter">الدور</label>
+
+            <select id="roleFilter" class="admin-select">
+                <option value="">جميع الأدوار</option>
+
+                {% set roles_list = [] %}
+
+                {% for user in users %}
+                    {% if user.role and user.role not in roles_list %}
+                        {% set _ = roles_list.append(user.role) %}
+
+                        <option value="{{ user.role|lower }}">
+                            {{ user.role }}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- زر إعادة التعيين -->
+        <div class="admin-filter-group admin-filter-button">
+            <button
+                type="button"
+                id="resetUserFilters"
+                class="btn btn-edit"
+            >
+                إعادة تعيين
+            </button>
+        </div>
+
+    </div>
+
+    <!-- جدول المستخدمين -->
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>اسم المستخدم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الدور</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+
+            <tbody id="usersTableBody">
+
+                {% for user in users %}
+
+                <tr
+                    class="user-row"
+                    data-username="{{ user.username|lower }}"
+                    data-email="{{ user.email|lower }}"
+                    data-role="{{ user.role|lower if user.role else '' }}"
+                >
+
+                    <!-- اسم المستخدم -->
+                    <td>
+                        <strong>{{ user.username }}</strong>
+                    </td>
+
+                    <!-- البريد الإلكتروني -->
+                    <td>
+                        {{ user.email }}
+                    </td>
+
+                    <!-- الدور -->
+                    <td>
+                        {% if user.role %}
+                            <span class="status-badge">
+                                {{ user.role }}
+                            </span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <!-- الإجراءات -->
+                    <td>
+                        <div class="admin-actions">
+
+                            <a
+                                href="{{ url_for('admin.edit_user', user_id=user.id) }}"
+                                class="btn btn-edit"
+                            >
+                                تعديل
+                            </a>
+
+                            <a
+                                href="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                                class="btn btn-delete"
+                                onclick="return confirm('هل أنت متأكد من حذف هذا المستخدم؟')"
+                            >
+                                حذف
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                <!-- لا توجد نتائج بحث -->
+                <tr id="noUsersResults" style="display: none;">
+                    <td colspan="4" class="admin-empty-state">
+                        لا توجد نتائج مطابقة للبحث أو الفلاتر.
+                    </td>
+                </tr>
+
+                <!-- لا يوجد مستخدمون أصلًا -->
+                {% if not users %}
+                <tr>
+                    <td colspan="4" class="admin-empty-state">
+                        لا يوجد مستخدمون حاليًا.
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // حقل البحث
+    const searchInput = document.getElementById("userSearch");
+
+    // فلتر الدور
+    const roleFilter = document.getElementById("roleFilter");
+
+    // زر إعادة التعيين
+    const resetButton = document.getElementById("resetUserFilters");
+
+    // جميع صفوف المستخدمين
+    const userRows = Array.from(
+        document.querySelectorAll(".user-row")
+    );
+
+    // عداد النتائج
+    const resultsCount = document.getElementById("usersResultsCount");
+
+    // رسالة عدم وجود نتائج
+    const noResultsRow = document.getElementById("noUsersResults");
+
+    /**
+     * توحيد النصوص لتسهيل عملية البحث.
+     */
+    function normalizeText(value) {
+        return String(value || "")
+            .toLowerCase()
+            .trim();
+    }
+
+    /**
+     * تنفيذ البحث والفلترة.
+     */
+    function filterUsers() {
+
+        const searchValue = normalizeText(searchInput.value);
+        const roleValue = normalizeText(roleFilter.value);
+
+        let visibleCount = 0;
+
+        userRows.forEach(function (row) {
+
+            const username = normalizeText(row.dataset.username);
+            const email = normalizeText(row.dataset.email);
+            const role = normalizeText(row.dataset.role);
+
+            // البحث في اسم المستخدم والبريد الإلكتروني والدور
+            const matchesSearch =
+                searchValue === "" ||
+                username.includes(searchValue) ||
+                email.includes(searchValue) ||
+                role.includes(searchValue);
+
+            // مطابقة الدور
+            const matchesRole =
+                roleValue === "" ||
+                role === roleValue;
+
+            const shouldShow =
+                matchesSearch &&
+                matchesRole;
+
+            row.style.display = shouldShow ? "" : "none";
+
+            if (shouldShow) {
+                visibleCount++;
+            }
+        });
+
+        // تحديث عداد النتائج
+        resultsCount.textContent = visibleCount;
+
+        // إظهار رسالة عدم وجود نتائج
+        if (userRows.length > 0 && visibleCount === 0) {
+            noResultsRow.style.display = "";
+        } else {
+            noResultsRow.style.display = "none";
+        }
+    }
+
+    /**
+     * إعادة البحث والفلاتر إلى الوضع الافتراضي.
+     */
+    function resetFilters() {
+        searchInput.value = "";
+        roleFilter.value = "";
+
+        filterUsers();
+        searchInput.focus();
+    }
+
+    // البحث المباشر أثناء الكتابة
+    searchInput.addEventListener("input", filterUsers);
+
+    // تشغيل الفلترة عند تغيير الدور
+    roleFilter.addEventListener("change", filterUsers);
+
+    // إعادة التعيين
+    resetButton.addEventListener("click", resetFilters);
+
+    // تشغيل أولي
+    filterUsers();
+});
+</script>
+{% endblock %}

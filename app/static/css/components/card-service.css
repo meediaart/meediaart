@@ -1,0 +1,239 @@
+/* ==========================================================
+   MEDIAART SERVICE CARD
+   ========================================================== */
+
+/*
+|--------------------------------------------------------------------------
+| شبكة بطاقات الخدمات
+|--------------------------------------------------------------------------
+*/
+
+.services-grid {
+    align-items: stretch;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| بطاقة الخدمة
+|--------------------------------------------------------------------------
+*/
+
+.service-card {
+    height: 100%;
+}
+
+.service-card .ma-card-body {
+    gap: var(--ma-space-3);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| صورة الخدمة
+|--------------------------------------------------------------------------
+*/
+
+.service-card-media {
+    aspect-ratio: 16 / 10;
+    background: var(--ma-surface-soft);
+}
+
+.service-card-media::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+        to top,
+        rgba(18, 27, 36, 0.16),
+        transparent 48%
+    );
+
+    pointer-events: none;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| الصورة البديلة
+|--------------------------------------------------------------------------
+*/
+
+.service-image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    color: var(--ma-text-muted);
+    background: var(--ma-surface-soft);
+
+    font-size: 2.625rem;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| الأيقونة العائمة
+|--------------------------------------------------------------------------
+*/
+
+.service-card-icon {
+    position: absolute;
+    right: var(--ma-space-4);
+    bottom: var(--ma-space-4);
+    z-index: 2;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+
+    color: var(--ma-surface);
+    background: var(--ma-dark);
+
+    border: 3px solid var(--ma-surface);
+    border-radius: 50%;
+
+    box-shadow: var(--ma-shadow-md);
+
+    transition:
+        transform var(--ma-transition),
+        background-color var(--ma-transition);
+}
+
+html[dir="rtl"] .service-card-icon {
+    right: auto;
+    left: var(--ma-space-4);
+}
+
+.service-card:hover .service-card-icon {
+    background: var(--ma-accent);
+    transform: translateY(-3px);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| عنوان الخدمة
+|--------------------------------------------------------------------------
+*/
+
+.service-card-title {
+    font-size: var(--ma-font-xl);
+    line-height: 1.4;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| تقييم الخدمة
+|--------------------------------------------------------------------------
+*/
+
+.service-rating {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+
+    color: var(--ma-warning);
+
+    font-size: 0.875rem;
+    line-height: 1;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| وصف الخدمة
+|--------------------------------------------------------------------------
+*/
+
+.service-card .ma-card-text {
+    min-height: calc(1.8em * 3);
+    margin: 0;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| أزرار الخدمة
+|--------------------------------------------------------------------------
+*/
+
+.service-card-actions {
+    align-items: stretch;
+}
+
+.service-card-actions .ma-btn {
+    flex: 1;
+    min-width: 140px;
+}
+
+.service-details-btn,
+.service-order-btn {
+    justify-content: center;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| الأجهزة اللوحية
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 992px) {
+    .service-card-actions {
+        flex-direction: column;
+    }
+
+    .service-card-actions .ma-btn {
+        width: 100%;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| الهواتف
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 640px) {
+    .service-card-icon {
+        width: 42px;
+        height: 42px;
+    }
+
+    .service-card-title {
+        font-size: var(--ma-font-lg);
+    }
+
+    .service-card .ma-card-text {
+        min-height: auto;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| تقليل الحركة
+|--------------------------------------------------------------------------
+*/
+
+@media (prefers-reduced-motion: reduce) {
+    .service-card-icon {
+        transition: none;
+    }
+
+    .service-card:hover .service-card-icon {
+        transform: none;
+    }
+}
+

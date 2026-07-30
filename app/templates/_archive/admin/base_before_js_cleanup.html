@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - MEDIA ART</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=4">
+</head>
+<body>
+
+<div class="admin-layout">
+
+    <button class="admin-mobile-toggle" id="adminMobileToggle" type="button">☰</button>
+
+    <aside class="admin-sidebar" id="adminMobileSidebar">
+        <div class="admin-sidebar-brand">
+            <h2>MEDIA ART</h2>
+            <p>لوحة التحكم</p>
+            <li>
+    <a href="{{ url_for('admin.contact_messages') }}">
+        رسائل التواصل
+    </a>
+    <li>
+    <a href="{{ url_for('admin.subscribers_list') }}">
+        القائمة البريدية
+    </a>
+</li>
+</li>
+        </div>
+
+        <div class="admin-sidebar-section">
+            <h3>الرئيسية</h3>
+            <a href="{{ url_for('admin.dashboard') }}">نظرة عامة</a>
+        </div>
+
+        <div class="admin-sidebar-section">
+            <h3>إدارة المحتوى</h3>
+            <a href="{{ url_for('admin.pages_list') }}">الصفحات</a>
+            <a href="{{ url_for('admin.posts_list') }}">المقالات</a>
+            <a href="{{ url_for('admin.team_list') }}">فريق العمل</a>
+        </div>
+
+        <div class="admin-sidebar-section">
+            <h3>إدارة المتجر</h3>
+            <a href="{{ url_for('admin.categories_list') }}">التصنيفات</a>
+            <a href="{{ url_for('admin.products_list') }}">المنتجات</a>
+            <a href="{{ url_for('admin.orders_list') }}">الطلبات</a>
+        </div>
+
+        <div class="admin-sidebar-section">
+            <h3>إدارة الموقع</h3>
+            <a href="{{ url_for('admin.home_sections_list') }}">السلايدر</a>
+            <a href="{{ url_for('admin.services_list') }}">الخدمات</a>
+            <a href="{{ url_for('admin.projects_list') }}">المشاريع</a>
+            <a href="{{ url_for('admin.menu_list') }}">القائمة</a>
+        </div>
+
+        <div class="admin-sidebar-section">
+            <h3>النظام</h3>
+            <a href="{{ url_for('admin.settings') }}">الإعدادات</a>
+            <a href="{{ url_for('admin.users_list') }}">المستخدمون</a>
+            <a href="{{ url_for('auth.logout') }}">تسجيل الخروج</a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-topbar">
+            <h1>{% block admin_page_title %}لوحة التحكم{% endblock %}</h1>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="admin-flashes">
+                    {% for category, message in messages %}
+                        <div class="admin-flash admin-flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="admin-content-card">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("adminMobileToggle");
+    const sidebar = document.getElementById("adminMobileSidebar");
+
+    if (btn && sidebar) {
+        btn.addEventListener("click", function () {
+            sidebar.classList.toggle("active");
+        });
+    }
+});
+</script>
+
+</body>
+</html>

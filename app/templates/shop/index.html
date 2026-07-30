@@ -3,193 +3,1219 @@
 {% block title %}
 {{ tr.shop }}
 {% endblock %}
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/pages/shop.css') }}"
+>
+{% endblock %}
 
 {% block content %}
+
+{% if current_lang == "en" %}
+    {% set search_label = "Search" %}
+    {% set search_placeholder = "Search products..." %}
+    {% set category_label = "Category" %}
+    {% set all_categories_text = "All categories" %}
+    {% set min_price_label = "Minimum price" %}
+    {% set max_price_label = "Maximum price" %}
+    {% set sort_label = "Sort by" %}
+    {% set default_sort_text = "Default order" %}
+    {% set price_low_text = "Price: low to high" %}
+    {% set price_high_text = "Price: high to low" %}
+    {% set name_az_text = "Name: A to Z" %}
+    {% set name_za_text = "Name: Z to A" %}
+    {% set reset_text = "Reset" %}
+    {% set results_text = "Results" %}
+    {% set no_results_text = "No products match your search or filters." %}
+
+{% elif current_lang == "ja" %}
+    {% set search_label = "検索" %}
+    {% set search_placeholder = "商品を検索..." %}
+    {% set category_label = "カテゴリー" %}
+    {% set all_categories_text = "すべてのカテゴリー" %}
+    {% set min_price_label = "最低価格" %}
+    {% set max_price_label = "最高価格" %}
+    {% set sort_label = "並び順" %}
+    {% set default_sort_text = "標準順" %}
+    {% set price_low_text = "価格：安い順" %}
+    {% set price_high_text = "価格：高い順" %}
+    {% set name_az_text = "名前：昇順" %}
+    {% set name_za_text = "名前：降順" %}
+    {% set reset_text = "リセット" %}
+    {% set results_text = "件数" %}
+    {% set no_results_text = "検索条件に一致する商品がありません。" %}
+
+{% else %}
+    {% set search_label = "البحث" %}
+    {% set search_placeholder = "ابحث عن منتج..." %}
+    {% set category_label = "التصنيف" %}
+    {% set all_categories_text = "جميع التصنيفات" %}
+    {% set min_price_label = "أقل سعر" %}
+    {% set max_price_label = "أعلى سعر" %}
+    {% set sort_label = "الترتيب" %}
+    {% set default_sort_text = "الترتيب الافتراضي" %}
+    {% set price_low_text = "السعر: من الأقل إلى الأعلى" %}
+    {% set price_high_text = "السعر: من الأعلى إلى الأقل" %}
+    {% set name_az_text = "الاسم: تصاعدي" %}
+    {% set name_za_text = "الاسم: تنازلي" %}
+    {% set reset_text = "إعادة تعيين" %}
+    {% set results_text = "عدد النتائج" %}
+    {% set no_results_text = "لا توجد منتجات مطابقة للبحث أو الفلاتر." %}
+{% endif %}
+
+<style>
+    
+
+   
+/* ==================================================
+   البحث والفلاتر
+================================================== */
+
+.shop-search-panel {
+    margin-bottom: 18px;
+}
+
+.shop-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(140px, 1fr));
+    gap: 12px;
+    align-items: end;
+}
+.shop-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.shop-filter-group label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.shop-filter-results {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 12px;
+    font-size: 13px;
+}
+
+.shop-mobile-filters-header {
+    display: none;
+}
+
+.shop-mobile-filters-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.shop-reset-btn,
+.shop-apply-filters-btn {
+    min-height: 42px;
+    padding: 8px 18px;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.shop-reset-btn {
+    color: #4f5662;
+    background: #ffffff;
+    border: 1px solid #dce1e9;
+}
+
+.shop-apply-filters-btn {
+    color: #ffffff;
+    background: var(--primary-color, #1455d9);
+    border: 1px solid var(--primary-color, #1455d9);
+}
+
+/* رسالة عدم وجود نتائج */
+#shopNoResults {
+    grid-column: 1 / -1;
+    width: 100%;
+    padding: 45px 20px;
+    text-align: center;
+    color: #737985;
+    background: #ffffff;
+    border: 1px dashed #dce1e9;
+    border-radius: 12px;
+}
+
+#shopNoResults[hidden] {
+    display: none !important;
+}
+
+#shopNoResults i {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 36px;
+    color: #a7adb8;
+}
+
+@media (max-width: 760px) {
+
+    .shop-mobile-filters-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1098;
+        background: rgba(0, 0, 0, 0.46);
+    }
+
+    .shop-mobile-filters-backdrop[hidden] {
+        display: none !important;
+    }
+
+    .shop-mobile-filters-sheet {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1099;
+        max-height: 85vh;
+        padding: 18px;
+        overflow-y: auto;
+        background: #ffffff;
+        border-radius: 18px 18px 0 0;
+        transform: translateY(105%);
+        visibility: hidden;
+        transition:
+            transform 0.25s ease,
+            visibility 0.25s ease;
+    }
+
+    .shop-mobile-filters-sheet.open {
+        transform: translateY(0);
+        visibility: visible;
+    }
+
+    .shop-mobile-filters-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .shop-mobile-filters-header h2 {
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .shop-mobile-filters-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        background: #f3f5f8;
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .shop-filters-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .shop-mobile-filters-actions {
+        position: sticky;
+        bottom: -18px;
+        margin: 18px -18px -18px;
+        padding: 14px 18px;
+        background: #ffffff;
+        border-top: 1px solid #e7e9ee;
+    }
+
+    .shop-reset-btn,
+    .shop-apply-filters-btn {
+        flex: 1;
+    }
+}
+
+/* ==================================================
+   زر العودة إلى بداية الصفحة
+================================================== */
+
+.shop-back-to-top {
+    position: fixed;
+    right: 22px;
+    bottom: 24px;
+    z-index: 1080;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+    padding: 0;
+
+    color: #ffffff;
+    background: var(--primary-color, #1455d9);
+    border: 0;
+    border-radius: 50%;
+
+    box-shadow: 0 7px 22px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease,
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.shop-back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.shop-back-to-top:hover {
+    background: #0e43b1;
+}
+
+.shop-back-to-top:active {
+    transform: translateY(1px);
+}
+
+.shop-back-to-top[hidden] {
+    display: none !important;
+}
+
+html[dir="rtl"] .shop-back-to-top {
+    right: auto;
+    left: 22px;
+}
+
+@media (max-width: 760px) {
+    .shop-back-to-top {
+        right: 14px;
+        bottom: 18px;
+        width: 42px;
+        height: 42px;
+    }
+
+    html[dir="rtl"] .shop-back-to-top {
+        right: auto;
+        left: 14px;
+    }
+}
+/* ==================================================
+   إخفاء وإظهار التصنيفات والفلاتر أثناء التمرير
+================================================== */
+
+#shopSlidingControls {
+    position: relative;
+    margin-top: 0;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+
+    transition:
+        margin-top 0.25s ease,
+        opacity 0.18s ease;
+}
+
+#shopSlidingControls.controls-hidden {
+    margin-top: calc(
+        -1 * var(--shop-controls-height, 0px)
+    );
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* عند فتح فلاتر الجوال تبقى الحاوية ظاهرة */
+@media (max-width: 760px) {
+    #shopSlidingControls:has(
+        #shopMobileFiltersSheet.open
+    ) {
+        margin-top: 0 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+}
+</style>
+
 <section class="shop-section">
+    <!-- ==================================================
+     MODULE 01
+     هيدر المتجر المصغر
+
+     الوظيفة:
+     - سلة
+     - مفضلة
+     - زر بحث
+     - اسم الشركة
+     - قائمة منسدلة
+
+     يظهر فقط داخل المتجر.
+================================================== -->
+
+
     <div class="container">
 
-        <h1 class="section-title">{{ tr.shop }}</h1>
 
-        <p class="section-subtitle">
-            {% if current_lang == "en" %}
-                Choose from our ready-made products and services.
-            {% elif current_lang == "ja" %}
-                既製の商品とサービスからお選びください。
-            {% else %}
-                اختر من خدماتنا ومنتجاتنا الجاهزة.
-            {% endif %}
-        </p>
+        <!-- البحث والفلاتر -->
+        <!-- ==================================================
+     MODULE 02
+     البحث والفلاتر
 
-        <div id="categoryBarPlaceholder"></div>
+     الكمبيوتر:
+     يظهر صندوق البحث والفلاتر المعتاد.
 
-        <div id="categoryBar" class="shop-categories-wrapper">
+     الجوال:
+     يظهر بحث علوي + شريط ترتيب وفلاتر
+     وتفتح الفلاتر الكاملة من أسفل الشاشة.
+================================================== -->
+<div
+    id="shopSlidingControls"
+    class="shop-sliding-controls"
+>
 
-            {% if active_category %}
-                <div class="active-category-title">
-                    {{ active_category.get_name(current_lang) }}
-                </div>
-            {% else %}
-                <div class="active-category-title">
-                    {% if current_lang == "en" %}
-                        All Products
-                    {% elif current_lang == "ja" %}
-                        すべての商品
-                    {% else %}
-                        كل المنتجات
-                    {% endif %}
-                </div>
-            {% endif %}
+    {% if categories %}
 
-            {% if categories %}
-            <div class="shop-categories">
+        <section
+            id="categoryBar"
+            class="shop-category-strip"
+            aria-label="{{ category_label }}"
+        >
+            <div class="shop-category-strip-inner">
 
-                <a href="{{ url_for('shop.index') }}"
-                   class="shop-category-card {% if not active_category %}active{% endif %}">
-                    <div class="shop-category-image">
-                        <span>🛍️</span>
-                    </div>
-                    <h3>
-                        {% if current_lang == "en" %}
-                            All
-                        {% elif current_lang == "ja" %}
-                            すべて
-                        {% else %}
-                            الكل
-                        {% endif %}
-                    </h3>
-                </a>
+                <button
+                    type="button"
+                    class="shop-category-scroll-btn shop-category-scroll-start"
+                    data-category-scroll="start"
+                    aria-label="{% if current_lang == 'en' %}Previous categories{% elif current_lang == 'ja' %}前のカテゴリー{% else %}التصنيفات السابقة{% endif %}"
+                >
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
 
-                {% for category in categories %}
-                    {% set category_name = category.get_name(current_lang) %}
-                    {% set category_slug = category.get_slug(current_lang) %}
+                <div
+                    id="shopCategoryScroller"
+                    class="shop-category-scroller"
+                >
 
-                    <a href="{{ url_for('shop.category_products', slug=category_slug) }}"
-                       class="shop-category-card {% if active_category and active_category.id == category.id %}active{% endif %}">
+                    <a
+                        href="{{ url_for('shop.index') }}"
+                        class="shop-category-pill {% if not active_category %}active{% endif %}"
+                    >
+                        <span class="shop-category-pill-image shop-category-all-icon">
+                            <i class="fa-solid fa-store"></i>
+                        </span>
 
-                        <div class="shop-category-image">
-                            {% if category.image %}
-                                <img src="{{ url_for('static', filename='uploads/' + category.image) }}"
-                                     alt="{{ category_name }}">
+                        <span class="shop-category-pill-name">
+                            {% if current_lang == "en" %}
+                                All
+                            {% elif current_lang == "ja" %}
+                                すべて
                             {% else %}
-                                <span>📦</span>
+                                الكل
                             {% endif %}
-                        </div>
-
-                        <h3>{{ category_name }}</h3>
+                        </span>
                     </a>
-                {% endfor %}
+
+                    {% for category in categories %}
+
+                        {% set category_name = category.get_name(current_lang) %}
+                        {% set category_slug = category.get_slug(current_lang) %}
+
+                        <a
+                            href="{{ url_for('shop.category_products', slug=category_slug) }}"
+                            class="shop-category-pill {% if active_category and active_category.id == category.id %}active{% endif %}"
+                        >
+                            <span class="shop-category-pill-image">
+
+                                {% if category.image %}
+                                    <img
+                                        src="{{ url_for('static', filename='uploads/' + category.image) }}"
+                                        alt="{{ category_name }}"
+                                        loading="lazy"
+                                    >
+                                {% else %}
+                                    <i class="fa-solid fa-box-open"></i>
+                                {% endif %}
+
+                            </span>
+
+                            <span class="shop-category-pill-name">
+                                {{ category_name }}
+                            </span>
+                        </a>
+
+                    {% endfor %}
+
+                </div>
+
+                <button
+                    type="button"
+                    class="shop-category-scroll-btn shop-category-scroll-end"
+                    data-category-scroll="end"
+                    aria-label="{% if current_lang == 'en' %}Next categories{% elif current_lang == 'ja' %}次のカテゴリー{% else %}التصنيفات التالية{% endif %}"
+                >
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
 
             </div>
-            {% endif %}
+        </section>
+
+    {% endif %}
+
+    <div class="shop-search-panel">
+
+        <!-- شريط واحد للجوال -->
+        <div class="shop-mobile-toolbar">
+
+            <!-- الترتيب المقترح -->
+            <button
+                type="button"
+                class="shop-mobile-toolbar-btn active"
+                data-mobile-sort=""
+            >
+                {% if current_lang == "en" %}
+                    Recommend
+                {% elif current_lang == "ja" %}
+                    おすすめ
+                {% else %}
+                    مقترح
+                {% endif %}
+
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+
+            <!-- ترتيب الاسم -->
+            <button
+                type="button"
+                class="shop-mobile-toolbar-btn"
+                data-mobile-sort="name-asc"
+            >
+                {% if current_lang == "en" %}
+                    Name
+                {% elif current_lang == "ja" %}
+                    名前
+                {% else %}
+                    الاسم
+                {% endif %}
+            </button>
+
+            <!-- السعر: يفتح نطاق السعر وخيارات ترتيب السعر -->
+            <button
+                type="button"
+                class="shop-mobile-toolbar-btn"
+                id="openShopPriceFilter"
+                aria-controls="shopMobileFiltersSheet"
+                aria-expanded="false"
+            >
+                {% if current_lang == "en" %}
+                    Price
+                {% elif current_lang == "ja" %}
+                    価格
+                {% else %}
+                    السعر
+                {% endif %}
+
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+
+            <!-- الفلاتر -->
+            <button
+                type="button"
+                class="shop-mobile-toolbar-btn"
+                id="openShopMobileFilters"
+                aria-controls="shopMobileFiltersSheet"
+                aria-expanded="false"
+            >
+                {% if current_lang == "en" %}
+                    Filter
+                {% elif current_lang == "ja" %}
+                    フィルター
+                {% else %}
+                    الفلاتر
+                {% endif %}
+
+                <i class="fa-solid fa-filter"></i>
+            </button>
+
+            <!-- إعادة التعيين بدون نص -->
+            <button
+                type="button"
+                class="shop-mobile-toolbar-btn shop-mobile-reset-icon"
+                id="resetShopFiltersMobile"
+                aria-label="{% if current_lang == 'en' %}Reset filters{% elif current_lang == 'ja' %}フィルターをリセット{% else %}إعادة تعيين الفلاتر{% endif %}"
+                title="{% if current_lang == 'en' %}Reset filters{% elif current_lang == 'ja' %}フィルターをリセット{% else %}إعادة تعيين الفلاتر{% endif %}"
+            >
+                <i class="fa-solid fa-rotate-left"></i>
+            </button>
 
         </div>
 
-        <div class="products-grid">
-            {% if products %}
-                {% for product in products %}
-                    {% include "components/product_card.html" %}
-                {% endfor %}
-            {% else %}
-                <p>
+        <!-- خلفية نافذة الفلاتر -->
+        <div
+            id="shopMobileFiltersBackdrop"
+            class="shop-mobile-filters-backdrop"
+            hidden
+        ></div>
+
+        <!-- نافذة السعر والفلاتر -->
+        <div
+            id="shopMobileFiltersSheet"
+            class="shop-mobile-filters-sheet"
+            aria-hidden="true"
+        >
+
+            <div class="shop-mobile-filters-header">
+
+                <h2>
                     {% if current_lang == "en" %}
-                        No products are available at the moment.
+                        Price and filters
                     {% elif current_lang == "ja" %}
-                        現在利用可能な商品はありません。
+                        価格とフィルター
                     {% else %}
-                        لا توجد منتجات متاحة حالياً.
+                        السعر والفلاتر
                     {% endif %}
-                </p>
-            {% endif %}
+                </h2>
+
+                <button
+                    type="button"
+                    id="closeShopMobileFilters"
+                    class="shop-mobile-filters-close"
+                    aria-label="{% if current_lang == 'en' %}Close{% elif current_lang == 'ja' %}閉じる{% else %}إغلاق{% endif %}"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+            <div class="shop-filters-grid">
+
+                <!-- أقل سعر -->
+                <div class="shop-filter-group">
+
+                    <label for="shopMinPrice">
+                        {{ min_price_label }}
+                    </label>
+
+                    <input
+                        type="number"
+                        id="shopMinPrice"
+                        class="shop-filter-input"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        placeholder="{{ min_price_label }}"
+                    >
+
+                </div>
+
+                <!-- أعلى سعر -->
+                <div class="shop-filter-group">
+
+                    <label for="shopMaxPrice">
+                        {{ max_price_label }}
+                    </label>
+
+                    <input
+                        type="number"
+                        id="shopMaxPrice"
+                        class="shop-filter-input"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        placeholder="{{ max_price_label }}"
+                    >
+
+                </div>
+
+                <!-- ترتيب السعر -->
+                <div class="shop-filter-group shop-price-sort-group">
+
+                    <label for="shopSortSelect">
+                        {% if current_lang == "en" %}
+                            Price sorting
+                        {% elif current_lang == "ja" %}
+                            価格順
+                        {% else %}
+                            ترتيب السعر
+                        {% endif %}
+                    </label>
+
+                    <select
+                        id="shopSortSelect"
+                        class="shop-filter-select"
+                    >
+                        <option value="">
+                            {{ default_sort_text }}
+                        </option>
+
+                        <option value="price-asc">
+                            {{ price_low_text }}
+                        </option>
+
+                        <option value="price-desc">
+                            {{ price_high_text }}
+                        </option>
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="shop-filter-results">
+                <span>
+                    {{ results_text }}:
+                </span>
+
+                <strong id="shopResultsCount">
+                    {{ products|length if products else 0 }}
+                </strong>
+            </div>
+
+            <div class="shop-mobile-filters-actions">
+
+                <button
+                    type="button"
+                    id="applyShopMobileFilters"
+                    class="shop-apply-filters-btn"
+                >
+                    {% if current_lang == "en" %}
+                        Apply
+                    {% elif current_lang == "ja" %}
+                        適用
+                    {% else %}
+                        تطبيق
+                    {% endif %}
+                </button>
+
+            </div>
+
         </div>
 
     </div>
-</section>
 
-<script>
-function shareProduct(button) {
-    const title = button.dataset.title;
-    const url = button.dataset.url;
+</div>
+<!-- نهاية shopSlidingControls -->
 
-    let text = "شوف هذا المنتج 🔥";
 
-    {% if current_lang == "en" %}
-        text = "Check out this product 🔥";
-    {% elif current_lang == "ja" %}
-        text = "この商品を見てください 🔥";
+<!-- المنتجات -->
+<div class="products-grid" id="shopProductsGrid">
+
+    {% if products %}
+
+        {% for product in products %}
+
+            {% set product_title = product.get_title(current_lang) %}
+            {% set product_description = product.get_description(current_lang) or "" %}
+            {% set category_id = product.category.id if product.category else "" %}
+            {% set product_price = product.price or 0 %}
+
+            <div
+                class="shop-product-item"
+                data-original-order="{{ loop.index0 }}"
+                data-title="{{ product_title|lower }}"
+                data-description="{{ product_description|lower }}"
+                data-category="{{ category_id }}"
+                data-price="{{ product_price }}"
+            >
+                {% include "components/product_card.html" %}
+            </div>
+
+        {% endfor %}
+
+        <div
+    id="shopNoResults"
+    class="shop-no-results"
+    hidden
+>
+    <i class="fa-solid fa-box-open"></i>
+
+    <span>
+        {{ no_results_text }}
+    </span>
+</div>
+    {% else %}
+
+        <p>
+            {% if current_lang == "en" %}
+                No products are available at the moment.
+            {% elif current_lang == "ja" %}
+                現在利用可能な商品はありません。
+            {% else %}
+                لا توجد منتجات متاحة حاليًا.
+            {% endif %}
+        </p>
+
     {% endif %}
 
-    sharePage(title, text, url);
-}
-</script>
+</div>
+<!-- نهاية shopProductsGrid -->
 
+</div>
+<!-- نهاية container -->
+
+</section>
+
+<!-- نهاية shop-section -->
+
+<!-- ==================================================
+     نافذة مشاركة المنتج
+================================================== -->
+<div
+    id="productShareModal"
+    class="product-share-modal"
+    hidden
+>
+    <div
+        class="product-share-backdrop"
+        data-close-share-modal
+    ></div>
+
+    <div
+        class="product-share-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="productShareTitle"
+    >
+        <div class="product-share-header">
+
+            <h2 id="productShareTitle">
+                {% if current_lang == "en" %}
+                    Share product
+                {% elif current_lang == "ja" %}
+                    商品を共有
+                {% else %}
+                    مشاركة المنتج
+                {% endif %}
+            </h2>
+
+            <button
+                type="button"
+                class="product-share-close"
+                data-close-share-modal
+                aria-label="{% if current_lang == 'en' %}Close{% elif current_lang == 'ja' %}閉じる{% else %}إغلاق{% endif %}"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+        <div class="product-share-options">
+
+            <a
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="product-share-option share-whatsapp"
+                data-share-service="whatsapp"
+            >
+                <i class="fa-brands fa-whatsapp"></i>
+                <span>WhatsApp</span>
+            </a>
+
+            <a
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="product-share-option share-telegram"
+                data-share-service="telegram"
+            >
+                <i class="fa-brands fa-telegram"></i>
+                <span>Telegram</span>
+            </a>
+
+            <a
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="product-share-option share-facebook"
+                data-share-service="facebook"
+            >
+                <i class="fa-brands fa-facebook-f"></i>
+                <span>Facebook</span>
+            </a>
+
+            <a
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="product-share-option share-x"
+                data-share-service="x"
+            >
+                <i class="fa-brands fa-x-twitter"></i>
+                <span>X</span>
+            </a>
+
+            <a
+                href="#"
+                class="product-share-option share-email"
+                data-share-service="email"
+            >
+                <i class="fa-solid fa-envelope"></i>
+
+                <span>
+                    {% if current_lang == "en" %}
+                        Email
+                    {% elif current_lang == "ja" %}
+                        メール
+                    {% else %}
+                        البريد
+                    {% endif %}
+                </span>
+            </a>
+
+            <button
+                type="button"
+                class="product-share-option share-device"
+                data-share-service="device"
+            >
+                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+
+                <span>
+                    {% if current_lang == "en" %}
+                        More
+                    {% elif current_lang == "ja" %}
+                        その他
+                    {% else %}
+                        تطبيقات أخرى
+                    {% endif %}
+                </span>
+            </button>
+
+            <button
+                type="button"
+                class="product-share-option share-copy"
+                data-share-service="copy"
+            >
+                <i class="fa-regular fa-copy"></i>
+
+                <span>
+                    {% if current_lang == "en" %}
+                        Copy link
+                    {% elif current_lang == "ja" %}
+                        リンクをコピー
+                    {% else %}
+                        نسخ الرابط
+                    {% endif %}
+                </span>
+            </button>
+
+        </div>
+
+        <p
+            id="productShareMessage"
+            class="product-share-message"
+            aria-live="polite"
+        ></p>
+
+    </div>
+</div>
+
+<!-- زر العودة إلى بداية الصفحة -->
+<button
+    type="button"
+    id="shopBackToTop"
+    class="shop-back-to-top"
+    aria-label="{% if current_lang == 'en' %}Back to top{% elif current_lang == 'ja' %}ページ上部へ戻る{% else %}العودة إلى أعلى الصفحة{% endif %}"
+>
+    <i class="fa-solid fa-chevron-up"></i>
+</button>
+{% endblock %}
+
+
+{% block extra_js %}
+
+<!-- وظائف البحث والفلاتر والتصنيفات -->
+<script
+    src="{{ url_for('static', filename='js/pages/shop.js') }}"
+    defer
+></script>
+
+<!-- ترتيب شبكة المنتجات -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const bar = document.getElementById("categoryBar");
-    const placeholder = document.getElementById("categoryBarPlaceholder");
 
-    if (!bar || !placeholder) return;
+    const productsGrid =
+        document.getElementById("shopProductsGrid");
 
-    const headerHeight = 70;
-    const startPoint = bar.offsetTop - headerHeight;
-
-    function fixCategoryBar() {
-        const mobileMenu = document.querySelector(".mobile-menu");
-        const menuOpen = mobileMenu && mobileMenu.classList.contains("active");
-
-        if (menuOpen) {
-            bar.classList.remove("category-fixed");
-            placeholder.style.height = "0px";
-            return;
-        }
-
-        if (window.scrollY >= startPoint) {
-            placeholder.style.height = bar.offsetHeight + "px";
-            bar.classList.add("category-fixed");
-        } else {
-            placeholder.style.height = "0px";
-            bar.classList.remove("category-fixed");
-        }
+    if (!productsGrid) {
+        return;
     }
 
-    window.addEventListener("scroll", fixCategoryBar);
-    window.addEventListener("resize", fixCategoryBar);
+    let resizeTimer;
 
-    fixCategoryBar();
+    function layoutProductMasonry() {
+
+        const gridStyle =
+            window.getComputedStyle(productsGrid);
+
+        const rowHeight =
+            parseFloat(gridStyle.gridAutoRows) || 4;
+
+        const rowGap =
+            parseFloat(gridStyle.rowGap) || 0;
+
+        const productItems =
+            productsGrid.querySelectorAll(
+                ".shop-product-item"
+            );
+
+        productItems.forEach(function (item) {
+
+            if (
+                item.hidden ||
+                window.getComputedStyle(item).display === "none"
+            ) {
+                item.style.gridRowEnd = "";
+                return;
+            }
+
+            const card =
+                item.querySelector(".product-card");
+
+            if (!card) {
+                return;
+            }
+
+            item.style.gridRowEnd = "auto";
+
+            const cardHeight =
+                card.getBoundingClientRect().height;
+
+            const rowSpan = Math.ceil(
+                (cardHeight + rowGap) /
+                (rowHeight + rowGap)
+            );
+
+            item.style.gridRowEnd =
+                "span " + Math.max(rowSpan, 1);
+        });
+    }
+
+    productsGrid
+        .querySelectorAll("img")
+        .forEach(function (image) {
+
+            if (!image.complete) {
+
+                image.addEventListener(
+                    "load",
+                    layoutProductMasonry,
+                    { once: true }
+                );
+
+                image.addEventListener(
+                    "error",
+                    layoutProductMasonry,
+                    { once: true }
+                );
+            }
+        });
+
+    window.addEventListener("resize", function () {
+
+        clearTimeout(resizeTimer);
+
+        resizeTimer = setTimeout(
+            layoutProductMasonry,
+            120
+        );
+    });
+
+    window.addEventListener(
+        "load",
+        layoutProductMasonry
+    );
+
+    window.requestAnimationFrame(function () {
+
+        window.requestAnimationFrame(
+            layoutProductMasonry
+        );
+    });
+
+    window.layoutProductMasonry =
+        layoutProductMasonry;
 });
 </script>
 
+
+<!-- إضافة المنتج إلى السلة -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".favorite-form").forEach(function (form) {
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
 
-            const button = form.querySelector(".card-icon-btn");
-            const icon = button.querySelector("i");
+    const cartButtons =
+        document.querySelectorAll(
+            ".js-product-card-cart"
+        );
 
-            fetch(form.action, {
-                method: "POST",
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
+    cartButtons.forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                const needsOptions =
+                    button.dataset.needsOptions === "true";
+
+                const productUrl =
+                    button.dataset.productUrl;
+
+                const cartUrl =
+                    button.dataset.cartUrl;
+
+                /*
+                 المنتجات التي تحتاج لونًا أو مقاسًا
+                 أو تخصيصًا تنتقل إلى صفحة التفاصيل.
+                */
+                if (needsOptions) {
+
+                    if (productUrl) {
+                        window.location.href =
+                            productUrl;
+                    }
+
+                    return;
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) return;
 
-                if (data.is_favorite) {
-                    button.classList.add("active");
-                    icon.className = "fa-solid fa-heart";
-                } else {
-                    button.classList.remove("active");
-                    icon.className = "fa-regular fa-heart";
+                if (!cartUrl || button.disabled) {
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error("Favorite error:", error);
-            });
-        });
+
+                button.disabled = true;
+
+                const icon =
+                    button.querySelector("i");
+
+                const originalIconClass =
+                    icon ? icon.className : "";
+
+                if (icon) {
+                    icon.className =
+                        "fa-solid fa-spinner fa-spin";
+                }
+
+                const formData =
+                    new FormData();
+
+                formData.append(
+                    "action_type",
+                    "cart"
+                );
+
+                fetch(cartUrl, {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest",
+                        "Accept":
+                            "application/json"
+                    }
+                })
+                .then(function (response) {
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "تعذر إضافة المنتج إلى السلة"
+                        );
+                    }
+
+                    return response.json();
+                })
+                .then(function (data) {
+
+                    if (!data.success) {
+                        throw new Error(
+                            data.message ||
+                            "تعذر إضافة المنتج إلى السلة"
+                        );
+                    }
+
+                    /*
+                     تحديث جميع عدادات السلة
+                     الموجودة في الموقع.
+                    */
+                    document
+                        .querySelectorAll(
+                            "[data-cart-count], " +
+                            "#cartCount, " +
+                            ".cart-count"
+                        )
+                        .forEach(function (counter) {
+
+                            counter.textContent =
+                                data.cart_count ?? 0;
+
+                            counter.hidden = false;
+                            counter.style.display = "";
+                        });
+
+                    if (icon) {
+                        icon.className =
+                            "fa-solid fa-check";
+                    }
+
+                    button.classList.add(
+                        "added"
+                    );
+
+                    setTimeout(function () {
+
+                        if (icon) {
+                            icon.className =
+                                originalIconClass;
+                        }
+
+                        button.classList.remove(
+                            "added"
+                        );
+
+                    }, 1200);
+                })
+                .catch(function (error) {
+
+                    console.error(
+                        "Add to cart error:",
+                        error
+                    );
+
+                    if (icon) {
+                        icon.className =
+                            "fa-solid fa-triangle-exclamation";
+                    }
+
+                    setTimeout(function () {
+
+                        if (icon) {
+                            icon.className =
+                                originalIconClass;
+                        }
+
+                    }, 1200);
+                })
+                .finally(function () {
+
+                    button.disabled = false;
+                });
+            }
+        );
     });
 });
 </script>
+
 {% endblock %}
