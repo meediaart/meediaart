@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="shop-section customer-dashboard-section">
+
+    <div class="container">
+
+        <div class="customer-dashboard-layout">
+
+            <!-- القائمة -->
+
+            {% include "customer/_sidebar.html" %}
+
+            <!-- المحتوى -->
+
+            <main class="customer-content">
+
+                {% block customer_content %}
+                {% endblock %}
+
+            </main>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

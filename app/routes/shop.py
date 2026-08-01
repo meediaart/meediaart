@@ -27,6 +27,8 @@ from app.models.order_item import OrderItem
 from flask import render_template
 from datetime import datetime
 from app.models.favorite import Favorite
+from app.models.address import Address
+from app.models.payment_method import PaymentMethod
 
 
 
@@ -838,8 +840,10 @@ def clear_cart():
     return redirect(url_for("shop.cart"))
 
 
+
 @shop_bp.route("/checkout", methods=["GET", "POST"])
 def checkout():
+
     cart_data = session.get("cart", [])
 
     if not cart_data:
@@ -849,92 +853,322 @@ def checkout():
     cart_items = []
     total = 0
 
+    addresses = []
+    payment_methods = []
+
+    if current_user.is_authenticated:
+
+        addresses = (
+            Address.query.filter_by(
+                user_id=current_user.id
+            )
+            .order_by(
+                Address.is_default.desc(),
+                Address.id.desc()
+            )
+            .all()
+        )
+
+        payment_methods = (
+            PaymentMethod.query.filter_by(
+                user_id=current_user.id
+            )
+            .order_by(
+                PaymentMethod.is_default.desc(),
+                PaymentMethod.id.desc()
+            )
+            .all()
+        )
+
+    # تجهيز عناصر السلة
+
     for item in cart_data:
-        product = Product.query.get(int(item["product_id"]))
 
-        if product:
-            quantity = int(item.get("quantity", 1))
-            item_total = product.price * quantity
-            total += item_total
+        product = Product.query.get(
+            int(item["product_id"])
+        )
 
-            cart_items.append({
-                "product": product,
-                "quantity": quantity,
-                "item_total": item_total,
-                "color": item.get("color"),
-                "size": item.get("size"),
-                "custom_text": item.get("custom_text"),
-                "custom_image": item.get("custom_image")
-            })
+        if not product:
+            continue
+
+        quantity = int(
+            item.get("quantity", 1)
+        )
+
+        item_total = product.price * quantity
+
+        total += item_total
+
+        cart_items.append({
+            "product": product,
+            "quantity": quantity,
+            "item_total": item_total,
+            "color": item.get("color"),
+            "size": item.get("size"),
+            "custom_text": item.get("custom_text"),
+            "custom_image": item.get("custom_image")
+        })
 
     if request.method == "POST":
-        customer_name = request.form.get("customer_name", "").strip()
-        customer_phone = request.form.get("customer_phone", "").strip()
-        customer_email = request.form.get("customer_email", "").strip()
-        customer_address = request.form.get("customer_address", "").strip()
 
-        if not customer_name or not customer_email:
-            flash("الاسم والبريد الإلكتروني مطلوبان", "error")
-            return render_template("shop/checkout.html", cart_items=cart_items, total=total)
+        selected_address = None
+        selected_payment = None
+
+        payment_type = "cash"
+
+        address_id = request.form.get("address_id")
+        payment_method_id = request.form.get("payment_method_id")
+
+        # -----------------------------
+        # المستخدم المسجل
+        # -----------------------------
+
+        if current_user.is_authenticated:
+
+            if address_id:
+
+                selected_address = (
+                    Address.query.filter_by(
+                        id=address_id,
+                        user_id=current_user.id
+                    ).first()
+                )
+
+            if payment_method_id in ("cash", "stripe", "paypay", "whatsapp"):
+
+                payment_type = payment_method_id
+
+            elif payment_method_id:
+
+                selected_payment = (
+                    PaymentMethod.query.filter_by(
+                        id=int(payment_method_id),
+                        user_id=current_user.id
+                    ).first()
+                )
+
+                if selected_payment:
+                    payment_type = selected_payment.payment_type
+
+            if selected_address:
+
+                customer_name = (
+                    selected_address.full_name
+                )
+
+                customer_phone = (
+                    selected_address.phone
+                )
+
+                customer_email = (
+                    current_user.email
+                )
+
+                customer_address = (
+                    f"{selected_address.prefecture} "
+                    f"{selected_address.city} "
+                    f"{selected_address.address_line}"
+                )
+
+            else:
+
+                customer_name = ""
+                customer_phone = ""
+                customer_email = current_user.email
+                customer_address = ""
+
+        # -----------------------------
+        # الضيف
+        # -----------------------------
+
+        else:
+
+            customer_name = (
+                request.form.get(
+                    "customer_name",
+                    ""
+                ).strip()
+            )
+
+            customer_phone = (
+                request.form.get(
+                    "customer_phone",
+                    ""
+                ).strip()
+            )
+
+            customer_email = (
+                request.form.get(
+                    "customer_email",
+                    ""
+                ).strip()
+            )
+
+            customer_address = (
+                request.form.get(
+                    "customer_address",
+                    ""
+                ).strip()
+            )
+            
+            if not customer_name or not customer_email:
+
+                flash(
+                    "الاسم والبريد الإلكتروني مطلوبان",
+                    "error"
+                )
+
+                return render_template(
+                    "shop/checkout.html",
+                    cart_items=cart_items,
+                    total=total,
+                    addresses=addresses,
+                    payment_methods=payment_methods
+                )
+
+        # =====================================================
+        # إنشاء الطلب
+        # =====================================================
 
         order = Order(
-    user_id=current_user.id if current_user.is_authenticated else None,
-    customer_name=customer_name,
-    customer_phone=customer_phone,
-    customer_email=customer_email,
-    customer_address=customer_address,
-    language=session.get("lang", "ar"),
-    total_price=total,
-    status="processing",
-    payment_method="cod",
-    payment_status="unpaid"
-)
+            user_id=(
+                current_user.id
+                if current_user.is_authenticated
+                else None
+            ),
+            customer_name=customer_name,
+            customer_phone=customer_phone,
+            customer_email=customer_email,
+            customer_address=customer_address,
+            language=session.get("lang", "ar"),
+            total_price=total,
+            status="processing",
+            payment_method=payment_type,
+            payment_status="unpaid"
+        )
 
         db.session.add(order)
         db.session.flush()
 
         for item in cart_data:
-            product = Product.query.get(int(item["product_id"]))
 
-            if product:
-                order_item = OrderItem(
+            product = Product.query.get(
+                int(item["product_id"])
+            )
+
+            if not product:
+                continue
+
+            db.session.add(
+                OrderItem(
                     order_id=order.id,
-                    product_title=product.get_title(session.get("lang", "ar")),
+                    product_title=product.get_title(
+                        session.get("lang", "ar")
+                    ),
                     price=product.price,
-                    quantity=int(item.get("quantity", 1)),
+                    quantity=int(
+                        item.get("quantity", 1)
+                    ),
                     color=item.get("color"),
                     size=item.get("size"),
                     custom_text=item.get("custom_text"),
                     custom_image=item.get("custom_image")
                 )
-
-                db.session.add(order_item)
+            )
 
         db.session.commit()
 
-        send_tracking_email(order)
 
-        session["cart"] = []
-        session.modified = True
+        # =====================================================
+        # التحويل حسب طريقة الدفع
+        # =====================================================
+        if payment_type == "cash":
 
-        flash("تم إنشاء الطلب بنجاح", "success")
+            send_tracking_email(order)
+            session["cart"] = []
+            session.modified = True
 
-        return redirect(url_for("shop.payment_page", order_id=order.id))
+            flash(
+                "تم إنشاء الطلب بنجاح",
+                "success"
+            )
 
-    return render_template("shop/checkout.html", cart_items=cart_items, total=total)
+            return redirect(
+                url_for(
+                    "shop.order_success",
+                    order_id=order.id
+                )
+            )
 
+        elif payment_type in ("stripe", "card"):
+
+            return redirect(
+                url_for(
+                    "shop.checkout_stripe",
+                    order_id=order.id
+                )
+            )
+        elif payment_type == "whatsapp":
+
+            return redirect(
+                url_for(
+                    "shop.checkout_whatsapp",
+                    order_id=order.id
+                )
+            )
+
+        else:
+
+            return redirect(
+                url_for(
+                    "shop.payment_page",
+                    order_id=order.id
+                )
+            )
+
+    return render_template(
+        "shop/checkout.html",
+        cart_items=cart_items,
+        total=total,
+        addresses=addresses,
+        payment_methods=payment_methods
+    )
+
+       
+        # هنا يبدأ إنشاء الطلب
 
 @shop_bp.route("/payment/<int:order_id>")
 def payment_page(order_id):
+
     order = Order.query.get_or_404(order_id)
-    return render_template("shop/payment.html", order=order)
+
+    if order.payment_method == "cash":
+        return redirect(
+            url_for(
+                "shop.order_success",
+                order_id=order.id
+            )
+        )
+
+    if order.payment_method == "card":
+        return redirect(
+            url_for(
+                "shop.checkout_stripe",
+                order_id=order.id
+            )
+        )
+
+    return render_template(
+        "shop/payment.html",
+        order=order
+    )
 
 
-@shop_bp.route("/checkout/cod/<int:order_id>", methods=["POST"])
+@shop_bp.route("/checkout/cod/<int:order_id>")
 def checkout_cod(order_id):
     order = Order.query.get_or_404(order_id)
 
-    order.payment_method = "cod"
+    order.payment_method = "cash"
     order.status = "processing"
     order.payment_status = "unpaid"
 
@@ -973,8 +1207,13 @@ def checkout_whatsapp(order_id):
     return redirect(whatsapp_url)
 
 
-@shop_bp.route("/checkout/stripe/<int:order_id>", methods=["POST"])
+@shop_bp.route("/checkout/stripe/<int:order_id>")
 def checkout_stripe(order_id):
+    flash(
+        "💳 خدمة الدفع عبر Stripe قيد التجهيز وستتوفر قريبًا. يمكنك حاليًا استخدام الدفع عند الاستلام.","info"
+        )
+
+    return redirect(url_for("shop.checkout"))
     order = Order.query.get_or_404(order_id)
 
     stripe.api_key = current_app.config["STRIPE_SECRET_KEY"]

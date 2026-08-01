@@ -18,3 +18,5 @@ from app.models.project_image import ProjectImage
 from app.models.contact_message import ContactMessage
 from app.models.favorite import Favorite
 from app.models.product_review import ProductReview
+from app.models.address import Address
+from app.models.payment_method import PaymentMethod

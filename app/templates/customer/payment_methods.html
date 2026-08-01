@@ -1,0 +1,124 @@
+{% extends "customer/layout.html" %}
+
+{% block title %}
+{{ tr.payment_methods }}
+{% endblock %}
+
+{% block customer_content %}
+
+<h1 class="section-title">
+    {{ tr.payment_methods }}
+</h1>
+
+<div style="margin-bottom:20px;">
+
+    <a
+        href="{{ url_for('customer_auth.new_payment_method') }}"
+        class="btn-primary"
+    >
+        + {{ tr.add_payment_method }}
+    </a>
+
+</div>
+
+{% if methods %}
+
+    {% for method in methods %}
+
+        <div class="page-card" style="margin-bottom:18px;">
+
+            <h3>
+
+                {{ method.provider or method.payment_type }}
+
+                {% if method.is_default %}
+                    ⭐ {{ tr.default }}
+                {% endif %}
+
+            </h3>
+
+            <p>
+
+                <strong>{{ tr.payment_methods }}:</strong>
+
+                {{ method.payment_type }}
+
+            </p>
+
+            {% if method.account_name %}
+
+                <p>
+
+                    <strong>{{ tr.full_name }}:</strong>
+
+                    {{ method.account_name }}
+
+                </p>
+
+            {% endif %}
+
+            {% if method.account_number %}
+
+                <p>
+
+                    <strong>****</strong>
+
+                    {{ method.account_number[-4:] }}
+
+                </p>
+
+            {% endif %}
+
+            <div
+                style="
+                    margin-top:18px;
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
+                "
+            >
+
+                <a
+                    href="{{ url_for('customer_auth.edit_payment_method', method_id=method.id) }}"
+                    class="btn-outline"
+                >
+                    {{ tr.edit }}
+                </a>
+
+                <form
+                    method="POST"
+                    action="{{ url_for('customer_auth.delete_payment_method', method_id=method.id) }}"
+                    onsubmit="return confirm('هل تريد حذف طريقة الدفع؟');"
+                    style="display:inline;"
+                >
+
+                    <button
+                        type="submit"
+                        class="btn-danger"
+                    >
+                        {{ tr.delete }}
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+{% else %}
+
+    <div class="page-card">
+
+        <p>
+
+            {{ tr.no_payment_methods }}
+
+        </p>
+
+    </div>
+
+{% endif %}
+
+{% endblock %}

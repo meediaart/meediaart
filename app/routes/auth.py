@@ -15,12 +15,20 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
 
-        if user and check_password_hash(user.password_hash, form.password.data):
+        if (
+            user
+            and user.role == "admin"
+            and check_password_hash(user.password_hash, form.password.data)
+        ):
             login_user(user)
             flash("تم تسجيل الدخول بنجاح", "success")
             return redirect(url_for("admin.dashboard"))
 
-        flash("اسم المستخدم أو كلمة المرور غير صحيحة", "error")
+        elif user and user.role != "admin":
+            flash("ليس لديك صلاحية للدخول إلى لوحة الإدارة", "error")
+
+        else:
+            flash("اسم المستخدم أو كلمة المرور غير صحيحة", "error")
 
     return render_template("auth/login.html", form=form)
 

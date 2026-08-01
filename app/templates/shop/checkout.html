@@ -9,6 +9,12 @@
     إتمام الطلب
 {% endif %}
 {% endblock %}
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/pages/checkout.css') }}"
+>
+{% endblock %}
 
 {% block content %}
 <section class="checkout-page">
@@ -40,6 +46,271 @@
 
                 <form method="POST" class="checkout-form">
 
+                    {% if current_user.is_authenticated %}
+
+                    <div class="checkout-box">
+
+                        <h3>
+
+                            📍 {{ tr.addresses }}
+
+                        </h3>
+
+                        {% if addresses %}
+
+                            {% for address in addresses %}
+
+                            <label class="checkout-address-card">
+
+                                <input
+                                    type="radio"
+                                    name="address_id"
+                                    value="{{ address.id }}"
+                                    {% if address.is_default %}
+                                    checked
+                                    {% endif %}
+                                >
+
+                                <div class="checkout-payment-content">
+
+                                    <div class="checkout-payment-title">
+                                        📍 {{ address.full_name }}
+                                    </div>
+
+                                    <div class="checkout-payment-desc">
+                                        {{ address.prefecture }} - {{ address.city }}
+                                    </div>
+
+                                    <div class="checkout-payment-desc">
+                                        {{ address.address_line }}
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <p>
+
+                                {{ tr.no_addresses }}
+
+                            </p>
+
+                            <a
+                                class="btn-outline"
+                                href="{{ url_for('customer_auth.new_address') }}"
+                            >
+
+                                + {{ tr.add_new_address }}
+
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                    <hr>
+
+                    {% endif %}
+                    
+                    <div class="checkout-box">
+
+                        <h3>
+                            💳 {{ tr.payment_methods }}
+                        </h3>
+
+                        {% if payment_methods %}
+
+                            {% for method in payment_methods %}
+
+                            <label class="checkout-payment-card">
+
+                                <input
+                                    type="radio"
+                                    name="payment_method_id"
+                                    value="{{ method.id }}"
+                                    {% if method.is_default %}
+                                    checked
+                                    {% endif %}
+                                >
+
+                                <div class="checkout-payment-content">
+
+                                    <div class="checkout-payment-title">
+                                        {{ method.provider or method.payment_type }}
+                                    </div>
+
+                                    <div class="checkout-payment-desc">
+
+                                        {{ method.payment_type }}
+
+                                        {% if method.account_number %}
+                                            •••• {{ method.account_number[-4:] }}
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+                            {% endfor %}
+
+                        {% endif %}
+
+                        <label class="checkout-payment-card">
+
+                            <input
+                                type="radio"
+                                name="payment_method_id"
+                                value="cash"
+                            >
+
+                            <div class="checkout-payment-content">
+
+                                <div class="checkout-payment-title">
+                                    🚚
+                                    {% if current_lang == "en" %}
+                                        Cash on Delivery
+                                    {% elif current_lang == "ja" %}
+                                        代金引換
+                                    {% else %}
+                                        الدفع عند الاستلام
+                                    {% endif %}
+                                </div>
+
+                                <div class="checkout-payment-desc">
+
+                                    {% if current_lang == "en" %}
+                                        Pay when your order arrives.
+                                    {% elif current_lang == "ja" %}
+                                        商品到着時にお支払いください。
+                                    {% else %}
+                                        ادفع عند استلام الطلب.
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </label>
+
+
+                        <label class="checkout-payment-card">
+
+                            <input
+                                type="radio"
+                                name="payment_method_id"
+                                value="stripe"
+                            >
+
+                            <div class="checkout-payment-content">
+
+                                <div class="checkout-payment-title">
+                                    💳 Stripe
+                                </div>
+
+                                <div class="checkout-payment-desc">
+
+                                    {% if current_lang == "en" %}
+                                        Pay securely by card.
+                                    {% elif current_lang == "ja" %}
+                                        クレジットカードでお支払い。
+                                    {% else %}
+                                        الدفع بالبطاقة البنكية.
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </label>
+
+
+                        <label class="checkout-payment-card">
+
+                            <input
+                                type="radio"
+                                name="payment_method_id"
+                                value="paypay"
+                            >
+
+                            <div class="checkout-payment-content">
+
+                                <div class="checkout-payment-title">
+                                    📱 PayPay
+                                </div>
+
+                                <div class="checkout-payment-desc">
+
+                                    {% if current_lang == "en" %}
+                                        Pay using PayPay.
+                                    {% elif current_lang == "ja" %}
+                                        PayPayで支払います。
+                                    {% else %}
+                                        الدفع باستخدام PayPay.
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </label>
+
+
+                        <label class="checkout-payment-card">
+
+                            <input
+                                type="radio"
+                                name="payment_method_id"
+                                value="whatsapp"
+                            >
+
+                            <div class="checkout-payment-content">
+
+                                <div class="checkout-payment-title">
+                                    💬 WhatsApp
+                                </div>
+
+                                <div class="checkout-payment-desc">
+
+                                    {% if current_lang == "en" %}
+                                        Complete the order through WhatsApp.
+                                    {% elif current_lang == "ja" %}
+                                        WhatsAppで注文します。
+                                    {% else %}
+                                        إكمال الطلب عبر واتساب.
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </label>
+
+                        {% if not payment_methods %}
+
+                            <p style="margin-top:20px;">
+                                {{ tr.no_payment_methods }}
+                            </p>
+
+                            <a
+                                href="{{ url_for('customer_auth.new_payment_method') }}"
+                                class="btn-outline"
+                            >
+                                + {{ tr.add_payment_method }}
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                    <hr>
+                    {% if not current_user.is_authenticated %}
                     <input type="text"
                            name="customer_name"
                            placeholder="{% if current_lang == 'en' %}Full name{% elif current_lang == 'ja' %}お名前{% else %}الاسم الكامل{% endif %}"
@@ -56,7 +327,7 @@
 
                     <textarea name="customer_address"
                               placeholder="{% if current_lang == 'en' %}Address / Notes{% elif current_lang == 'ja' %}住所・備考{% else %}العنوان / الملاحظات{% endif %}"></textarea>
-
+                    {% endif %}
                     <button type="submit" class="btn-primary">
 
                         {% if current_lang == "en" %}
@@ -144,5 +415,7 @@
         </div>
 
     </div>
+    
 </section>
 {% endblock %}
+

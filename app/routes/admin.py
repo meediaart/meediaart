@@ -29,6 +29,21 @@ from app.models.home_section import HomeSection
 from app.models.settings import SiteSetting
 from flask_login import current_user
 from functools import wraps
+from flask_login import login_required, current_user, logout_user
+
+def admin_required(view):
+    @wraps(view)
+    @login_required
+    def wrapped_view(*args, **kwargs):
+
+        if current_user.role != "admin":
+            logout_user()
+            flash("ليس لديك صلاحية للوصول إلى لوحة الإدارة.", "error")
+            return redirect(url_for("auth.login"))
+
+        return view(*args, **kwargs)
+
+    return wrapped_view
 from app.models.user import User
 from werkzeug.security import generate_password_hash
 from app.models.team_member import TeamMember
@@ -55,7 +70,7 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/dash770813890")
 
 
 @admin_bp.route("/")
-@login_required
+@admin_required
 def dashboard():
     services_count = Service.query.count()
     pages_count = Page.query.count()
@@ -79,7 +94,7 @@ def dashboard():
     )
     
 @admin_bp.route("/services")
-@login_required
+@admin_required
 def services_list():
     services = Service.query.order_by(Service.display_order.asc(), Service.id.desc()).all()
     return render_template("admin/services_list.html", services=services)
@@ -87,7 +102,7 @@ def services_list():
 
 
 @admin_bp.route("/services/create", methods=["GET", "POST"])
-@login_required
+@admin_required
 def create_service():
     form = ServiceForm()
 
@@ -171,7 +186,7 @@ def create_service():
     return render_template("admin/service_form.html", form=form, page_title="إضافة خدمة")
 
 @admin_bp.route("/services/edit/<int:service_id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_service(service_id):
     service = Service.query.get_or_404(service_id)
     form = ServiceForm(obj=service)
@@ -251,7 +266,7 @@ def edit_service(service_id):
     return render_template("admin/service_form.html", form=form, page_title="تعديل خدمة")
 
 @admin_bp.route("/services/delete/<int:service_id>")
-@login_required
+@admin_required
 def delete_service(service_id):
     service = Service.query.get_or_404(service_id)
 
@@ -263,14 +278,14 @@ def delete_service(service_id):
 
 
 @admin_bp.route("/pages")
-@login_required
+@admin_required
 def pages_list():
     pages = Page.query.order_by(Page.id.desc()).all()
     return render_template("admin/pages_list.html", pages=pages)
 
 
 @admin_bp.route("/pages/create", methods=["GET", "POST"])
-@login_required
+@admin_required
 def create_page():
     form = PageForm()
     form.parent_id.choices = [(0, "— لا يوجد —")] + [
@@ -353,7 +368,7 @@ def create_page():
     )
     
 @admin_bp.route("/pages/edit/<int:page_id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_page(page_id):
     page = Page.query.get_or_404(page_id)
 
@@ -424,7 +439,7 @@ def edit_page(page_id):
     
     
 @admin_bp.route("/pages/delete/<int:page_id>")
-@login_required
+@admin_required
 def delete_page(page_id):
     page = Page.query.get_or_404(page_id)
 
@@ -436,14 +451,14 @@ def delete_page(page_id):
 
 
 @admin_bp.route("/home-sections")
-@login_required
+@admin_required
 def home_sections_list():
     sections = HomeSection.query.order_by(HomeSection.display_order.asc()).all()
     return render_template("admin/home_sections_list.html", sections=sections)
 
 
 @admin_bp.route("/home-sections/create", methods=["GET", "POST"])
-@login_required
+@admin_required
 def create_home_section():
     form = HomeSectionForm()
 
@@ -505,7 +520,7 @@ def create_home_section():
 
 
 @admin_bp.route("/home-sections/edit/<int:id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_home_section(id):
     section = HomeSection.query.get_or_404(id)
     form = HomeSectionForm(obj=section)
@@ -555,7 +570,7 @@ def edit_home_section(id):
     )
 
 @admin_bp.route("/home-sections/delete/<int:id>")
-@login_required
+@admin_required
 def delete_home_section(id):
     section = HomeSection.query.get_or_404(id)
 
@@ -570,7 +585,7 @@ def delete_home_section(id):
     flash("تم حذف القسم والصورة بنجاح", "success")
     return redirect(url_for("admin.home_sections_list"))
 @admin_bp.route("/settings", methods=["GET", "POST"])
-@login_required
+@admin_required
 def settings():
     setting = SiteSetting.query.first()
 
@@ -609,7 +624,6 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 @admin_bp.route("/users")
-@login_required
 @admin_required
 def users_list():
     users = User.query.order_by(User.id.desc()).all()
@@ -617,7 +631,6 @@ def users_list():
 
 
 @admin_bp.route("/users/create", methods=["GET", "POST"])
-@login_required
 @admin_required
 def create_user():
     form = UserForm()
@@ -638,7 +651,7 @@ def create_user():
 
     return render_template("admin/user_form.html", form=form, page_title="إضافة مستخدم")
 @admin_bp.route("/users/edit/<int:user_id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_user(user_id):
     user = User.query.get_or_404(user_id)
     form = UserForm(obj=user)
@@ -659,7 +672,7 @@ def edit_user(user_id):
 
     return render_template("admin/user_form.html", form=form)
 @admin_bp.route("/users/delete/<int:user_id>")
-@login_required
+@admin_required
 def delete_user(user_id):
     user = User.query.get_or_404(user_id)
 
@@ -676,14 +689,14 @@ def delete_user(user_id):
     flash("تم حذف المستخدم", "success")
     return redirect(url_for("admin.users_list"))
 @admin_bp.route("/team")
-@login_required
+@admin_required
 def team_list():
     members = TeamMember.query.order_by(TeamMember.display_order.asc(), TeamMember.id.asc()).all()
     return render_template("admin/team_list.html", members=members)
 
 
 @admin_bp.route("/team/create", methods=["GET", "POST"])
-@login_required
+@admin_required
 def create_team_member():
     form = TeamMemberForm()
 
@@ -763,7 +776,7 @@ def create_team_member():
 
 
 @admin_bp.route("/team/edit/<int:member_id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_team_member(member_id):
     member = TeamMember.query.get_or_404(member_id)
     form = TeamMemberForm(obj=member)
@@ -847,7 +860,7 @@ def edit_team_member(member_id):
     return render_template("admin/team_form.html", form=form, page_title="تعديل عضو فريق")
 
 @admin_bp.route("/team/delete/<int:member_id>")
-@login_required
+@admin_required
 def delete_team_member(member_id):
     member = TeamMember.query.get_or_404(member_id)
 
@@ -862,14 +875,14 @@ def delete_team_member(member_id):
     flash("تم حذف عضو الفريق", "success")
     return redirect(url_for("admin.team_list"))
 @admin_bp.route("/categories")
-@login_required
+@admin_required
 def categories_list():
     categories = Category.query.order_by(Category.id.desc()).all()
     return render_template("admin/categories_list.html", categories=categories)
 
 
 @admin_bp.route("/categories/create", methods=["GET", "POST"])
-@login_required
+@admin_required
 def create_category():
     form = CategoryForm()
 
@@ -943,7 +956,7 @@ def create_category():
 
     return render_template("admin/category_form.html", form=form, page_title="إضافة تصنيف")
 @admin_bp.route("/categories/edit/<int:category_id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_category(category_id):
     category = Category.query.get_or_404(category_id)
     form = CategoryForm(obj=category)
@@ -1001,7 +1014,7 @@ def edit_category(category_id):
     return render_template("admin/category_form.html", form=form, page_title="تعديل تصنيف")
 
 @admin_bp.route("/categories/delete/<int:category_id>")
-@login_required
+@admin_required
 def delete_category(category_id):
     category = Category.query.get_or_404(category_id)
 
@@ -1011,7 +1024,7 @@ def delete_category(category_id):
     flash("تم حذف التصنيف بنجاح", "success")
     return redirect(url_for("admin.categories_list"))
 @admin_bp.route("/products")
-@login_required
+@admin_required
 def products_list():
     """
     عرض قائمة المنتجات والتصنيفات المستخدمة في الإجراءات الجماعية.
@@ -1032,7 +1045,7 @@ def products_list():
         categories=categories
     )
 @admin_bp.route("/products/bulk-action", methods=["POST"])
-@login_required
+@admin_required
 def bulk_products_action():
     """
     تنفيذ إجراء واحد على مجموعة من المنتجات المحددة.
@@ -1285,7 +1298,7 @@ def bulk_products_action():
     return redirect(url_for("admin.products_list"))
 
 @admin_bp.route("/products/create", methods=["GET", "POST"])
-@login_required
+@admin_required
 def create_product():
     form = ProductForm()
 
@@ -1399,7 +1412,7 @@ def create_product():
 
 
 @admin_bp.route("/products/edit/<int:product_id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_product(product_id):
     product = Product.query.get_or_404(product_id)
     form = ProductForm(obj=product)
@@ -1510,7 +1523,7 @@ def edit_product(product_id):
     return render_template("admin/product_form.html", form=form, page_title="تعديل منتج")
 
 @admin_bp.route("/products/delete/<int:product_id>")
-@login_required
+@admin_required
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
 
@@ -1526,7 +1539,7 @@ def delete_product(product_id):
     return redirect(url_for("admin.products_list"))
 
 @admin_bp.route("/products/toggle-home/<int:product_id>")
-@login_required
+@admin_required
 def toggle_product_home(product_id):
     product = Product.query.get_or_404(product_id)
 
@@ -1538,7 +1551,7 @@ def toggle_product_home(product_id):
 
 
 @admin_bp.route("/products/toggle-active/<int:product_id>")
-@login_required
+@admin_required
 def toggle_product_active(product_id):
     product = Product.query.get_or_404(product_id)
 
@@ -1549,7 +1562,7 @@ def toggle_product_active(product_id):
     return redirect(url_for("admin.products_list"))
 
 @admin_bp.route("/products/export")
-@login_required
+@admin_required
 def export_products():
     """
     تصدير جميع المنتجات إلى ملف CSV.
@@ -1673,14 +1686,14 @@ def update_order(order_id):
     return redirect(url_for("admin.order_detail", order_id=order.id))
 
 @admin_bp.route("/projects")
-@login_required
+@admin_required
 def projects_list():
     projects = Project.query.order_by(Project.display_order.asc(), Project.id.desc()).all()
     return render_template("admin/projects_list.html", projects=projects)
 
 
 @admin_bp.route("/projects/create", methods=["GET", "POST"])
-@login_required
+@admin_required
 def create_project():
     form = ProjectForm()
 
@@ -1760,7 +1773,7 @@ def create_project():
 
 
 @admin_bp.route("/projects/edit/<int:project_id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_project(project_id):
     project = Project.query.get_or_404(project_id)
     form = ProjectForm(obj=project)
@@ -1823,7 +1836,7 @@ def edit_project(project_id):
 
 
 @admin_bp.route("/projects/delete/<int:project_id>")
-@login_required
+@admin_required
 def delete_project(project_id):
     project = Project.query.get_or_404(project_id)
 
@@ -1834,14 +1847,14 @@ def delete_project(project_id):
     return redirect(url_for("admin.projects_list"))
 
 @admin_bp.route("/posts")
-@login_required
+@admin_required
 def posts_list():
     posts = Post.query.order_by(Post.id.desc()).all()
     return render_template("admin/posts_list.html", posts=posts)
 
 
 @admin_bp.route("/posts/create", methods=["GET", "POST"])
-@login_required
+@admin_required
 def create_post():
     form = PostForm()
 
@@ -1928,7 +1941,7 @@ def create_post():
 
 
 @admin_bp.route("/posts/edit/<int:post_id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_post(post_id):
     post = Post.query.get_or_404(post_id)
     form = PostForm(obj=post)
@@ -2002,7 +2015,7 @@ def edit_post(post_id):
 
     return render_template("admin/post_form.html", form=form, page_title="تعديل مقال")
 @admin_bp.route("/posts/delete/<int:post_id>")
-@login_required
+@admin_required
 def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
 
@@ -2016,14 +2029,14 @@ def delete_post(post_id):
 # =========================
 
 @admin_bp.route("/menu")
-@login_required
+@admin_required
 def menu_list():
     items = MenuItem.query.order_by(MenuItem.display_order.asc(), MenuItem.id.asc()).all()
     return render_template("admin/menu_list.html", items=items)
 
 
 @admin_bp.route("/menu/create", methods=["GET", "POST"])
-@login_required
+@admin_required
 def create_menu_item():
     form = MenuItemForm()
     
@@ -2072,7 +2085,7 @@ def create_menu_item():
         
     )
 @admin_bp.route("/menu/edit/<int:item_id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_menu_item(item_id):
     item = MenuItem.query.get_or_404(item_id)
     form = MenuItemForm(obj=item)
@@ -2119,7 +2132,7 @@ def edit_menu_item(item_id):
 
 
 @admin_bp.route("/menu/delete/<int:item_id>")
-@login_required
+@admin_required
 def delete_menu_item(item_id):
     item = MenuItem.query.get_or_404(item_id)
 
@@ -2130,7 +2143,7 @@ def delete_menu_item(item_id):
     return redirect(url_for("admin.menu_list"))
 
 @admin_bp.route("/posts/toggle-active/<int:post_id>")
-@login_required
+@admin_required
 def toggle_post_active(post_id):
     post = Post.query.get_or_404(post_id)
 
@@ -2141,7 +2154,7 @@ def toggle_post_active(post_id):
     return redirect(url_for("admin.posts_list"))
 
 @admin_bp.route("/posts/toggle-home/<int:post_id>")
-@login_required
+@admin_required
 def toggle_post_home(post_id):
     post = Post.query.get_or_404(post_id)
 
@@ -2152,7 +2165,7 @@ def toggle_post_home(post_id):
     return redirect(url_for("admin.posts_list"))
 
 @admin_bp.route("/projects/toggle-active/<int:project_id>")
-@login_required
+@admin_required
 def toggle_project_active(project_id):
     project = Project.query.get_or_404(project_id)
 
@@ -2163,7 +2176,7 @@ def toggle_project_active(project_id):
     return redirect(url_for("admin.projects_list"))
 
 @admin_bp.route("/projects/toggle-home/<int:project_id>")
-@login_required
+@admin_required
 def toggle_project_home(project_id):
     project = Project.query.get_or_404(project_id)
 
@@ -2174,7 +2187,7 @@ def toggle_project_home(project_id):
     return redirect(url_for("admin.projects_list"))
 
 @admin_bp.route("/services/toggle-home/<int:service_id>")
-@login_required
+@admin_required
 def toggle_service_home(service_id):
     service = Service.query.get_or_404(service_id)
 
@@ -2187,7 +2200,7 @@ def toggle_service_home(service_id):
 
 
 @admin_bp.route("/menu/toggle-active/<int:item_id>")
-@login_required
+@admin_required
 def toggle_menu_active(item_id):
     item = MenuItem.query.get_or_404(item_id)
     item.is_active = not item.is_active
@@ -2196,7 +2209,7 @@ def toggle_menu_active(item_id):
     return redirect(url_for("admin.menu_list"))
 
 @admin_bp.route("/menu/toggle-home/<int:item_id>")
-@login_required
+@admin_required
 def toggle_menu_home(item_id):
     item = MenuItem.query.get_or_404(item_id)
     item.show_on_home = not item.show_on_home
@@ -2205,7 +2218,7 @@ def toggle_menu_home(item_id):
     return redirect(url_for("admin.menu_list"))
 
 @admin_bp.route("/orders/update/<int:order_id>", methods=["POST"])
-@login_required
+@admin_required
 def update_order_status(order_id):
     order = Order.query.get_or_404(order_id)
 
@@ -2256,7 +2269,7 @@ def update_order_status(order_id):
     return redirect(url_for("admin.orders_list"))
 
 @admin_bp.route("/orders/bulk-update", methods=["POST"])
-@login_required
+@admin_required
 def bulk_update_orders():
     """
     تحديث حالة الطلب أو حالة الدفع
@@ -2384,7 +2397,7 @@ def bulk_update_orders():
     )
 
 @admin_bp.route("/orders/<int:order_id>")
-@login_required
+@admin_required
 def order_details(order_id):
     order = Order.query.get_or_404(order_id)
     return render_template("admin/order_details.html", order=order)
@@ -2456,13 +2469,13 @@ def partners_delete(id):
     return redirect(url_for("admin.partners_index"))
 
 @admin_bp.route("/partners")
-@login_required
+@admin_required
 def partners():
     partners = Partner.query.all()
     return render_template("admin/partners.html", partners=partners)
 
 @admin_bp.route("/partners/add", methods=["GET", "POST"])
-@login_required
+@admin_required
 def add_partner():
     if request.method == "POST":
         name = request.form.get("name")
@@ -2484,7 +2497,7 @@ def add_partner():
 # =========================
 
 @admin_bp.route("/messages")
-@login_required
+@admin_required
 def contact_messages():
     messages = ContactMessage.query.order_by(
         ContactMessage.created_at.desc()
@@ -2497,7 +2510,7 @@ def contact_messages():
 
 
 @admin_bp.route("/messages/<int:message_id>")
-@login_required
+@admin_required
 def contact_message_detail(message_id):
     message = ContactMessage.query.get_or_404(message_id)
 
@@ -2511,7 +2524,7 @@ def contact_message_detail(message_id):
 
 
 @admin_bp.route("/messages/delete/<int:message_id>")
-@login_required
+@admin_required
 def delete_contact_message(message_id):
     message = ContactMessage.query.get_or_404(message_id)
 
@@ -2527,7 +2540,7 @@ def delete_contact_message(message_id):
 # =========================
 
 @admin_bp.route("/subscribers")
-@login_required
+@admin_required
 def subscribers_list():
     language = request.args.get("language", "")
     source = request.args.get("source", "")
@@ -2561,7 +2574,7 @@ def subscribers_list():
 
 
 @admin_bp.route("/subscribers/delete/<int:subscriber_id>")
-@login_required
+@admin_required
 def delete_subscriber(subscriber_id):
 
     subscriber = NewsletterSubscriber.query.get_or_404(
@@ -2576,7 +2589,7 @@ def delete_subscriber(subscriber_id):
     return redirect(url_for("admin.subscribers_list"))
 
 @admin_bp.route("/subscribers/export")
-@login_required
+@admin_required
 def export_subscribers():
     language = request.args.get("language", "")
     source = request.args.get("source", "")
@@ -2644,7 +2657,7 @@ def export_subscribers():
 # =========================================================
 
 @admin_bp.route("/product-reviews")
-@login_required
+@admin_required
 def product_reviews_list():
     """
     عرض جميع تقييمات المنتجات مع دعم البحث والفلاتر.
@@ -2734,7 +2747,7 @@ def product_reviews_list():
     "/product-reviews/<int:review_id>/toggle-approval",
     methods=["POST"]
 )
-@login_required
+@admin_required
 def toggle_product_review_approval(review_id):
     """
     اعتماد التقييم أو إعادته إلى حالة الانتظار.
@@ -2760,7 +2773,7 @@ def toggle_product_review_approval(review_id):
     "/product-reviews/<int:review_id>/toggle-rating",
     methods=["POST"]
 )
-@login_required
+@admin_required
 def toggle_product_review_rating(review_id):
     """
     إظهار أو إخفاء نجوم التقييم فقط.
@@ -2786,7 +2799,7 @@ def toggle_product_review_rating(review_id):
     "/product-reviews/<int:review_id>/toggle-comment",
     methods=["POST"]
 )
-@login_required
+@admin_required
 def toggle_product_review_comment(review_id):
     """
     إظهار أو إخفاء نص التعليق فقط.
@@ -2812,7 +2825,7 @@ def toggle_product_review_comment(review_id):
     "/product-reviews/<int:review_id>/toggle-image",
     methods=["POST"]
 )
-@login_required
+@admin_required
 def toggle_product_review_image(review_id):
     """
     إظهار أو إخفاء صورة التقييم فقط.
@@ -2838,7 +2851,7 @@ def toggle_product_review_image(review_id):
     "/product-reviews/<int:review_id>/delete",
     methods=["POST"]
 )
-@login_required
+@admin_required
 def delete_product_review(review_id):
     """
     حذف التقييم وصورته المرفوعة نهائيًا.

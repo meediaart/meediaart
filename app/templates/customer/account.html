@@ -1,34 +1,57 @@
-{% extends "base.html" %}
+{% extends "customer/layout.html" %}
 
-{% block title %}حسابي{% endblock %}
+{% block title %}
+{{ tr.my_account }}
+{% endblock %}
 
-{% block content %}
-<section class="shop-section customer-account-page">
-    <div class="container">
-        <h1 class="section-title">حسابي</h1>
+{% block customer_content %}
 
-        <div class="page-card customer-account-card">
-            <div class="customer-account-info">
-                <p>
-                    <strong>اسم المستخدم:</strong>
-                    <span>{{ current_user.username }}</span>
-                </p>
+<h1 class="section-title">
+   {{ tr.my_account }}
+</h1>
 
-                <p>
-                    <strong>البريد الإلكتروني:</strong>
-                    <span>{{ current_user.email }}</span>
-                </p>
-            </div>
+<div class="customer-card">
 
-            <div class="customer-account-actions">
-                <a
-                    href="{{ url_for('customer_auth.logout') }}"
-                    class="btn-outline"
-                >
-                    تسجيل الخروج
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
+    <h2>
+        {{ tr.personal_information }}:
+    </h2>
+
+    <br>
+
+    <p>
+        <strong>{{ tr.username }}:</strong>
+        {{ current_user.username }}
+    </p>
+
+    <p>
+        <strong>{{ tr.email_address }}:</strong>
+        {{ current_user.email }}
+    </p>
+
+    <p>
+        <strong>{{ tr.first_name }}:</strong>
+        {{ current_user.first_name or "-" }}
+    </p>
+
+    <p>
+        <strong>{{ tr.last_name }}:</strong>
+        {{ current_user.last_name or "-" }}
+    </p>
+
+    <p>
+        <strong>{{ tr.phone_number }}:</strong>
+        {{ current_user.phone or "-" }}
+    </p>
+
+    <br>
+
+    <a
+        href="{{ url_for('customer_auth.profile') }}"
+        class="ma-btn ma-btn-primary"
+    >
+       {{ tr.edit_profile }}
+    </a>
+
+</div>
+
 {% endblock %}

@@ -1,0 +1,72 @@
+{% extends "customer/layout.html" %}
+
+{% block title %}
+{{ tr.add_payment_method }}
+{% endblock %}
+
+{% block customer_content %}
+
+<h1 class="section-title">
+    {{ tr.add_payment_method }}
+</h1>
+
+<div class="customer-card">
+
+<form method="POST">
+
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+
+        <label>{{ tr.payment_methods }}</label>
+
+        {{ form.payment_type(class="form-control") }}
+
+    </div>
+
+    <div class="form-group">
+
+        <label>{{ tr.provider }}</label>
+
+        {{ form.provider(class="form-control") }}
+
+    </div>
+
+    <div class="form-group">
+
+        <label>{{ tr.full_name }}</label>
+
+        {{ form.account_name(class="form-control") }}
+
+    </div>
+
+    <div class="form-group">
+
+        <label>{{ tr.account_number }}</label>
+
+        {{ form.account_number(class="form-control") }}
+
+    </div>
+
+    <div class="form-group">
+
+        {{ form.is_default() }}
+
+        <label>
+            {{ tr.default }}
+        </label>
+
+    </div>
+
+    <button
+        class="ma-btn ma-btn-primary"
+        type="submit"
+    >
+        {{ tr.save }}
+    </button>
+
+</form>
+
+</div>
+
+{% endblock %}

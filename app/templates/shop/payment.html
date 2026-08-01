@@ -1,112 +1,89 @@
 {% extends "base.html" %}
 
 {% block title %}
-{% if current_lang == "en" %}
-    Choose Payment Method
-{% elif current_lang == "ja" %}
-    支払い方法を選択
-{% else %}
-    اختيار طريقة الدفع
-{% endif %}
+Payment
 {% endblock %}
 
 {% block content %}
+
 <section class="shop-section">
-    <div class="container success-box">
 
-        <h1 class="section-title">
-            {% if current_lang == "en" %}
-                Choose Payment Method
-            {% elif current_lang == "ja" %}
-                支払い方法を選択
+    <div class="container">
+
+        <div class="page-card" style="max-width:700px;margin:auto;">
+
+            <h1 class="section-title">
+
+                {% if order.payment_method == "bank" %}
+                    🏦 Bank Transfer
+                {% else %}
+                    📱 PayPay
+                {% endif %}
+
+            </h1>
+
+            <p>
+
+                <strong>Order:</strong>
+                #{{ order.id }}
+
+            </p>
+
+            <p>
+
+                <strong>Total:</strong>
+                ¥{{ order.total_price }}
+
+            </p>
+
+            {% if order.payment_method == "bank" %}
+
+                <hr>
+
+                <h3>Transfer Information</h3>
+
+                <p><strong>Bank:</strong> XXXXX Bank</p>
+
+                <p><strong>Branch:</strong> XXXXX</p>
+
+                <p><strong>Account:</strong> XXXXXXXX</p>
+
+                <p><strong>Name:</strong> MEDIAART GK</p>
+
+                <br>
+
+                <a
+                    href="{{ url_for('shop.order_success', order_id=order.id) }}"
+                    class="btn-primary"
+                >
+                    I have completed the transfer
+                </a>
+
             {% else %}
-                اختيار طريقة الدفع
+
+                <hr>
+
+                <h3>PayPay</h3>
+
+                <p>
+
+                    QR Code will be added here later.
+
+                </p>
+
+                <a
+                    href="{{ url_for('shop.order_success', order_id=order.id) }}"
+                    class="btn-primary"
+                >
+                    Continue
+                </a>
+
             {% endif %}
-        </h1>
-
-        <p class="section-subtitle">
-
-            {% if current_lang == "en" %}
-                Order Number:
-            {% elif current_lang == "ja" %}
-                注文番号:
-            {% else %}
-                رقم الطلب:
-            {% endif %}
-
-            {{ order.id }}
-
-        </p>
-
-        <p>
-
-            {% if current_lang == "en" %}
-                Total:
-            {% elif current_lang == "ja" %}
-                合計:
-            {% else %}
-                الإجمالي:
-            {% endif %}
-
-            ¥{{ order.total_price }}
-
-        </p>
-
-        <div class="hero-buttons">
-
-            <form method="POST"
-                  action="{{ url_for('shop.checkout_stripe', order_id=order.id) }}">
-
-                <button type="submit" class="btn-primary">
-
-                    {% if current_lang == "en" %}
-                        Pay with Card
-                    {% elif current_lang == "ja" %}
-                        カードで支払う
-                    {% else %}
-                        الدفع بالبطاقة
-                    {% endif %}
-
-                </button>
-
-            </form>
-
-            <form method="POST"
-                  action="{{ url_for('shop.checkout_whatsapp', order_id=order.id) }}">
-
-                <button type="submit" class="btn-outline">
-
-                    {% if current_lang == "en" %}
-                        Order via WhatsApp
-                    {% elif current_lang == "ja" %}
-                        WhatsAppで注文
-                    {% else %}
-                        الطلب عبر واتساب
-                    {% endif %}
-
-                </button>
-
-            </form>
-
-            <form method="POST"
-                  action="{{ url_for('shop.checkout_cod', order_id=order.id) }}">
-
-                <button type="submit" class="btn-outline-dark">
-
-                    {% if current_lang == "en" %}
-                        Cash on Delivery
-                    {% elif current_lang == "ja" %}
-                        代金引換
-                    {% else %}
-                        الدفع عند التسليم
-                    {% endif %}
-
-                </button>
-
-            </form>
 
         </div>
 
     </div>
+
 </section>
+
 {% endblock %}

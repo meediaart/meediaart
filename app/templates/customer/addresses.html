@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ tr.addresses }}
+{% endblock %}
+
+{% block content %}
+
+<section class="shop-section">
+
+    <div class="container">
+
+        <h1 class="section-title">
+            {{ tr.addresses }}
+        </h1>
+
+        <div style="margin-bottom:20px;">
+
+            <a
+                href="{{ url_for('customer_auth.new_address') }}"
+                class="btn-primary"
+            >
+                + {{ tr.add_new_address }}
+            </a>
+
+        </div>
+
+        {% if addresses %}
+
+            {% for address in addresses %}
+
+                <div class="page-card" style="margin-bottom:18px;">
+
+                    <h3>
+
+                        {{ address.full_name }}
+
+                        {% if address.is_default %}
+                            ⭐ {{ tr.default_address }}
+                        {% endif %}
+
+                    </h3>
+
+                    <p><strong>{{ tr.phone_number }}:</strong> {{ address.phone }}</p>
+
+                    <p><strong>{{ tr.postal_code }}:</strong> {{ address.postal_code }}</p>
+
+                    <p><strong>{{ tr.prefecture }}:</strong> {{ address.prefecture }}</p>
+
+                    <p><strong>{{ tr.city }}:</strong> {{ address.city }}</p>
+
+                    <p><strong>{{ tr.address }}:</strong> {{ address.address_line }}</p>
+
+                    {% if address.building %}
+                        <p><strong>{{ tr.building }}:</strong> {{ address.building }}</p>
+                    {% endif %}
+
+                    <div
+                    style="
+                        margin-top:18px;
+                        display:flex;
+                        gap:10px;
+                        flex-wrap:wrap;
+                    "
+                >
+
+                    <a
+                        href="{{ url_for('customer_auth.edit_address', address_id=address.id) }}"
+                        class="btn-outline"
+                    >
+                        ✏️ {{ tr.edit }}
+                    </a>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('customer_auth.delete_address', address_id=address.id) }}"
+                        onsubmit="return confirm('{{ tr.delete_confirmation }}');"
+                    >
+
+                        <button
+                            type="submit"
+                            class="btn-danger"
+                        >
+                            🗑 {{ tr.delete }}
+                        </button>
+
+                    </form>
+
+                    {% if not address.is_default %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('customer_auth.set_default_address', address_id=address.id) }}"
+                    >
+
+                        <button
+                            type="submit"
+                            class="btn-primary"
+                        >
+                            ⭐ ⭐ {{ tr.default }}
+                        </button>
+
+                    </form>
+
+                    {% endif %}
+
+                </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="page-card">
+
+                <p>
+                    {{ tr.no_addresses }}.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

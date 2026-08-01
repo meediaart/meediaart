@@ -1,0 +1,51 @@
+<aside class="customer-sidebar">
+
+    <div class="customer-user-box">
+
+        <div class="customer-avatar">
+            👤
+        </div>
+
+        <h3>
+            {{ current_user.username }}
+        </h3>
+
+        <p>
+            {{ current_user.email }}
+        </p>
+
+    </div>
+
+    <nav class="customer-menu">
+
+        <a href="{{ url_for('customer_auth.account') }}">
+            👤 {{ tr.profile }}
+        </a>
+
+        <a href="{{ url_for('customer_auth.addresses') }}">
+            📍 {{ tr.addresses }}
+        </a>
+
+        <a href="{{ url_for('customer_auth.payment_methods') }}">
+            💳 {{ tr.payment_methods }}
+        </a>
+
+        <a href="{{ url_for('customer_auth.orders') }}">
+            📦 {{ tr.orders }}
+        </a>
+
+        <a href="{{ url_for('shop.favorites') }}">
+            ❤️ {{ tr.favorites }}
+        </a>
+
+        <a href="#">
+            🔒 {{ tr.security }}
+        </a>
+
+        <a href="{{ url_for('customer_auth.logout') }}">
+            🚪 {{ tr.logout }}
+        </a>
+
+    </nav>
+
+</aside>
