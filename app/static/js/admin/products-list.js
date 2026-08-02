@@ -121,23 +121,27 @@ document.addEventListener("DOMContentLoaded", function () {
      */
     function updateSelectedCount() {
 
-        const count = productCheckboxes.filter(
-            function (checkbox) {
-                return checkbox.checked;
-            }
-        ).length;
+    console.log("updateSelectedCount تم استدعاؤها");
 
-        selectedCount.textContent =
-            "تم تحديد: " + count;
-
-        if (count > 0) {
-            bulkBar.style.display = "flex";
-        } else {
-            bulkBar.style.display = "none";
+    const count = productCheckboxes.filter(
+        function (checkbox) {
+            return checkbox.checked;
         }
+    ).length;
 
-        updateSelectAllState();
+    console.log("عدد المنتجات المحددة:", count);
+
+    selectedCount.textContent =
+        "تم تحديد: " + count;
+
+    if (count > 0) {
+        bulkBar.classList.remove("admin-hidden");
+    } else {
+        bulkBar.classList.add("admin-hidden");
     }
+
+    updateSelectAllState();
+}
 
     /**
      * تنفيذ البحث والفلاتر.
@@ -320,10 +324,19 @@ document.addEventListener("DOMContentLoaded", function () {
     productCheckboxes.forEach(
         function (checkbox) {
 
-            checkbox.addEventListener(
-                "change",
-                updateSelectedCount
-            );
+            checkbox.addEventListener("click", function () {
+
+                console.log("clicked", checkbox.checked);
+
+                setTimeout(function () {
+
+                    console.log("after", checkbox.checked);
+
+                    updateSelectedCount();
+
+                }, 100);
+
+            });
         }
     );
 

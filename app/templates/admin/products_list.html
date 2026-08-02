@@ -7,6 +7,69 @@
 
 <div class="page-card">
 
+
+    <!-- Statistics -->
+<div class="admin-stats-grid">
+
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon">📦</div>
+
+        <div class="admin-stat-content">
+            <span>إجمالي المنتجات</span>
+            <strong>{{ products|length }}</strong>
+        </div>
+    </div>
+
+    <div class="admin-stat-card">
+
+        <div class="admin-stat-icon">🟢</div>
+
+        <div class="admin-stat-content">
+            <span>المنتجات المفعلة</span>
+
+            <strong>
+                {{ products|selectattr("is_active")|list|length }}
+            </strong>
+
+        </div>
+
+    </div>
+
+    <div class="admin-stat-card">
+
+        <div class="admin-stat-icon">🏠</div>
+
+        <div class="admin-stat-content">
+            <span>في الرئيسية</span>
+
+            <strong>
+                {{ products|selectattr("show_on_home")|list|length }}
+            </strong>
+
+        </div>
+
+    </div>
+
+    <div class="admin-stat-card">
+
+        <div class="admin-stat-icon">🏷️</div>
+
+        <div class="admin-stat-content">
+            <span>عليها خصم</span>
+
+            <strong>
+                {{ products
+                    |selectattr("discount_percent")
+                    |rejectattr("discount_percent", "equalto", 0)
+                    |list
+                    |length }}
+            </strong>
+
+        </div>
+
+    </div>
+
+</div>
     <!-- رأس الصفحة -->
     <div class="section-header">
 
@@ -485,25 +548,29 @@
 
                                     <div class="product-setting-line">
 
-                                        <span>
-                                            النجوم
-                                        </span>
+                                        <span>⭐ النجوم</span>
 
-                                        <span class="{% if product.ratings_enabled %}product-setting-on{% else %}product-setting-off{% endif %}">
+                                        <a
+                                            href="{{ url_for('admin.toggle_product_ratings', product_id=product.id) }}"
+                                            class="status-badge {% if product.ratings_enabled %}status-paid{% else %}status-unpaid{% endif %}">
+
                                             {{ "مفعلة" if product.ratings_enabled else "متوقفة" }}
-                                        </span>
+
+                                        </a>
 
                                     </div>
 
                                     <div class="product-setting-line">
 
-                                        <span>
-                                            التعليقات
-                                        </span>
+                                        <span>💬 التعليقات</span>
 
-                                        <span class="{% if product.comments_enabled %}product-setting-on{% else %}product-setting-off{% endif %}">
+                                        <a
+                                            href="{{ url_for('admin.toggle_product_comments', product_id=product.id) }}"
+                                            class="status-badge {% if product.comments_enabled %}status-paid{% else %}status-unpaid{% endif %}">
+
                                             {{ "مفعلة" if product.comments_enabled else "متوقفة" }}
-                                        </span>
+
+                                        </a>
 
                                     </div>
 

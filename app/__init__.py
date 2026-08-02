@@ -1,9 +1,9 @@
-from flask import Flask, session, url_for, redirect, request
-from config import Config
+from flask import Flask, redirect, request, session, url_for
 
-from app.extensions import db, login_manager, mail, babel
+from app.extensions import babel, db, login_manager, mail
 from app.routes.newsletter import newsletter_bp
 from app.routes.pages import pages_bp
+from config import Config
 
 
 def create_app():
@@ -43,37 +43,22 @@ def create_app():
 
     with app.app_context():
 
-        from app.models import (
-            Service,
-            Post,
-            Product,
-            ProductReview,
-            Category,
-            Project,
-            User,
-            Order,
-            MenuItem,
-            Page,
-            HomeSection,
-            SiteSetting,
-            ContactMessage,
-            Favorite,
-            Address,
-            PaymentMethod,
-        )
+        from app import models  # noqa: F401
 
         db.create_all()
 
-    from app.routes.main import main_bp
+        
+
     from app.routes.about import about_bp
-    from app.routes.services import services_bp
-    from app.routes.portfolio import portfolio_bp
-    from app.routes.shop import shop_bp
-    from app.routes.blog import blog_bp
-    from app.routes.contact import contact_bp
     from app.routes.admin import admin_bp
     from app.routes.auth import auth_bp
+    from app.routes.blog import blog_bp
+    from app.routes.contact import contact_bp
     from app.routes.customer_auth import customer_auth_bp
+    from app.routes.main import main_bp
+    from app.routes.portfolio import portfolio_bp
+    from app.routes.services import services_bp
+    from app.routes.shop import shop_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(about_bp)
@@ -197,6 +182,8 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
+
+        from app.models import User
 
         return User.query.get(int(user_id))
 

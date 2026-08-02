@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, session
+
 from app.models.page import Page
 
 pages_bp = Blueprint("pages", __name__, url_prefix="/pages")

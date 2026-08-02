@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template
+
 from app.models.project import Project
 
 portfolio_bp = Blueprint("portfolio", __name__, url_prefix="/portfolio")

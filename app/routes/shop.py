@@ -1,64 +1,59 @@
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    session,
-    flash,
-    current_app,
-    jsonify
-)
-from sqlalchemy import or_
-from flask_mail import Message
-from werkzeug.utils import secure_filename
-from flask_login import current_user, login_required
-
 import os
 import uuid
+from datetime import UTC, datetime
+
 import stripe
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_login import current_user, login_required
+from flask_mail import Message
+from sqlalchemy import or_
+from werkzeug.utils import secure_filename
 
 from app.extensions import db, mail
-from app.models.product import Product
-from app.models.product_review import ProductReview
+from app.models.address import Address
 from app.models.category import Category
+from app.models.favorite import Favorite
 from app.models.order import Order
 from app.models.order_item import OrderItem
-from flask import render_template
-from datetime import datetime
-from app.models.favorite import Favorite
-from app.models.address import Address
 from app.models.payment_method import PaymentMethod
-
-
-
+from app.models.product import Product
+from app.models.product_review import ProductReview
 
 shop_bp = Blueprint("shop", __name__, url_prefix="/shop")
+
+
 @shop_bp.route("/test-email")
 def test_email():
 
     msg = Message(
         subject="اختبار البريد",
         recipients=["shamanmorey@gmail.com"],
-        body="إذا وصلتك هذه الرسالة فالبريد يعمل بنجاح"
+        body="إذا وصلتك هذه الرسالة فالبريد يعمل بنجاح",
     )
 
     try:
         mail.send(msg)
         return "✅ تم إرسال البريد"
 
-    except Exception as e:
-        return f"❌ خطأ: {e}"
+    except Exception:
+        current_app.logger.exception("Test email failed.")
+    return "❌ حدث خطأ أثناء إرسال البريد."
+
 
 shop_bp = Blueprint("shop", __name__, url_prefix="/shop")
 
 
-ALLOWED_REVIEW_IMAGE_EXTENSIONS = {
-    "jpg",
-    "jpeg",
-    "png",
-    "webp"
-}
+ALLOWED_REVIEW_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
 
 def allowed_review_image(filename):
@@ -68,9 +63,9 @@ def allowed_review_image(filename):
 
     return (
         "." in filename
-        and filename.rsplit(".", 1)[1].lower()
-        in ALLOWED_REVIEW_IMAGE_EXTENSIONS
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_REVIEW_IMAGE_EXTENSIONS
     )
+
 
 def send_tracking_email(order):
 
@@ -78,11 +73,7 @@ def send_tracking_email(order):
         print("❌ لا يوجد بريد للعميل")
         return
 
-    tracking_url = url_for(
-        "shop.tracking",
-        order_id=order.id,
-        _external=True
-    )
+    tracking_url = url_for("shop.tracking", order_id=order.id, _external=True)
 
     current_lang = getattr(order, "language", "ar")
 
@@ -94,27 +85,27 @@ def send_tracking_email(order):
         subject = f"تأكيد طلبك #{order.id} - MEDIA ART"
 
         body = f"""
-مرحبًا {order.customer_name or ""} 🌸
+        مرحبًا {order.customer_name or ""} 🌸
 
-شكرًا لاختيارك MEDIA ART.
+        شكرًا لاختيارك MEDIA ART.
 
-تم استلام طلبك بنجاح ونحن نعمل الآن على مراجعته وتجهيزه.
+        تم استلام طلبك بنجاح ونحن نعمل الآن على مراجعته وتجهيزه.
 
-━━━━━━━━━━━━━━━━━━
-رقم الطلب:
-#{order.id}
-━━━━━━━━━━━━━━━━━━
+        ━━━━━━━━━━━━━━━━━━
+        رقم الطلب:
+        #{order.id}
+        ━━━━━━━━━━━━━━━━━━
 
-يمكنك تتبع حالة طلبك مباشرة عبر الرابط التالي:
+        يمكنك تتبع حالة طلبك مباشرة عبر الرابط التالي:
 
-{tracking_url}
+        {tracking_url}
 
-إذا كان لديك أي استفسار يمكنك الرد على هذا البريد أو التواصل معنا عبر واتساب.
+        إذا كان لديك أي استفسار يمكنك الرد على هذا البريد أو التواصل معنا عبر واتساب.
 
-شكرًا لثقتك بنا 💙
+        شكرًا لثقتك بنا 💙
 
-MEDIA ART
-"""
+        MEDIA ART
+        """
 
     # =========================
     # ENGLISH
@@ -180,61 +171,54 @@ MEDIA ART
     msg = Message(
         subject=subject,
         recipients=[order.customer_email],
-        sender=current_app.config.get("MAIL_DEFAULT_SENDER")
+        sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
     )
+    msg.body = body
     html = render_template(
-    "emails/order_confirmation.html",
-
-    lang=current_lang,
-
-    subject=subject,
-
-    order=order,
-
-    tracking_url=tracking_url,
-
-    year=datetime.utcnow().year,
-
-    title=(
-        "تم استلام طلبك بنجاح"
-        if current_lang == "ar"
-        else "Your order has been received"
-        if current_lang == "en"
-        else "ご注文を受け付けました"
-    ),
-
-    message=(
-        f"مرحبًا {order.customer_name}، شكرًا لطلبك من MEDIA ART."
-        if current_lang == "ar"
-        else f"Hello {order.customer_name}, thank you for ordering from MEDIA ART."
-        if current_lang == "en"
-        else f"{order.customer_name} 様、MEDIA ARTをご利用いただきありがとうございます。"
-    ),
-
-    order_label=(
-        "رقم الطلب"
-        if current_lang == "ar"
-        else "Order Number"
-        if current_lang == "en"
-        else "注文番号"
-    ),
-
-    track_button=(
-        "تتبع الطلب"
-        if current_lang == "ar"
-        else "Track Order"
-        if current_lang == "en"
-        else "注文を追跡"
-    ),
-
-    footer_text=(
-        "إذا كان لديك أي استفسار يمكنك الرد على هذا البريد."
-        if current_lang == "ar"
-        else "If you have any questions, feel free to reply to this email."
-        if current_lang == "en"
-        else "ご不明な点がございましたらこのメールへご返信ください。"
+        "emails/order_confirmation.html",
+        lang=current_lang,
+        subject=subject,
+        order=order,
+        tracking_url=tracking_url,
+        year=datetime.now(UTC).year,
+        title=(
+            "تم استلام طلبك بنجاح"
+            if current_lang == "ar"
+            else (
+                "Your order has been received"
+                if current_lang == "en"
+                else "ご注文を受け付けました"
+            )
+        ),
+        message=(
+            f"مرحبًا {order.customer_name}، شكرًا لطلبك من MEDIA ART."
+            if current_lang == "ar"
+            else (
+                f"Hello {order.customer_name}, thank you for ordering from MEDIA ART."
+                if current_lang == "en"
+                else f"{order.customer_name} 様、MEDIA ARTをご利用いただきありがとうございます。"
+            )
+        ),
+        order_label=(
+            "رقم الطلب"
+            if current_lang == "ar"
+            else "Order Number" if current_lang == "en" else "注文番号"
+        ),
+        track_button=(
+            "تتبع الطلب"
+            if current_lang == "ar"
+            else "Track Order" if current_lang == "en" else "注文を追跡"
+        ),
+        footer_text=(
+            "إذا كان لديك أي استفسار يمكنك الرد على هذا البريد."
+            if current_lang == "ar"
+            else (
+                "If you have any questions, feel free to reply to this email."
+                if current_lang == "en"
+                else "ご不明な点がございましたらこのメールへご返信ください。"
+            )
+        ),
     )
-)
 
     msg.html = html
 
@@ -244,20 +228,19 @@ MEDIA ART
         mail.send(msg)
         print("✅ تم إرسال الإيميل بنجاح إلى:", order.customer_email)
 
-    except Exception as e:
-        print("❌ فشل إرسال الإيميل:")
-        print(e)
+    except Exception:
+        current_app.logger.exception("Order email sending failed.")
+
 
 @shop_bp.route("/shop")
 def index():
-    categories = Category.query.filter_by(is_active=True).order_by(
-        Category.display_order.asc(),
-        Category.id.desc()
-    ).all()
+    categories = (
+        Category.query.filter_by(is_active=True)
+        .order_by(Category.display_order.asc(), Category.id.desc())
+        .all()
+    )
 
-    products = Product.query.filter_by(
-        is_active=True
-    ).order_by(Product.id.desc()).all()
+    products = Product.query.filter_by(is_active=True).order_by(Product.id.desc()).all()
 
     # المنتجات المفضلة للمستخدم الحالي
     favorite_ids = []
@@ -273,8 +256,10 @@ def index():
         categories=categories,
         products=products,
         active_category=None,
-        favorite_ids=favorite_ids
+        favorite_ids=favorite_ids,
     )
+
+
 @shop_bp.route("/shop/category/<slug>")
 def category_products(slug):
     category = Category.query.filter(
@@ -282,19 +267,21 @@ def category_products(slug):
             Category.slug == slug,
             Category.slug_ar == slug,
             Category.slug_en == slug,
-            Category.slug_ja == slug
+            Category.slug_ja == slug,
         )
     ).first_or_404()
 
-    categories = Category.query.filter_by(is_active=True).order_by(
-        Category.display_order.asc(),
-        Category.id.desc()
-    ).all()
+    categories = (
+        Category.query.filter_by(is_active=True)
+        .order_by(Category.display_order.asc(), Category.id.desc())
+        .all()
+    )
 
-    products = Product.query.filter_by(
-        category_id=category.id,
-        is_active=True
-    ).order_by(Product.id.desc()).all()
+    products = (
+        Product.query.filter_by(category_id=category.id, is_active=True)
+        .order_by(Product.id.desc())
+        .all()
+    )
 
     favorite_ids = []
 
@@ -309,10 +296,10 @@ def category_products(slug):
         categories=categories,
         products=products,
         active_category=category,
-        favorite_ids=favorite_ids
+        favorite_ids=favorite_ids,
     )
-    
-    
+
+
 @shop_bp.route("/product/<slug>")
 def product(slug):
 
@@ -321,34 +308,28 @@ def product(slug):
             Product.slug == slug,
             Product.slug_ar == slug,
             Product.slug_en == slug,
-            Product.slug_ja == slug
+            Product.slug_ja == slug,
         ),
-        Product.is_active == True
+        Product.is_active == True,
     ).first_or_404()
 
     current_lang = session.get("lang", "ar")
 
     # التقييمات المعتمدة فقط
-    approved_reviews = ProductReview.query.filter_by(
-        product_id=product.id,
-        is_approved=True
-    ).order_by(
-        ProductReview.created_at.desc()
-    ).all()
+    approved_reviews = (
+        ProductReview.query.filter_by(product_id=product.id, is_approved=True)
+        .order_by(ProductReview.created_at.desc())
+        .all()
+    )
 
     # التقييمات التي تسمح الإدارة بإظهار نجومها
     visible_ratings = [
-        review.rating
-        for review in approved_reviews
-        if review.is_rating_visible
+        review.rating for review in approved_reviews if review.is_rating_visible
     ]
 
     # حساب متوسط التقييم
     if visible_ratings:
-        average_rating = round(
-            sum(visible_ratings) / len(visible_ratings),
-            1
-        )
+        average_rating = round(sum(visible_ratings) / len(visible_ratings), 1)
     else:
         average_rating = 0
 
@@ -360,8 +341,9 @@ def product(slug):
         current_lang=current_lang,
         reviews=approved_reviews,
         average_rating=average_rating,
-        ratings_count=ratings_count
+        ratings_count=ratings_count,
     )
+
 
 @shop_bp.route("/cart")
 def cart():
@@ -381,15 +363,17 @@ def cart():
             item_total = product.price * quantity
             total += item_total
 
-            cart_items.append({
-                "product": product,
-                "quantity": quantity,
-                "item_total": item_total,
-                "color": item.get("color"),
-                "size": item.get("size"),
-                "custom_text": item.get("custom_text"),
-                "custom_image": item.get("custom_image")
-            })
+            cart_items.append(
+                {
+                    "product": product,
+                    "quantity": quantity,
+                    "item_total": item_total,
+                    "color": item.get("color"),
+                    "size": item.get("size"),
+                    "custom_text": item.get("custom_text"),
+                    "custom_image": item.get("custom_image"),
+                }
+            )
 
     return render_template("shop/cart.html", cart_items=cart_items, total=total)
 
@@ -425,7 +409,7 @@ def add_to_cart(product_id):
         "color": selected_color,
         "size": selected_size,
         "custom_text": custom_text,
-        "custom_image": None
+        "custom_image": None,
     }
 
     # رفع الصورة المخصصة إن وجدت
@@ -434,17 +418,11 @@ def add_to_cart(product_id):
     if file and file.filename:
         filename = secure_filename(file.filename)
 
-        upload_folder = os.path.join(
-            current_app.root_path,
-            "static",
-            "uploads"
-        )
+        upload_folder = os.path.join(current_app.root_path, "static", "uploads")
 
         os.makedirs(upload_folder, exist_ok=True)
 
-        file.save(
-            os.path.join(upload_folder, filename)
-        )
+        file.save(os.path.join(upload_folder, filename))
 
         item["custom_image"] = filename
 
@@ -459,9 +437,7 @@ def add_to_cart(product_id):
             and cart_item.get("custom_text") == item["custom_text"]
             and cart_item.get("custom_image") == item["custom_image"]
         ):
-            cart_item["quantity"] = (
-                int(cart_item.get("quantity", 1)) + 1
-            )
+            cart_item["quantity"] = int(cart_item.get("quantity", 1)) + 1
 
             found = True
             break
@@ -478,26 +454,23 @@ def add_to_cart(product_id):
 
     for cart_item in cart:
         try:
-            cart_count += int(
-                cart_item.get("quantity", 1)
-            )
+            cart_count += int(cart_item.get("quantity", 1))
         except (TypeError, ValueError):
             cart_count += 1
 
     # معرفة هل الطلب جاء من JavaScript
-    is_ajax_request = (
-        request.headers.get("X-Requested-With")
-        == "XMLHttpRequest"
-    )
+    is_ajax_request = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
     # الإضافة من بطاقة المنتج بدون تحديث الصفحة
     if is_ajax_request:
-        return jsonify({
-            "success": True,
-            "message": "تمت إضافة المنتج إلى السلة",
-            "cart_count": cart_count,
-            "product_id": product.id
-        })
+        return jsonify(
+            {
+                "success": True,
+                "message": "تمت إضافة المنتج إلى السلة",
+                "cart_count": cart_count,
+                "product_id": product.id,
+            }
+        )
 
     # الطلب العادي من صفحة تفاصيل المنتج
     flash("تمت إضافة المنتج إلى السلة", "success")
@@ -507,38 +480,21 @@ def add_to_cart(product_id):
 
     return redirect(url_for("shop.cart"))
 
-@shop_bp.route(
-    "/product/<int:product_id>/review",
-    methods=["POST"]
-)
+
+@shop_bp.route("/product/<int:product_id>/review", methods=["POST"])
 def submit_product_review(product_id):
 
-    product = Product.query.filter_by(
-        id=product_id,
-        is_active=True
-    ).first_or_404()
+    product = Product.query.filter_by(id=product_id, is_active=True).first_or_404()
 
     current_lang = session.get("lang", "ar")
 
-    customer_name = request.form.get(
-        "customer_name",
-        ""
-    ).strip()
+    customer_name = request.form.get("customer_name", "").strip()
 
-    customer_email = request.form.get(
-        "customer_email",
-        ""
-    ).strip()
+    customer_email = request.form.get("customer_email", "").strip()
 
-    comment = request.form.get(
-        "comment",
-        ""
-    ).strip()
+    comment = request.form.get("comment", "").strip()
 
-    rating_value = request.form.get(
-        "rating",
-        ""
-    ).strip()
+    rating_value = request.form.get("rating", "").strip()
 
     # التحقق من الاسم
     if not customer_name:
@@ -552,12 +508,7 @@ def submit_product_review(product_id):
         else:
             flash("يرجى إدخال الاسم.", "error")
 
-        return redirect(
-            url_for(
-                "shop.product",
-                slug=product.get_slug(current_lang)
-            )
-        )
+        return redirect(url_for("shop.product", slug=product.get_slug(current_lang)))
 
     # التحقق من عدد النجوم
     try:
@@ -569,60 +520,31 @@ def submit_product_review(product_id):
     if rating < 1 or rating > 5:
 
         if current_lang == "en":
-            flash(
-                "Please select a rating from 1 to 5 stars.",
-                "error"
-            )
+            flash("Please select a rating from 1 to 5 stars.", "error")
 
         elif current_lang == "ja":
-            flash(
-                "1〜5つ星の評価を選択してください。",
-                "error"
-            )
+            flash("1〜5つ星の評価を選択してください。", "error")
 
         else:
-            flash(
-                "يرجى اختيار تقييم من نجمة إلى خمس نجوم.",
-                "error"
-            )
+            flash("يرجى اختيار تقييم من نجمة إلى خمس نجوم.", "error")
 
-        return redirect(
-            url_for(
-                "shop.product",
-                slug=product.get_slug(current_lang)
-            )
-        )
+        return redirect(url_for("shop.product", slug=product.get_slug(current_lang)))
 
     # التحقق من طول البيانات
     if len(customer_name) > 120:
         flash("الاسم طويل جدًا.", "error")
 
-        return redirect(
-            url_for(
-                "shop.product",
-                slug=product.get_slug(current_lang)
-            )
-        )
+        return redirect(url_for("shop.product", slug=product.get_slug(current_lang)))
 
     if len(customer_email) > 255:
         flash("البريد الإلكتروني طويل جدًا.", "error")
 
-        return redirect(
-            url_for(
-                "shop.product",
-                slug=product.get_slug(current_lang)
-            )
-        )
+        return redirect(url_for("shop.product", slug=product.get_slug(current_lang)))
 
     if len(comment) > 3000:
         flash("التعليق طويل جدًا.", "error")
 
-        return redirect(
-            url_for(
-                "shop.product",
-                slug=product.get_slug(current_lang)
-            )
-        )
+        return redirect(url_for("shop.product", slug=product.get_slug(current_lang)))
 
     review_image_filename = None
     review_image = request.files.get("review_image")
@@ -633,62 +555,32 @@ def submit_product_review(product_id):
         if not allowed_review_image(review_image.filename):
 
             if current_lang == "en":
-                flash(
-                    "Allowed image types: JPG, PNG and WEBP.",
-                    "error"
-                )
+                flash("Allowed image types: JPG, PNG and WEBP.", "error")
 
             elif current_lang == "ja":
-                flash(
-                    "使用できる画像形式はJPG、PNG、WEBPです。",
-                    "error"
-                )
+                flash("使用できる画像形式はJPG、PNG、WEBPです。", "error")
 
             else:
-                flash(
-                    "أنواع الصور المسموحة: JPG وPNG وWEBP.",
-                    "error"
-                )
+                flash("أنواع الصور المسموحة: JPG وPNG وWEBP.", "error")
 
             return redirect(
-                url_for(
-                    "shop.product",
-                    slug=product.get_slug(current_lang)
-                )
+                url_for("shop.product", slug=product.get_slug(current_lang))
             )
 
-        original_filename = secure_filename(
-            review_image.filename
-        )
+        original_filename = secure_filename(review_image.filename)
 
-        extension = original_filename.rsplit(
-            ".",
-            1
-        )[1].lower()
+        extension = original_filename.rsplit(".", 1)[1].lower()
 
         # اسم فريد يمنع استبدال صورة بصورة أخرى
-        review_image_filename = (
-            f"review_{product.id}_{uuid.uuid4().hex}.{extension}"
-        )
+        review_image_filename = f"review_{product.id}_{uuid.uuid4().hex}.{extension}"
 
         review_upload_folder = os.path.join(
-            current_app.root_path,
-            "static",
-            "uploads",
-            "reviews"
+            current_app.root_path, "static", "uploads", "reviews"
         )
 
-        os.makedirs(
-            review_upload_folder,
-            exist_ok=True
-        )
+        os.makedirs(review_upload_folder, exist_ok=True)
 
-        review_image.save(
-            os.path.join(
-                review_upload_folder,
-                review_image_filename
-            )
-        )
+        review_image.save(os.path.join(review_upload_folder, review_image_filename))
 
     review = ProductReview(
         product_id=product.id,
@@ -702,21 +594,15 @@ def submit_product_review(product_id):
         is_rating_visible=True,
         is_comment_visible=True,
         is_image_visible=True,
-        ip_address=request.headers.get(
-            "X-Forwarded-For",
-            request.remote_addr
-        ),
-        user_agent=request.headers.get(
-            "User-Agent",
-            ""
-        )[:500]
+        ip_address=request.headers.get("X-Forwarded-For", request.remote_addr),
+        user_agent=request.headers.get("User-Agent", "")[:500],
     )
 
     try:
         db.session.add(review)
         db.session.commit()
 
-    except Exception as error:
+    except Exception:
         db.session.rollback()
 
         # حذف الصورة إذا فشل حفظ التقييم في قاعدة البيانات
@@ -727,66 +613,39 @@ def submit_product_review(product_id):
                 "static",
                 "uploads",
                 "reviews",
-                review_image_filename
+                review_image_filename,
             )
 
             if os.path.exists(image_path):
                 os.remove(image_path)
 
         current_app.logger.exception(
-            "Product review save error: %s",
-            error
+            "Product review save error."
         )
 
         if current_lang == "en":
-            flash(
-                "The review could not be submitted. Please try again.",
-                "error"
-            )
+            flash("The review could not be submitted. Please try again.", "error")
 
         elif current_lang == "ja":
-            flash(
-                "レビューを送信できませんでした。もう一度お試しください。",
-                "error"
-            )
+            flash("レビューを送信できませんでした。もう一度お試しください。", "error")
 
         else:
-            flash(
-                "تعذر إرسال التقييم، يرجى المحاولة مرة أخرى.",
-                "error"
-            )
+            flash("تعذر إرسال التقييم، يرجى المحاولة مرة أخرى.", "error")
 
-        return redirect(
-            url_for(
-                "shop.product",
-                slug=product.get_slug(current_lang)
-            )
-        )
+        return redirect(url_for("shop.product", slug=product.get_slug(current_lang)))
 
     if current_lang == "en":
-        flash(
-            "Thank you. Your review will appear after approval.",
-            "success"
-        )
+        flash("Thank you. Your review will appear after approval.", "success")
 
     elif current_lang == "ja":
-        flash(
-            "ありがとうございます。承認後にレビューが表示されます。",
-            "success"
-        )
+        flash("ありがとうございます。承認後にレビューが表示されます。", "success")
 
     else:
-        flash(
-            "شكرًا لك، سيظهر تقييمك بعد مراجعته واعتماده.",
-            "success"
-        )
+        flash("شكرًا لك، سيظهر تقييمك بعد مراجعته واعتماده.", "success")
 
-    return redirect(
-        url_for(
-            "shop.product",
-            slug=product.get_slug(current_lang)
-        )
-    )
+    return redirect(url_for("shop.product", slug=product.get_slug(current_lang)))
+
+
 @shop_bp.route("/cart/remove/<int:product_id>", methods=["POST"])
 def remove_from_cart(product_id):
     cart = session.get("cart", [])
@@ -840,7 +699,6 @@ def clear_cart():
     return redirect(url_for("shop.cart"))
 
 
-
 @shop_bp.route("/checkout", methods=["GET", "POST"])
 def checkout():
 
@@ -859,24 +717,14 @@ def checkout():
     if current_user.is_authenticated:
 
         addresses = (
-            Address.query.filter_by(
-                user_id=current_user.id
-            )
-            .order_by(
-                Address.is_default.desc(),
-                Address.id.desc()
-            )
+            Address.query.filter_by(user_id=current_user.id)
+            .order_by(Address.is_default.desc(), Address.id.desc())
             .all()
         )
 
         payment_methods = (
-            PaymentMethod.query.filter_by(
-                user_id=current_user.id
-            )
-            .order_by(
-                PaymentMethod.is_default.desc(),
-                PaymentMethod.id.desc()
-            )
+            PaymentMethod.query.filter_by(user_id=current_user.id)
+            .order_by(PaymentMethod.is_default.desc(), PaymentMethod.id.desc())
             .all()
         )
 
@@ -884,30 +732,28 @@ def checkout():
 
     for item in cart_data:
 
-        product = Product.query.get(
-            int(item["product_id"])
-        )
+        product = Product.query.get(int(item["product_id"]))
 
         if not product:
             continue
 
-        quantity = int(
-            item.get("quantity", 1)
-        )
+        quantity = int(item.get("quantity", 1))
 
         item_total = product.price * quantity
 
         total += item_total
 
-        cart_items.append({
-            "product": product,
-            "quantity": quantity,
-            "item_total": item_total,
-            "color": item.get("color"),
-            "size": item.get("size"),
-            "custom_text": item.get("custom_text"),
-            "custom_image": item.get("custom_image")
-        })
+        cart_items.append(
+            {
+                "product": product,
+                "quantity": quantity,
+                "item_total": item_total,
+                "color": item.get("color"),
+                "size": item.get("size"),
+                "custom_text": item.get("custom_text"),
+                "custom_image": item.get("custom_image"),
+            }
+        )
 
     if request.method == "POST":
 
@@ -927,12 +773,9 @@ def checkout():
 
             if address_id:
 
-                selected_address = (
-                    Address.query.filter_by(
-                        id=address_id,
-                        user_id=current_user.id
-                    ).first()
-                )
+                selected_address = Address.query.filter_by(
+                    id=address_id, user_id=current_user.id
+                ).first()
 
             if payment_method_id in ("cash", "stripe", "paypay", "whatsapp"):
 
@@ -940,29 +783,20 @@ def checkout():
 
             elif payment_method_id:
 
-                selected_payment = (
-                    PaymentMethod.query.filter_by(
-                        id=int(payment_method_id),
-                        user_id=current_user.id
-                    ).first()
-                )
+                selected_payment = PaymentMethod.query.filter_by(
+                    id=int(payment_method_id), user_id=current_user.id
+                ).first()
 
                 if selected_payment:
                     payment_type = selected_payment.payment_type
 
             if selected_address:
 
-                customer_name = (
-                    selected_address.full_name
-                )
+                customer_name = selected_address.full_name
 
-                customer_phone = (
-                    selected_address.phone
-                )
+                customer_phone = selected_address.phone
 
-                customer_email = (
-                    current_user.email
-                )
+                customer_email = current_user.email
 
                 customer_address = (
                     f"{selected_address.prefecture} "
@@ -983,47 +817,24 @@ def checkout():
 
         else:
 
-            customer_name = (
-                request.form.get(
-                    "customer_name",
-                    ""
-                ).strip()
-            )
+            customer_name = request.form.get("customer_name", "").strip()
 
-            customer_phone = (
-                request.form.get(
-                    "customer_phone",
-                    ""
-                ).strip()
-            )
+            customer_phone = request.form.get("customer_phone", "").strip()
 
-            customer_email = (
-                request.form.get(
-                    "customer_email",
-                    ""
-                ).strip()
-            )
+            customer_email = request.form.get("customer_email", "").strip()
 
-            customer_address = (
-                request.form.get(
-                    "customer_address",
-                    ""
-                ).strip()
-            )
-            
+            customer_address = request.form.get("customer_address", "").strip()
+
             if not customer_name or not customer_email:
 
-                flash(
-                    "الاسم والبريد الإلكتروني مطلوبان",
-                    "error"
-                )
+                flash("الاسم والبريد الإلكتروني مطلوبان", "error")
 
                 return render_template(
                     "shop/checkout.html",
                     cart_items=cart_items,
                     total=total,
                     addresses=addresses,
-                    payment_methods=payment_methods
+                    payment_methods=payment_methods,
                 )
 
         # =====================================================
@@ -1031,11 +842,7 @@ def checkout():
         # =====================================================
 
         order = Order(
-            user_id=(
-                current_user.id
-                if current_user.is_authenticated
-                else None
-            ),
+            user_id=(current_user.id if current_user.is_authenticated else None),
             customer_name=customer_name,
             customer_phone=customer_phone,
             customer_email=customer_email,
@@ -1044,7 +851,7 @@ def checkout():
             total_price=total,
             status="processing",
             payment_method=payment_type,
-            payment_status="unpaid"
+            payment_status="unpaid",
         )
 
         db.session.add(order)
@@ -1052,9 +859,7 @@ def checkout():
 
         for item in cart_data:
 
-            product = Product.query.get(
-                int(item["product_id"])
-            )
+            product = Product.query.get(int(item["product_id"]))
 
             if not product:
                 continue
@@ -1062,22 +867,17 @@ def checkout():
             db.session.add(
                 OrderItem(
                     order_id=order.id,
-                    product_title=product.get_title(
-                        session.get("lang", "ar")
-                    ),
+                    product_title=product.get_title(session.get("lang", "ar")),
                     price=product.price,
-                    quantity=int(
-                        item.get("quantity", 1)
-                    ),
+                    quantity=int(item.get("quantity", 1)),
                     color=item.get("color"),
                     size=item.get("size"),
                     custom_text=item.get("custom_text"),
-                    custom_image=item.get("custom_image")
+                    custom_image=item.get("custom_image"),
                 )
             )
 
         db.session.commit()
-
 
         # =====================================================
         # التحويل حسب طريقة الدفع
@@ -1088,54 +888,31 @@ def checkout():
             session["cart"] = []
             session.modified = True
 
-            flash(
-                "تم إنشاء الطلب بنجاح",
-                "success"
-            )
+            flash("تم إنشاء الطلب بنجاح", "success")
 
-            return redirect(
-                url_for(
-                    "shop.order_success",
-                    order_id=order.id
-                )
-            )
+            return redirect(url_for("shop.order_success", order_id=order.id))
 
         elif payment_type in ("stripe", "card"):
 
-            return redirect(
-                url_for(
-                    "shop.checkout_stripe",
-                    order_id=order.id
-                )
-            )
+            return redirect(url_for("shop.checkout_stripe", order_id=order.id))
         elif payment_type == "whatsapp":
 
-            return redirect(
-                url_for(
-                    "shop.checkout_whatsapp",
-                    order_id=order.id
-                )
-            )
+            return redirect(url_for("shop.checkout_whatsapp", order_id=order.id))
 
         else:
 
-            return redirect(
-                url_for(
-                    "shop.payment_page",
-                    order_id=order.id
-                )
-            )
+            return redirect(url_for("shop.payment_page", order_id=order.id))
 
     return render_template(
         "shop/checkout.html",
         cart_items=cart_items,
         total=total,
         addresses=addresses,
-        payment_methods=payment_methods
+        payment_methods=payment_methods,
     )
 
-       
-        # هنا يبدأ إنشاء الطلب
+    # هنا يبدأ إنشاء الطلب
+
 
 @shop_bp.route("/payment/<int:order_id>")
 def payment_page(order_id):
@@ -1143,25 +920,12 @@ def payment_page(order_id):
     order = Order.query.get_or_404(order_id)
 
     if order.payment_method == "cash":
-        return redirect(
-            url_for(
-                "shop.order_success",
-                order_id=order.id
-            )
-        )
+        return redirect(url_for("shop.order_success", order_id=order.id))
 
     if order.payment_method == "card":
-        return redirect(
-            url_for(
-                "shop.checkout_stripe",
-                order_id=order.id
-            )
-        )
+        return redirect(url_for("shop.checkout_stripe", order_id=order.id))
 
-    return render_template(
-        "shop/payment.html",
-        order=order
-    )
+    return render_template("shop/payment.html", order=order)
 
 
 @shop_bp.route("/checkout/cod/<int:order_id>")
@@ -1195,7 +959,9 @@ def checkout_whatsapp(order_id):
 
     for item in order.items:
         item_total = item.price * item.quantity
-        message += f"- {item.product_title} | العدد: {item.quantity} | السعر: ¥{item_total}%0A"
+        message += (
+            f"- {item.product_title} | العدد: {item.quantity} | السعر: ¥{item_total}%0A"
+        )
 
     message += f"%0Aالإجمالي: ¥{order.total_price}%0A"
     message += f"رقم الطلب: #{order.id}"
@@ -1210,8 +976,9 @@ def checkout_whatsapp(order_id):
 @shop_bp.route("/checkout/stripe/<int:order_id>")
 def checkout_stripe(order_id):
     flash(
-        "💳 خدمة الدفع عبر Stripe قيد التجهيز وستتوفر قريبًا. يمكنك حاليًا استخدام الدفع عند الاستلام.","info"
-        )
+        "💳 خدمة الدفع عبر Stripe قيد التجهيز وستتوفر قريبًا. يمكنك حاليًا استخدام الدفع عند الاستلام.",
+        "info",
+    )
 
     return redirect(url_for("shop.checkout"))
     order = Order.query.get_or_404(order_id)
@@ -1221,25 +988,25 @@ def checkout_stripe(order_id):
     line_items = []
 
     for item in order.items:
-        line_items.append({
-            "price_data": {
-                "currency": "jpy",
-                "product_data": {
-                    "name": item.product_title,
+        line_items.append(
+            {
+                "price_data": {
+                    "currency": "jpy",
+                    "product_data": {
+                        "name": item.product_title,
+                    },
+                    "unit_amount": int(item.price),
                 },
-                "unit_amount": int(item.price),
-            },
-            "quantity": item.quantity,
-        })
+                "quantity": item.quantity,
+            }
+        )
 
     checkout_session = stripe.checkout.Session.create(
         mode="payment",
         line_items=line_items,
         success_url=url_for("shop.payment_success", order_id=order.id, _external=True),
         cancel_url=url_for("shop.checkout", _external=True),
-        metadata={
-            "order_id": str(order.id)
-        }
+        metadata={"order_id": str(order.id)},
     )
 
     order.payment_method = "stripe"
@@ -1287,14 +1054,14 @@ def tracking():
 
     return render_template("shop/track_order.html", order=order, error=error)
 
+
 @shop_bp.route("/favorite/toggle/<int:product_id>", methods=["POST"])
 @login_required
 def toggle_favorite(product_id):
     product = Product.query.get_or_404(product_id)
 
     favorite = Favorite.query.filter_by(
-        user_id=current_user.id,
-        product_id=product.id
+        user_id=current_user.id, product_id=product.id
     ).first()
 
     if favorite:
@@ -1310,19 +1077,19 @@ def toggle_favorite(product_id):
     db.session.commit()
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return {
-            "success": True,
-            "is_favorite": is_favorite,
-            "message": message
-        }
+        return {"success": True, "is_favorite": is_favorite, "message": message}
 
     return redirect(request.referrer or url_for("shop.index"))
+
+
 @shop_bp.route("/favorites")
 @login_required
 def favorites():
-    favorite_items = Favorite.query.filter_by(
-        user_id=current_user.id
-    ).order_by(Favorite.id.desc()).all()
+    favorite_items = (
+        Favorite.query.filter_by(user_id=current_user.id)
+        .order_by(Favorite.id.desc())
+        .all()
+    )
 
     products = [
         item.product
@@ -1333,7 +1100,5 @@ def favorites():
     favorite_ids = [product.id for product in products]
 
     return render_template(
-        "shop/favorites.html",
-        products=products,
-        favorite_ids=favorite_ids
+        "shop/favorites.html", products=products, favorite_ids=favorite_ids
     )

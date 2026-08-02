@@ -1,9 +1,8 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, session
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 from app.extensions import db
 from app.models.contact_message import ContactMessage
 from app.models.newsletter_subscriber import NewsletterSubscriber
-
 
 contact_bp = Blueprint("contact", __name__, url_prefix="/contact")
 

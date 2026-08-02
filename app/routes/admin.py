@@ -1,35 +1,37 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask import current_app, flash, redirect, render_template, request, url_for
-from flask_login import login_required
-from werkzeug.utils import secure_filename
 import os
+from functools import wraps
 
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
+from flask_login import current_user, login_required, logout_user
+from werkzeug.utils import secure_filename
 
-from config import UPLOAD_FOLDER
 from app.extensions import db
-
-from app.forms.service_form import ServiceForm
+from app.forms.category_form import CategoryForm
+from app.forms.home_section_form import HomeSectionForm
 from app.forms.menu_form import MenuItemForm
 from app.forms.page_form import PageForm
-from app.forms.home_section_form import HomeSectionForm
-from app.forms.settings_form import SettingsForm
-from app.forms.product_form import ProductForm
-from app.forms.team_member_form import TeamMemberForm
-from app.forms.category_form import CategoryForm
-from app.forms.user_form import UserForm
-from app.forms.project_form import ProjectForm
 from app.forms.post_form import PostForm
-from app.models.product_review import ProductReview
-
-
-from app.models.service import Service
+from app.forms.product_form import ProductForm
+from app.forms.project_form import ProjectForm
+from app.forms.service_form import ServiceForm
+from app.forms.team_member_form import TeamMemberForm
+from app.forms.user_form import UserForm
+from app.models.home_section import HomeSection
 from app.models.menu_item import MenuItem
 from app.models.page import Page
-from app.models.home_section import HomeSection
+from app.models.product_review import ProductReview
+from app.models.service import Service
 from app.models.settings import SiteSetting
-from flask_login import current_user
-from functools import wraps
-from flask_login import login_required, current_user, logout_user
+from config import UPLOAD_FOLDER
+
 
 def admin_required(view):
     @wraps(view)
@@ -44,27 +46,25 @@ def admin_required(view):
         return view(*args, **kwargs)
 
     return wrapped_view
-from app.models.user import User
-from werkzeug.security import generate_password_hash
-from app.models.team_member import TeamMember
-from app.models.category import Category
-from app.models.product import Product
-from app.models.order import Order
-from app.models.order_item import OrderItem
-from app.models.project import Project
-from app.models.post import Post
-from flask import send_file
-from app.utils.pdf_generator import generate_invoice
-from flask import render_template, request, redirect, url_for, flash
-from app.models.partner import Partner
-from app.models.product_image import ProductImage
-from app.models.contact_message import ContactMessage
-from app.models.newsletter_subscriber import NewsletterSubscriber
 import csv
 from io import StringIO
-from flask import Response
-from app.utils.image_helper import optimize_image
 
+from flask import Response, send_file
+from werkzeug.security import generate_password_hash
+
+from app.models.category import Category
+from app.models.contact_message import ContactMessage
+from app.models.newsletter_subscriber import NewsletterSubscriber
+from app.models.order import Order
+from app.models.partner import Partner
+from app.models.post import Post
+from app.models.product import Product
+from app.models.product_image import ProductImage
+from app.models.project import Project
+from app.models.team_member import TeamMember
+from app.models.user import User
+from app.utils.image_helper import optimize_image
+from app.utils.pdf_generator import generate_invoice
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/dash770813890")
 
@@ -133,10 +133,8 @@ def create_service():
             quality=85,
             max_width=1600
         )
-        
-        if form.validate_on_submit():
-            slug_en = form.slug_en.data.strip() if form.slug_en.data else None
-            slug_ja = form.slug_ja.data.strip() if form.slug_ja.data else None
+        slug_en = form.slug_en.data.strip() if form.slug_en.data else None
+        slug_ja = form.slug_ja.data.strip() if form.slug_ja.data else None
         service = Service(
             # العربية
             title_ar=form.title_ar.data,
@@ -208,16 +206,22 @@ def edit_service(service_id):
 
         filename = service.image
 
-        if form.image.data and hasattr(form.image.data, "filename") and form.image.data.filename:
-            file = form.image.data
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
+        if (
+            form.image.data
+            and hasattr(form.image.data, "filename")
+            and form.image.data.filename
+        ):
+            filename = optimize_image(
+                file=form.image.data,
+                upload_folder=UPLOAD_FOLDER,
+                quality=85,
+                max_width=1600
+            )
 
         service.image = filename
-
         # العربية
         service.title_ar = form.title_ar.data
-        service.slug_ar = form.slug_ja.data.strip() if form.slug_ar.data else None
+        service.slug_ar = form.slug_ar.data.strip() if form.slug_ar.data else None
         service.short_description_ar = form.short_description_ar.data
         service.description_ar = form.description_ar.data
         service.keywords_ar = form.keywords_ar.data
@@ -252,11 +256,6 @@ def edit_service(service_id):
         service.is_active = form.is_active.data
         service.show_on_home = form.show_on_home.data
         
-        print("=" * 50)
-        print("slug_ar:", repr(form.slug_ar.data))
-        print("slug_en:", repr(form.slug_en.data))
-        print("slug_ja:", repr(form.slug_ja.data))
-        print("=" * 50)
 
         db.session.commit()
 
@@ -304,6 +303,25 @@ def create_page():
         existing = Page.query.filter_by(
             slug_ar=form.slug_ar.data
         ).first()
+        
+        slug_en = form.slug_en.data.strip() if form.slug_en.data else None
+        slug_ja = form.slug_ja.data.strip() if form.slug_ja.data else None
+
+        if slug_en and Page.query.filter_by(slug_en=slug_en).first():
+            flash("الرابط الإنجليزي مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/page_form.html",
+                form=form,
+                page_title="إضافة صفحة"
+            )
+
+        if slug_ja and Page.query.filter_by(slug_ja=slug_ja).first():
+            flash("الرابط الياباني مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/page_form.html",
+                form=form,
+                page_title="إضافة صفحة"
+            )
 
         if existing:
             flash("الرابط العربي مستخدم مسبقًا", "error")
@@ -356,6 +374,28 @@ def create_page():
         )
 
         db.session.add(page)
+        db.session.flush()
+
+        if form.show_in_menu.data:
+            menu_item = MenuItem(
+                title=page.title_ar,
+                title_ar=page.title_ar,
+                title_en=page.title_en,
+                title_ja=page.title_ja,
+
+                page_id=page.id,
+
+                content_type="page",
+
+                display_order=page.display_order,
+
+                is_active=page.is_active,
+
+                show_on_home=page.show_on_home
+            )
+
+            db.session.add(menu_item)
+
         db.session.commit()
 
         flash("تمت إضافة الصفحة بنجاح", "success")
@@ -387,6 +427,43 @@ def edit_page(page_id):
         form.parent_id.data = page.parent_id or 0
 
     if form.validate_on_submit():
+        slug_en = form.slug_en.data.strip() if form.slug_en.data else None
+        slug_ja = form.slug_ja.data.strip() if form.slug_ja.data else None
+
+        existing_ar = Page.query.filter(
+            Page.slug_ar == form.slug_ar.data,
+            Page.id != page.id
+        ).first()
+
+        if existing_ar:
+            flash("الرابط العربي مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/page_form.html",
+                form=form,
+                page_title="تعديل صفحة"
+            )
+
+        if slug_en and Page.query.filter(
+            Page.slug_en == slug_en,
+            Page.id != page.id
+        ).first():
+            flash("الرابط الإنجليزي مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/page_form.html",
+                form=form,
+                page_title="تعديل صفحة"
+            )
+
+        if slug_ja and Page.query.filter(
+            Page.slug_ja == slug_ja,
+            Page.id != page.id
+        ).first():
+            flash("الرابط الياباني مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/page_form.html",
+                form=form,
+                page_title="تعديل صفحة"
+            )
 
         # العناوين
         page.title = form.title_ar.data
@@ -425,6 +502,42 @@ def edit_page(page_id):
 
         # الحالة
         page.is_active = form.is_active.data
+        
+        
+        menu_item = MenuItem.query.filter_by(page_id=page.id).first()
+
+        if page.show_in_menu:
+
+            if menu_item:
+                menu_item.title = page.title_ar
+                menu_item.title_ar = page.title_ar
+                menu_item.title_en = page.title_en
+                menu_item.title_ja = page.title_ja
+
+                menu_item.display_order = page.display_order
+                menu_item.is_active = page.is_active
+                menu_item.show_on_home = page.show_on_home
+
+            else:
+                menu_item = MenuItem(
+                    title=page.title_ar,
+                    title_ar=page.title_ar,
+                    title_en=page.title_en,
+                    title_ja=page.title_ja,
+
+                    page_id=page.id,
+                    content_type="page",
+
+                    display_order=page.display_order,
+                    is_active=page.is_active,
+                    show_on_home=page.show_on_home
+                )
+
+                db.session.add(menu_item)
+
+        else:
+            if menu_item:
+                db.session.delete(menu_item)
 
         db.session.commit()
 
@@ -442,6 +555,12 @@ def edit_page(page_id):
 @admin_required
 def delete_page(page_id):
     page = Page.query.get_or_404(page_id)
+
+    # حذف عنصر القائمة المرتبط إن وجد
+    menu_item = MenuItem.query.filter_by(page_id=page.id).first()
+
+    if menu_item:
+        db.session.delete(menu_item)
 
     db.session.delete(page)
     db.session.commit()
@@ -603,8 +722,7 @@ def settings():
 
         setting.site_name = request.form.get("site_name")
         setting.footer_text = request.form.get("footer_text")
-        setting.show_partners = True if request.form.get("show_partners") else False
-
+        setting.show_partners = bool(request.form.get("show_partners"))
         db.session.commit()
 
         flash("تم حفظ الإعدادات", "success")
@@ -1278,12 +1396,11 @@ def bulk_products_action():
     try:
         db.session.commit()
 
-    except Exception as error:
+    except Exception:
         db.session.rollback()
 
         current_app.logger.exception(
-            "Bulk products action failed: %s",
-            error
+         "Bulk products action failed."
         )
 
         flash(
@@ -1437,18 +1554,16 @@ def edit_product(product_id):
             return render_template("admin/product_form.html", form=form, page_title="تعديل منتج")
 
         if (
-        form.image.data
-        and hasattr(form.image.data, "filename")
-        and form.image.data.filename
+            form.image.data
+            and hasattr(form.image.data, "filename")
+            and form.image.data.filename
     ):
-         filename = optimize_image(
-            file=form.image.data,
-            upload_folder=UPLOAD_FOLDER,
-            quality=85,
-            max_width=1600
-        )
-
-        product.image = filename
+            product.image = optimize_image(
+                file=form.image.data,
+                upload_folder=UPLOAD_FOLDER,
+                quality=85,
+                max_width=1600,
+            )
 
         product.title = form.title_ar.data
         product.slug = form.slug_ar.data
@@ -1559,6 +1674,33 @@ def toggle_product_active(product_id):
     db.session.commit()
 
     flash("تم تحديث حالة المنتج", "success")
+    return redirect(url_for("admin.products_list"))
+
+@admin_bp.route("/products/toggle-ratings/<int:product_id>")
+@admin_required
+def toggle_product_ratings(product_id):
+    product = Product.query.get_or_404(product_id)
+
+    product.ratings_enabled = not product.ratings_enabled
+
+    db.session.commit()
+
+    flash("تم تحديث حالة تقييم النجوم", "success")
+
+    return redirect(url_for("admin.products_list"))
+
+
+@admin_bp.route("/products/toggle-comments/<int:product_id>")
+@admin_required
+def toggle_product_comments(product_id):
+    product = Product.query.get_or_404(product_id)
+
+    product.comments_enabled = not product.comments_enabled
+
+    db.session.commit()
+
+    flash("تم تحديث حالة التعليقات", "success")
+
     return redirect(url_for("admin.products_list"))
 
 @admin_bp.route("/products/export")
@@ -1698,11 +1840,41 @@ def create_project():
     form = ProjectForm()
 
     if form.validate_on_submit():
-        existing = Project.query.filter_by(slug=form.slug.data).first()
-        if existing:
-            flash("هذا الرابط المختصر مستخدم مسبقًا", "error")
-            return render_template("admin/project_form.html", form=form, page_title="إضافة مشروع")
+        slug_ar = form.slug_ar.data.strip()
 
+        slug_en = form.slug_en.data.strip() if form.slug_en.data else None
+        slug_ja = form.slug_ja.data.strip() if form.slug_ja.data else None
+
+        if Project.query.filter(
+            Project.slug_ar == slug_ar
+        ).first():
+            flash("الرابط العربي مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/project_form.html",
+                form=form,
+                page_title="إضافة مشروع"
+            )
+
+        if slug_en and Project.query.filter(
+            Project.slug_en == slug_en
+        ).first():
+            flash("الرابط الإنجليزي مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/project_form.html",
+                form=form,
+                page_title="إضافة مشروع"
+            )
+
+        if slug_ja and Project.query.filter(
+            Project.slug_ja == slug_ja
+        ).first():
+            flash("الرابط الياباني مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/project_form.html",
+                form=form,
+                page_title="إضافة مشروع"
+            )
+    
         filename = None
 
         if (
@@ -1779,30 +1951,67 @@ def edit_project(project_id):
     form = ProjectForm(obj=project)
 
     if form.validate_on_submit():
-        existing = Project.query.filter(
-            Project.slug == form.slug.data,
-            Project.id != project.id
-        ).first()
 
-        if existing:
-            flash("هذا الرابط المختصر مستخدم مسبقًا", "error")
-            return render_template("admin/project_form.html", form=form, page_title="تعديل مشروع")
+        slug_ar = form.slug_ar.data.strip()
+        slug_en = form.slug_en.data.strip() if form.slug_en.data else None
+        slug_ja = form.slug_ja.data.strip() if form.slug_ja.data else None
 
-        if form.image.data and hasattr(form.image.data, "filename") and form.image.data.filename:
-         file = form.image.data
-         filename = secure_filename(file.filename)
-        file.save(os.path.join(UPLOAD_FOLDER, filename))
-        project.image = filename
+        if Project.query.filter(
+            Project.slug_ar == slug_ar,
+            Project.id != project.id,
+        ).first():
+            flash("الرابط العربي مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/project_form.html",
+                form=form,
+                page_title="تعديل مشروع",
+            )
+
+        if slug_en and Project.query.filter(
+            Project.slug_en == slug_en,
+            Project.id != project.id,
+        ).first():
+            flash("الرابط الإنجليزي مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/project_form.html",
+                form=form,
+                page_title="تعديل مشروع",
+            )
+
+        if slug_ja and Project.query.filter(
+            Project.slug_ja == slug_ja,
+            Project.id != project.id,
+        ).first():
+            flash("الرابط الياباني مستخدم مسبقًا", "error")
+            return render_template(
+                "admin/project_form.html",
+                form=form,
+                page_title="تعديل مشروع",
+            )
+
+        if (
+            form.image.data
+            and hasattr(form.image.data, "filename")
+            and form.image.data.filename
+        ):
+            filename = optimize_image(
+                file=form.image.data,
+                upload_folder=UPLOAD_FOLDER,
+                quality=85,
+                max_width=1600,
+            )
+
+            project.image = filename
 
         # ===== قديم للتوافق =====
         project.title = form.title_ar.data
-        project.slug = form.slug_ar.data
+        project.slug = slug_ar
         project.short_description = form.short_description_ar.data
         project.description = form.description_ar.data
 
         # ===== العربية =====
         project.title_ar = form.title_ar.data
-        project.slug_ar = form.slug_ar.data
+        project.slug_ar = slug_ar
         project.short_description_ar = form.short_description_ar.data
         project.description_ar = form.description_ar.data
         project.keywords_ar = form.keywords_ar.data
@@ -1811,7 +2020,7 @@ def edit_project(project_id):
 
         # ===== الإنجليزية =====
         project.title_en = form.title_en.data
-        project.slug_en = form.slug_en.data
+        project.slug_en = slug_en
         project.short_description_en = form.short_description_en.data
         project.description_en = form.description_en.data
         project.keywords_en = form.keywords_en.data
@@ -1820,19 +2029,29 @@ def edit_project(project_id):
 
         # ===== اليابانية =====
         project.title_ja = form.title_ja.data
-        project.slug_ja = form.slug_ja.data
+        project.slug_ja = slug_ja
         project.short_description_ja = form.short_description_ja.data
         project.description_ja = form.description_ja.data
         project.keywords_ja = form.keywords_ja.data
         project.meta_title_ja = form.meta_title_ja.data
         project.meta_description_ja = form.meta_description_ja.data
 
+        project.client_name = form.client_name.data
+        project.project_type = form.project_type.data
+        project.display_order = form.display_order.data or 0
+        project.is_active = form.is_active.data
+        project.show_on_home = form.show_on_home.data
+
         db.session.commit()
 
         flash("تم تعديل المشروع بنجاح", "success")
         return redirect(url_for("admin.projects_list"))
 
-    return render_template("admin/project_form.html", form=form, page_title="تعديل مشروع")
+    return render_template(
+        "admin/project_form.html",
+        form=form,
+        page_title="تعديل مشروع",
+    )
 
 
 @admin_bp.route("/projects/delete/<int:project_id>")
@@ -2430,8 +2649,7 @@ def partners_add():
     if request.method == "POST":
         name = request.form.get("name")
         display_order = request.form.get("display_order", 0)
-        is_active = True if request.form.get("is_active") == "on" else False
-
+        is_active = request.form.get("is_active") == "on"
         image_file = request.files.get("image")
 
         if not name or not image_file:

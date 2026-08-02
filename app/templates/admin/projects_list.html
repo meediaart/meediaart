@@ -217,24 +217,47 @@
 
                     <!-- الإجراءات -->
                     <td>
-                        <div class="admin-actions">
+                        <div class="admin-action-icons">
 
-                            <a
-                                href="{{ url_for('admin.edit_project', project_id=project.id) }}"
-                                class="admin-btn admin-btn-secondary"
-                            >
-                                تعديل
-                            </a>
+                        <a
+                            href="{{ url_for('shop.product', slug=product.get_slug(current_lang)) }}"
+                            target="_blank"
+                            class="admin-icon-btn"
+                            title="عرض المنتج">
 
-                            <a
-    href="{{ url_for('admin.delete_project', project_id=project.id) }}"
-    class="admin-btn admin-btn-danger js-confirm-delete"
-    data-confirm-message="هل أنت متأكد من حذف هذا المشروع؟"
->
-    حذف
-</a>
+                            <i class="fa-solid fa-eye"></i>
 
-                        </div>
+                        </a>
+
+                        <a
+                            href="{{ url_for('admin.edit_product', product_id=product.id) }}"
+                            class="admin-icon-btn"
+                            title="تعديل">
+
+                            <i class="fa-solid fa-pen"></i>
+
+                        </a>
+
+                        <a
+                            href="{{ url_for('admin.duplicate_product', product_id=product.id) }}"
+                            class="admin-icon-btn"
+                            title="نسخ">
+
+                            <i class="fa-regular fa-copy"></i>
+
+                        </a>
+
+                        <a
+                            href="{{ url_for('admin.delete_product', product_id=product.id) }}"
+                            class="admin-icon-btn danger js-confirm-delete"
+                            title="حذف"
+                            data-confirm-message="هل أنت متأكد من حذف هذا المنتج؟">
+
+                            <i class="fa-solid fa-trash"></i>
+
+                        </a>
+
+                    </div>
                     </td>
 
                 </tr>

@@ -45,12 +45,6 @@ class Service(db.Model):
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     show_on_home = db.Column(db.Boolean, nullable=False, default=False)
 
-    images = db.relationship(
-        "ServiceImage",
-        backref="service",
-        cascade="all, delete-orphan",
-        order_by="ServiceImage.display_order"
-    )
     
     images = db.relationship(
         "ServiceImage",
@@ -100,9 +94,6 @@ class Service(db.Model):
         if lang == "ja" and self.meta_description_ja:
             return self.meta_description_ja
         return self.meta_description_ar or self.short_description_ar
-
-    def __repr__(self):
-        return f"<Service {self.title_ar}>"
 
     def __repr__(self):
         return f"<Service {self.title_ar}>"

@@ -1,7 +1,8 @@
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table
+from io import BytesIO
+
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
-from io import BytesIO
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table
 
 
 def generate_invoice(order):

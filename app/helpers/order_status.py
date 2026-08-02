@@ -1,9 +1,9 @@
 from app.constants import (
+    ORDER_CANCELLED,
+    ORDER_DELIVERED,
     ORDER_PENDING,
     ORDER_PROCESSING,
     ORDER_SHIPPED,
-    ORDER_DELIVERED,
-    ORDER_CANCELLED,
 )
 
 

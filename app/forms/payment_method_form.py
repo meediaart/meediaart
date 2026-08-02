@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Optional, Length
+from wtforms import BooleanField, SelectField, StringField, SubmitField
+from wtforms.validators import DataRequired, Length, Optional
 
 
 class PaymentMethodForm(FlaskForm):

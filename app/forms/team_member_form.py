@@ -1,19 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
-
-from wtforms import (
-    StringField,
-    TextAreaField,
-    IntegerField,
-    BooleanField,
-    SubmitField
-)
-
-from wtforms.validators import (
-    DataRequired,
-    Length,
-    Optional
-)
+from wtforms import BooleanField, IntegerField, StringField, SubmitField, TextAreaField
+from wtforms.validators import DataRequired, Length, Optional
 
 
 class TeamMemberForm(FlaskForm):

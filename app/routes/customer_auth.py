@@ -1,18 +1,17 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session
-from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask_login import current_user, login_required, login_user, logout_user
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db
-from app.models.user import User
-from app.models.order import Order
-from app.helpers.order_status import get_order_timeline, get_order_status_label
-from app.forms.profile_form import ProfileForm
-from app.extensions import db
 from app.forms.address_form import AddressForm
+from app.forms.payment_method_form import PaymentMethodForm
+from app.forms.profile_form import ProfileForm
+from app.helpers.order_status import get_order_status_label, get_order_timeline
 from app.models.address import Address
 from app.models.favorite import Favorite
+from app.models.order import Order
 from app.models.payment_method import PaymentMethod
-from app.forms.payment_method_form import PaymentMethodForm
+from app.models.user import User
 
 customer_auth_bp = Blueprint("customer_auth", __name__, url_prefix="/account")
 

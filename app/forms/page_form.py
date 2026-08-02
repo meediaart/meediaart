@@ -1,14 +1,14 @@
 from flask_wtf import FlaskForm
 from wtforms import (
-    StringField,
-    TextAreaField,
     BooleanField,
-    SubmitField,
+    IntegerField,
     SelectField,
-    IntegerField
+    StringField,
+    SubmitField,
+    TextAreaField,
 )
 from wtforms.validators import DataRequired, Length, Optional
-from app.models.page import Page
+
 
 class PageForm(FlaskForm):
 

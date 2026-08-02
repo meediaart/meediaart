@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
 from flask_wtf.file import FileField
-from wtforms import BooleanField
+from wtforms import BooleanField, StringField, SubmitField
+
 
 class SettingsForm(FlaskForm):
     site_name = StringField("اسم الموقع")

@@ -139,3 +139,252 @@ a {
     background: var(--ma-accent-soft);
     color: var(--ma-text);
 }
+
+
+/* ==================================================
+   BUTTONS
+================================================== */
+
+.btn{
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:8px;
+
+    padding:12px 22px;
+
+    border:none;
+
+    border-radius:var(--ma-radius-md);
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    text-decoration:none;
+
+    transition:all var(--ma-transition);
+
+}
+
+.btn:hover{
+
+    transform:translateY(-2px);
+
+}
+
+.btn-primary{
+
+    background:var(--ma-accent);
+
+    color:#fff;
+
+}
+
+.btn-primary:hover{
+
+    background:var(--ma-accent-hover);
+
+}
+
+.btn-secondary{
+
+    background:var(--ma-surface-soft);
+
+    color:var(--ma-text);
+
+}
+
+.btn-success{
+
+    background:var(--ma-success);
+
+    color:#fff;
+
+}
+
+.btn-danger{
+
+    background:var(--ma-danger);
+
+    color:#fff;
+
+}
+
+/* ==================================================
+   FORMS
+================================================== */
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:20px;
+}
+
+.form-group label{
+    font-size:var(--ma-font-sm);
+    font-weight:600;
+    color:var(--ma-text);
+}
+
+input,
+textarea,
+select{
+
+    width:100%;
+
+    padding:12px 16px;
+
+    border:1px solid var(--ma-border);
+
+    border-radius:var(--ma-radius-md);
+
+    background:var(--ma-surface);
+
+    color:var(--ma-text);
+
+    transition:all var(--ma-transition);
+
+}
+
+textarea{
+
+    resize:vertical;
+
+    min-height:140px;
+
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+
+    outline:none;
+
+    border-color:var(--ma-accent);
+
+    box-shadow:
+        0 0 0 4px var(--ma-accent-soft);
+
+}
+
+input::placeholder,
+textarea::placeholder{
+
+    color:var(--ma-text-muted);
+
+}
+
+
+/* ==================================================
+   PAGE CARD
+================================================== */
+
+.page-card{
+
+    background:var(--ma-surface);
+
+    border:1px solid var(--ma-border);
+
+    border-radius:var(--ma-radius-lg);
+
+    padding:32px;
+
+    box-shadow:var(--ma-shadow-md);
+
+    margin-bottom:32px;
+
+}
+
+@media (max-width:768px){
+
+    .page-card{
+
+        padding:20px;
+
+        border-radius:var(--ma-radius-md);
+
+    }
+
+}
+
+
+
+/* ===========================
+   Admin Forms
+=========================== */
+
+.service-form-card{
+    max-width:1400px;
+    margin:auto;
+}
+
+.lang-tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:25px;
+    flex-wrap:wrap;
+}
+
+.lang-tab-btn{
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#ececec;
+    transition:.3s;
+}
+
+.lang-tab-btn.active{
+    background:#2563eb;
+    color:#fff;
+}
+
+.lang-tab-pane{
+    display:none;
+}
+
+.lang-tab-pane.active{
+    display:block;
+}
+
+.lang-grid,
+.general-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:18px;
+}
+
+.admin-form-group.full-width{
+    grid-column:1 / -1;
+}
+
+.general-settings-box{
+    margin-top:35px;
+    padding-top:25px;
+    border-top:1px solid #ddd;
+}
+
+.general-checks{
+    display:flex;
+    gap:25px;
+    margin-top:20px;
+    flex-wrap:wrap;
+}
+
+@media(max-width:768px){
+
+    .lang-grid,
+    .general-grid{
+
+        grid-template-columns:1fr;
+    }
+
+    .lang-tabs{
+
+        flex-direction:column;
+    }
+}

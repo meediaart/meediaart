@@ -1,5 +1,6 @@
 from app.extensions import db
 
+
 class SiteSetting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 

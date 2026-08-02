@@ -1,5 +1,6 @@
 from app.extensions import db
 
+
 class ProductImage(db.Model):
     __tablename__ = "product_images"
 

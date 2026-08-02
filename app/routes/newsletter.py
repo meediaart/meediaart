@@ -1,8 +1,9 @@
-from flask import Blueprint, request, redirect, url_for, flash, session
+from datetime import UTC, datetime
+
+from flask import Blueprint, request, session
+
 from app.extensions import db
 from app.models.newsletter_subscriber import NewsletterSubscriber
-from datetime import datetime
-
 
 newsletter_bp = Blueprint("newsletter", __name__, url_prefix="/newsletter")
 
@@ -47,8 +48,7 @@ def subscribe():
         source="footer",
 
         consent_given=True,
-        consent_at=datetime.utcnow(),
-
+        consent_at=datetime.now(UTC),
         ip_address=request.remote_addr
     )
 
