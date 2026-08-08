@@ -186,9 +186,12 @@ def dynamic_page(slug):
 
 @main_bp.route("/product/<slug>")
 def product_detail(slug):
-    product = Product.query.filter_by(slug_ar=slug).first_or_404()
-    return render_template("shop/product.html", product=product)
-
+    return redirect(
+        url_for("shop.product", slug=slug),
+        code=301
+    )
+    
+    
 @main_bp.route("/sitemap.xml")
 def sitemap():
 
@@ -262,11 +265,11 @@ def sitemap():
     )
 
     add_dynamic(
-        Product.query.filter_by(is_active=True).all(),
-        "main.product_detail",
-        "slug_ar",
-        "0.8",
-        "weekly"
+    Product.query.filter_by(is_active=True).all(),
+    "shop.product",
+    "slug_ar",
+    "0.8",
+    "weekly"
     )
 
     add_dynamic(

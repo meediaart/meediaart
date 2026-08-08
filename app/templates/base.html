@@ -18,7 +18,7 @@
 
     <link rel="canonical" href="{{ seo_url }}">
 
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="{{ seo_og_type|default('website') }}">
     <meta property="og:site_name" content="{{ setting.site_name if setting else 'MEDIA ART' }}">
     <meta property="og:title" content="{{ seo_title }}">
     <meta property="og:description" content="{{ seo_description }}">
@@ -33,7 +33,64 @@
 
     <meta name="theme-color" content="#0d6efd">
 
-    <meta property="og:description" content="{{ seo_description }}">
+    {# ==================================================
+        Structured Data - Organization + WebSite
+        ================================================== #}
+
+        {% set schema_site_name =
+            setting.site_name
+            if setting and setting.site_name
+            else "MEDIA ART"
+        %}
+
+        {% set schema_site_url = request.url_root.rstrip('/') %}
+
+        {% if setting and setting.logo %}
+            {% set schema_logo_url =
+                url_for(
+                    'static',
+                    filename='uploads/' + setting.logo,
+                    _external=True
+                )
+            %}
+        {% else %}
+            {% set schema_logo_url =
+                url_for(
+                    'static',
+                    filename='images/logo.png',
+                    _external=True
+                )
+            %}
+        {% endif %}
+
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Organization",
+                    "@id": {{ (schema_site_url ~ "/#organization")|tojson }},
+                    "name": {{ schema_site_name|tojson }},
+                    "url": {{ schema_site_url|tojson }},
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": {{ schema_logo_url|tojson }}
+                    }
+                },
+                {
+                    "@type": "WebSite",
+                    "@id": {{ (schema_site_url ~ "/#website")|tojson }},
+                    "url": {{ schema_site_url|tojson }},
+                    "name": {{ schema_site_name|tojson }},
+                    "publisher": {
+                        "@id": {{ (schema_site_url ~ "/#organization")|tojson }}
+                    },
+                    "inLanguage": {{ current_lang|tojson }}
+                }
+            ]
+        }
+        </script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link
     rel="stylesheet"
@@ -48,6 +105,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/parts/final-shop.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/parts/final-footer.css') }}">
     {% block extra_css %}{% endblock %}
+    {% block structured_data %}{% endblock %}
 </head>
 
 <body>

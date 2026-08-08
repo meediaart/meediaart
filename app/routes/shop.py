@@ -50,8 +50,6 @@ def test_email():
     return "❌ حدث خطأ أثناء إرسال البريد."
 
 
-shop_bp = Blueprint("shop", __name__, url_prefix="/shop")
-
 
 ALLOWED_REVIEW_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
@@ -232,7 +230,7 @@ MEDIA ART
         current_app.logger.exception("Order email sending failed.")
 
 
-@shop_bp.route("/shop")
+@shop_bp.route("/", strict_slashes=False)
 def index():
     categories = (
         Category.query.filter_by(is_active=True)
@@ -260,7 +258,7 @@ def index():
     )
 
 
-@shop_bp.route("/shop/category/<slug>")
+@shop_bp.route("/category/<slug>")
 def category_products(slug):
     category = Category.query.filter(
         or_(
@@ -334,15 +332,62 @@ def product(slug):
         average_rating = 0
 
     ratings_count = len(visible_ratings)
+    
+    # =========================
+    # SEO الخاص بالمنتج
+    # =========================
+
+    seo_title = product.get_meta_title(current_lang)
+
+    seo_description = (
+        product.get_meta_description(current_lang)
+        or product.get_description(current_lang)
+        or ""
+    )
+
+    seo_keywords = product.get_keywords(current_lang) or ""
+
+    if product.image:
+        seo_image = url_for(
+            "static",
+            filename="uploads/" + product.image,
+            _external=True,
+        )
+    elif product.images:
+        seo_image = url_for(
+            "static",
+            filename="uploads/" + product.images[0].image,
+            _external=True,
+        )
+    else:
+        seo_image = url_for(
+            "static",
+            filename="images/logo.png",
+            _external=True,
+        )
+
+    seo_url = url_for(
+        "shop.product",
+        slug=product.get_slug(current_lang),
+        _external=True,
+    )
 
     return render_template(
-        "shop/product.html",
-        product=product,
-        current_lang=current_lang,
-        reviews=approved_reviews,
-        average_rating=average_rating,
-        ratings_count=ratings_count,
-    )
+    "shop/product.html",
+    product=product,
+    current_lang=current_lang,
+    reviews=approved_reviews,
+    average_rating=average_rating,
+    ratings_count=ratings_count,
+
+    # SEO
+    seo_title=seo_title,
+    seo_description=seo_description,
+    seo_keywords=seo_keywords,
+    seo_image=seo_image,
+    seo_url=seo_url,
+    seo_og_type="product",
+)
 
 
 @shop_bp.route("/cart")

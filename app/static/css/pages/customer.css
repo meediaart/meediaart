@@ -104,3 +104,140 @@
     margin-bottom:20px;
 
 }
+
+/* =========================
+   Customer Dashboard Mobile
+========================= */
+
+@media (max-width: 900px) {
+
+    .customer-dashboard-layout {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .customer-sidebar {
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .customer-user-box {
+        margin-bottom: 18px;
+    }
+
+    .customer-avatar {
+        width: 72px;
+        height: 72px;
+        font-size: 34px;
+    }
+
+    .customer-menu {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .customer-menu a {
+        padding: 11px 12px;
+        text-align: center;
+        font-size: 14px;
+        background: #f8f9fb;
+    }
+
+    .customer-content {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .customer-card {
+        padding: 20px;
+        border-radius: 14px;
+    }
+}
+
+
+@media (max-width: 520px) {
+
+    .customer-dashboard-layout {
+        gap: 14px;
+    }
+
+    .customer-sidebar {
+        padding: 14px;
+    }
+
+    .customer-menu {
+        grid-template-columns: 1fr;
+    }
+
+    .customer-menu a {
+        width: 100%;
+        text-align: start;
+        padding: 12px 14px;
+    }
+
+    .customer-card {
+        padding: 16px;
+    }
+
+    .customer-card h2 {
+        font-size: 20px;
+        margin-bottom: 14px;
+    }
+}
+
+
+
+
+
+.customer-info-list{
+    display:grid;
+    gap:12px;
+}
+
+.customer-info-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:14px 0;
+    border-bottom:1px solid #eceff3;
+}
+
+.customer-info-row:last-child{
+    border-bottom:none;
+}
+
+.customer-info-row span{
+    color:#6b7280;
+    font-size:14px;
+}
+
+.customer-info-row strong{
+    color:#111827;
+    text-align:end;
+    overflow-wrap:anywhere;
+}
+
+.customer-card-actions{
+    margin-top:24px;
+}
+
+@media (max-width:520px){
+
+    .customer-info-row{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:5px;
+    }
+
+    .customer-info-row strong{
+        text-align:start;
+        width:100%;
+    }
+
+    .customer-card-actions .ma-btn{
+        width:100%;
+        justify-content:center;
+    }
+}

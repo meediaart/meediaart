@@ -1,5 +1,72 @@
 {% extends "base.html" %}
 
+{% set schema_project_name = project.get_title(current_lang) %}
+{% set schema_project_description =
+    project.get_description(current_lang)
+    or project.get_short_description(current_lang)
+    or ""
+%}
+
+{% set schema_project_url =
+    url_for(
+        'portfolio.detail',
+        slug=project.get_slug(current_lang),
+        _external=True
+    )
+%}
+
+{% if project.image %}
+    {% set schema_project_image =
+        url_for(
+            'static',
+            filename='uploads/' + project.image,
+            _external=True
+        )
+    %}
+{% elif project.images and project.images|length > 0 %}
+    {% set schema_project_image =
+        url_for(
+            'static',
+            filename='uploads/' + project.images[0].image,
+            _external=True
+        )
+    %}
+{% else %}
+    {% set schema_project_image =
+        url_for(
+            'static',
+            filename='images/logo.png',
+            _external=True
+        )
+    %}
+{% endif %}
+
+{% block structured_data %}
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    "name": {{ schema_project_name|tojson }},
+    "description": {{ schema_project_description|tojson }},
+    "url": {{ schema_project_url|tojson }},
+    "image": {{ schema_project_image|tojson }}
+    {% if project.project_type %}
+    ,
+    "genre": {{ project.project_type|tojson }}
+    {% endif %}
+    {% if project.client_name %}
+    ,
+    "about": {
+        "@type": "Thing",
+        "name": {{ project.client_name|tojson }}
+    }
+    {% endif %}
+}
+</script>
+
+{% endblock %}
+
 {% block title %}
 {% if project %}
     {{ project.get_meta_title(current_lang) }}

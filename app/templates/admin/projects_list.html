@@ -219,53 +219,45 @@
                     <td>
                         <div class="admin-action-icons">
 
-                        <a
-                            href="{{ url_for('shop.product', slug=product.get_slug(current_lang)) }}"
-                            target="_blank"
-                            class="admin-icon-btn"
-                            title="عرض المنتج">
+                            <!-- عرض المشروع -->
+                            <a
+                                href="{{ url_for('portfolio.detail', slug=project.get_slug(current_lang)) }}"
+                                target="_blank"
+                                class="admin-icon-btn"
+                                title="عرض المشروع"
+                            >
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
 
-                            <i class="fa-solid fa-eye"></i>
+                            <!-- تعديل المشروع -->
+                            <a
+                                href="{{ url_for('admin.edit_project', project_id=project.id) }}"
+                                class="admin-icon-btn"
+                                title="تعديل"
+                            >
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
 
-                        </a>
+                            <!-- حذف المشروع -->
+                            <a
+                                href="{{ url_for('admin.delete_project', project_id=project.id) }}"
+                                class="admin-icon-btn danger js-confirm-delete"
+                                title="حذف"
+                                data-confirm-message="هل أنت متأكد من حذف هذا المشروع؟"
+                            >
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
 
-                        <a
-                            href="{{ url_for('admin.edit_product', product_id=product.id) }}"
-                            class="admin-icon-btn"
-                            title="تعديل">
-
-                            <i class="fa-solid fa-pen"></i>
-
-                        </a>
-
-                        <a
-                            href="{{ url_for('admin.duplicate_product', product_id=product.id) }}"
-                            class="admin-icon-btn"
-                            title="نسخ">
-
-                            <i class="fa-regular fa-copy"></i>
-
-                        </a>
-
-                        <a
-                            href="{{ url_for('admin.delete_product', product_id=product.id) }}"
-                            class="admin-icon-btn danger js-confirm-delete"
-                            title="حذف"
-                            data-confirm-message="هل أنت متأكد من حذف هذا المنتج؟">
-
-                            <i class="fa-solid fa-trash"></i>
-
-                        </a>
-
-                    </div>
+                        </div>
                     </td>
+                    
 
                 </tr>
 
                 {% endfor %}
 
                 <!-- رسالة عدم وجود نتائج -->
-                <tr id="noProjectsResults" class="admin-hidden"></tr>
+                <tr id="noProjectsResults" class="admin-hidden">
                     <td colspan="6" class="admin-empty-state">
                         لا توجد مشاريع مطابقة للبحث أو الفلاتر.
                     </td>

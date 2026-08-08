@@ -1,4 +1,42 @@
 {% extends "base.html" %}
+{% set schema_product_name = product.get_title(current_lang) %}
+{% set schema_product_description = product.get_description(current_lang) or "" %}
+{% set schema_product_url = url_for('shop.product', slug=product.get_slug(current_lang), _external=True) %}
+
+{% if product.discount_percent and product.discount_percent > 0 %}
+    {% set schema_product_price =
+        product.price -
+        (product.price * product.discount_percent / 100)
+    %}
+{% else %}
+    {% set schema_product_price = product.price %}
+{% endif %}
+
+{% if product.image %}
+    {% set schema_product_image =
+        url_for(
+            'static',
+            filename='uploads/' + product.image,
+            _external=True
+        )
+    %}
+{% elif product.images and product.images|length > 0 %}
+    {% set schema_product_image =
+        url_for(
+            'static',
+            filename='uploads/' + product.images[0].image,
+            _external=True
+        )
+    %}
+{% else %}
+    {% set schema_product_image =
+        url_for(
+            'static',
+            filename='images/logo.png',
+            _external=True
+        )
+    %}
+{% endif %}
 
 {% block title %}
 {{ product.get_meta_title(current_lang) }}
@@ -102,6 +140,35 @@
     {% set customer_image_text = "صورة العميل" %}
 
 {% endif %}
+
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": {{ schema_product_name|tojson }},
+    "description": {{ schema_product_description|tojson }},
+    "image": [
+        {{ schema_product_image|tojson }}
+    ],
+    "url": {{ schema_product_url|tojson }},
+    "sku": {{ product.id|string|tojson }},
+    "offers": {
+        "@type": "Offer",
+        "url": {{ schema_product_url|tojson }},
+        "priceCurrency": "JPY",
+        "price": {{ schema_product_price|round(0)|string|tojson }}
+    }
+    {% if product.ratings_enabled and ratings_count > 0 %}
+    ,
+    "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": {{ average_rating|string|tojson }},
+        "reviewCount": {{ ratings_count }}
+    }
+    {% endif %}
+}
+</script>
 
 <style>
     /* =========================
