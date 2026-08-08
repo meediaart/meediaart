@@ -6,6 +6,69 @@
     {% set post_content = post.get_content(current_lang) or "" %}
 {% endif %}
 
+{% if post %}
+
+    {% set schema_article_url =
+        url_for(
+            'blog.article',
+            slug=post.get_slug(current_lang),
+            _external=True
+        )
+    %}
+
+    {% if post.image %}
+        {% set schema_article_image =
+            url_for(
+                'static',
+                filename='uploads/' + post.image,
+                _external=True
+            )
+        %}
+    {% else %}
+        {% set schema_article_image =
+            url_for(
+                'static',
+                filename='images/logo.png',
+                _external=True
+            )
+        %}
+    {% endif %}
+
+{% endif %}
+
+
+{% block structured_data %}
+
+{% if post %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": {{ post_title|tojson }},
+    "description": {{ post_excerpt|tojson }},
+    "url": {{ schema_article_url|tojson }},
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": {{ schema_article_url|tojson }}
+    },
+    "image": [
+        {{ schema_article_image|tojson }}
+    ],
+    "datePublished": {{ post.created_at.isoformat()|tojson }},
+    "publisher": {
+        "@type": "Organization",
+        "name": {{ (setting.site_name if setting and setting.site_name else "MEDIA ART")|tojson }},
+        "logo": {
+            "@type": "ImageObject",
+            "url": {{ url_for('static', filename='images/logo.png', _external=True)|tojson }}
+        }
+    }
+}
+</script>
+{% endif %}
+
+{% endblock %}
+
 {% block title %}
 {% if post %}
     {{ post.get_meta_title(current_lang) }}

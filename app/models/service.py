@@ -94,6 +94,22 @@ class Service(db.Model):
         if lang == "ja" and self.meta_description_ja:
             return self.meta_description_ja
         return self.meta_description_ar or self.short_description_ar
+    
+    def get_keywords(self, lang="ar"):
+        """
+         إرجاع الكلمات المفتاحية حسب اللغة الحالية.
+            """
+
+        if lang == "en" and self.keywords_en:
+            return self.keywords_en
+
+        if lang == "ja" and self.keywords_ja:
+                return self.keywords_ja
+
+        return self.keywords_ar
+
+    def __repr__(self):
+        return f"<Service {self.title_ar}>"
 
     def __repr__(self):
         return f"<Service {self.title_ar}>"

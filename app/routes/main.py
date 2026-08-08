@@ -126,6 +126,12 @@ def home():
     seo_image = (
         url_for(
             "static",
+            filename="uploads/" + setting.logo,
+            _external=True,
+        )
+        if setting and setting.logo
+        else url_for(
+            "static",
             filename="images/logo.png",
             _external=True,
         )
@@ -293,3 +299,22 @@ def sitemap():
 @main_bp.route("/ui")
 def ui():
     return render_template("ui.html")
+
+@main_bp.route("/favicon.ico")
+def favicon():
+    setting = SiteSetting.query.first()
+
+    if setting and setting.logo:
+        return redirect(
+            url_for(
+                "static",
+                filename="uploads/" + setting.logo
+            )
+        )
+
+    return redirect(
+        url_for(
+            "static",
+            filename="images/logo.png"
+        )
+    )

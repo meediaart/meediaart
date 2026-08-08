@@ -3,35 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% set seo_title = seo_title if seo_title else (setting.site_name if setting and setting.site_name else tr.site_default) %}
-    {% set seo_description = seo_description if seo_description else "MEDIA ART - Professional Web Design, Development, Marketing and IT Solutions." %}
-    {% set seo_keywords = seo_keywords if seo_keywords else "web design, web development, seo, marketing, ecommerce, media art" %}
-    {% set seo_image = seo_image if seo_image else url_for('static', filename='images/logo.png', _external=True) %}
-    {% set seo_url = seo_url if seo_url else request.url %}
+        {% set seo_title =
+        seo_title
+        if seo_title
+        else (
+            setting.site_name
+            if setting and setting.site_name
+            else "MEDIA ART"
+        )
+    %}
 
-    <title>{% block title %}{{ seo_title }}{% endblock %}</title>
+    {% set seo_description =
+        seo_description
+        if seo_description
+        else "MEDIA ART - Professional Web Design, Development, Marketing and IT Solutions."
+    %}
 
-    <meta name="description" content="{{ seo_description }}">
-    <meta name="keywords" content="{{ seo_keywords }}">
-    <meta name="author" content="MEDIA ART">
-    <meta name="robots" content="index,follow,max-image-preview:large">
+    {% set seo_keywords =
+        seo_keywords
+        if seo_keywords
+        else "web design, web development, seo, marketing, ecommerce, media art"
+    %}
 
-    <link rel="canonical" href="{{ seo_url }}">
+    {# صورة SEO / المشاركة #}
+    {% if seo_image %}
 
-    <meta property="og:type" content="{{ seo_og_type|default('website') }}">
-    <meta property="og:site_name" content="{{ setting.site_name if setting else 'MEDIA ART' }}">
-    <meta property="og:title" content="{{ seo_title }}">
-    <meta property="og:description" content="{{ seo_description }}">
-    <meta property="og:url" content="{{ seo_url }}">
-    <meta property="og:image" content="{{ seo_image }}">
-    <meta property="og:locale" content="{{ current_lang }}">
+        {% set seo_image = seo_image %}
 
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ seo_title }}">
-    <meta name="twitter:description" content="{{ seo_description }}">
-    <meta name="twitter:image" content="{{ seo_image }}">
+    {% elif setting and setting.logo %}
 
-    <meta name="theme-color" content="#0d6efd">
+        {% set seo_image =
+            url_for(
+                'static',
+                filename='uploads/' + setting.logo,
+                _external=True
+            )
+        %}
+
+    {% else %}
+
+        {% set seo_image =
+            url_for(
+                'static',
+                filename='images/logo.png',
+                _external=True
+            )
+        %}
+
+    {% endif %}
+
+    {% set seo_url =
+        seo_url if seo_url else request.url
+    %}
+
+
+    <title>
+        {% block title %}{{ seo_title }}{% endblock %}
+    </title>
+
+    <meta
+        name="description"
+        content="{{ seo_description }}"
+    >
+
+    <meta
+        name="keywords"
+        content="{{ seo_keywords }}"
+    >
+
+    <meta
+        name="author"
+        content="MEDIA ART"
+    >
+
+    <meta
+        name="robots"
+        content="index,follow,max-image-preview:large"
+    >
+
+    <link
+        rel="canonical"
+        href="{{ seo_url }}"
+    >
+
+
+    {# Open Graph #}
+
+    <meta
+        property="og:type"
+        content="{{ seo_og_type|default('website') }}"
+    >
+
+    <meta
+        property="og:site_name"
+        content="{{ setting.site_name if setting and setting.site_name else 'MEDIA ART' }}"
+    >
+
+    <meta
+        property="og:title"
+        content="{{ seo_title }}"
+    >
+
+    <meta
+        property="og:description"
+        content="{{ seo_description }}"
+    >
+
+    <meta
+        property="og:url"
+        content="{{ seo_url }}"
+    >
+
+    <meta
+        property="og:image"
+        content="{{ seo_image }}"
+    >
+
+    <meta
+        property="og:locale"
+        content="{{ current_lang }}"
+    >
+
+
+    {# Twitter / X #}
+
+    <meta
+        name="twitter:card"
+        content="summary_large_image"
+    >
+
+    <meta
+        name="twitter:title"
+        content="{{ seo_title }}"
+    >
+
+    <meta
+        name="twitter:description"
+        content="{{ seo_description }}"
+    >
+
+    <meta
+        name="twitter:image"
+        content="{{ seo_image }}"
+    >
+
+
+    <meta
+        name="theme-color"
+        content="#0d6efd"
+    >
+
+
+    {# Favicon من لوجو لوحة الإدارة #}
+
+    {% if setting and setting.logo %}
+
+        <link
+            rel="icon"
+            href="{{ url_for(
+                'static',
+                filename='uploads/' + setting.logo
+            ) }}"
+        >
+
+        <link
+            rel="shortcut icon"
+            href="{{ url_for(
+                'static',
+                filename='uploads/' + setting.logo
+            ) }}"
+        >
+
+        <link
+            rel="apple-touch-icon"
+            href="{{ url_for(
+                'static',
+                filename='uploads/' + setting.logo
+            ) }}"
+        >
+
+    {% else %}
+
+        <link
+            rel="icon"
+            href="{{ url_for(
+                'static',
+                filename='images/logo.png'
+            ) }}"
+        >
+
+        <link
+            rel="shortcut icon"
+            href="{{ url_for(
+                'static',
+                filename='images/logo.png'
+            ) }}"
+        >
+
+    {% endif %}
 
     {# ==================================================
         Structured Data - Organization + WebSite

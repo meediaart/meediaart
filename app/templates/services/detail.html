@@ -1,5 +1,67 @@
 {% extends "base.html" %}
 
+{% set schema_service_name = service.get_title(current_lang) %}
+
+{% set schema_service_description =
+    service.get_description(current_lang)
+    or service.get_short_description(current_lang)
+    or ""
+%}
+
+{% set schema_service_url =
+    url_for(
+        'services.detail',
+        slug=service.get_slug(current_lang),
+        _external=True
+    )
+%}
+
+{% if service.image %}
+    {% set schema_service_image =
+        url_for(
+            'static',
+            filename='uploads/' + service.image,
+            _external=True
+        )
+    %}
+{% elif service.images and service.images|length > 0 %}
+    {% set schema_service_image =
+        url_for(
+            'static',
+            filename='uploads/' + service.images[0].image,
+            _external=True
+        )
+    %}
+{% else %}
+    {% set schema_service_image =
+        url_for(
+            'static',
+            filename='images/logo.png',
+            _external=True
+        )
+    %}
+{% endif %}
+
+{% block structured_data %}
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": {{ schema_service_name|tojson }},
+    "description": {{ schema_service_description|tojson }},
+    "url": {{ schema_service_url|tojson }},
+    "image": {{ schema_service_image|tojson }},
+    "provider": {
+        "@type": "Organization",
+        "name": {{ (setting.site_name if setting and setting.site_name else "MEDIA ART")|tojson }}
+    }
+    
+}
+</script>
+
+{% endblock %}
+
 {% block title %}
 {{ service.get_meta_title(current_lang) }}
 {% endblock %}
